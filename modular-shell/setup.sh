@@ -46,7 +46,7 @@ jobs:
         with:
           node-version: "20"
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Build
         run: npm run build
       - name: Upload artifact
@@ -103,7 +103,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // Fixes blank page on GitHub Pages
+  // IMPORTANT: This ./ base path allows the app to run in the github subdirectory
+  base: './', 
 })
 EOF
 

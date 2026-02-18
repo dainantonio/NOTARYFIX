@@ -17,8 +17,8 @@ export default {
           200: '#bae0ff',
           300: '#7cc2ff',
           400: '#369eff',
-          500: '#0077ff', // Vibrant Primary
-          600: '#005be6', // Interactive
+          500: '#0077ff', 
+          600: '#005be6',
           700: '#0047cc',
           800: '#003db3',
           900: '#00358f',
