@@ -17,7 +17,7 @@ export default {
           200: '#bae0ff',
           300: '#7cc2ff',
           400: '#369eff',
-          500: '#0077ff', 
+          500: '#0077ff', // Signature Blue
           600: '#005be6',
           700: '#0047cc',
           800: '#003db3',
@@ -34,8 +34,7 @@ export default {
         'fade-in': 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'float': 'float 8s ease-in-out infinite',
-        'float-delayed': 'float 8s ease-in-out 4s infinite',
-        'bounce-slow': 'bounce 3s infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
@@ -44,7 +43,7 @@ export default {
       },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        'glow-brand': '0 0 60px -15px rgba(0, 119, 255, 0.3)',
+        'glow': '0 0 50px -10px rgba(0, 119, 255, 0.4)',
       }
     },
   },

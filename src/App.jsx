@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import LandingPage from './pages/Landing';
 import AuthScreen from './pages/Auth';
 import Onboarding from './pages/Onboarding';
-import { Modal } from './components/UI';
+import Dashboard from './pages/Dashboard';
+import { Modal, PageControl } from './components/UI';
 import { LegalContent } from './pages/Legal';
 
 export default function App() {
@@ -47,25 +48,17 @@ export default function App() {
         )}
 
         {view === 'dashboard' && (
-            <div className="flex h-screen items-center justify-center bg-slate-50">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold">Dashboard Placeholder</h1>
-                    <p className="text-slate-500 mb-4">You are authenticated.</p>
-                    <button 
-                        onClick={() => setView('landing')} 
-                        className="text-brand-600 hover:underline"
-                    >
-                        Sign Out
-                    </button>
-                </div>
-            </div>
+            <Dashboard onLogout={() => setView('landing')} />
         )}
 
         {view === 'landing' && (
-            <LandingPage 
-                onNavigate={setView} 
-                onOpenLegal={setLegalModal} 
-            />
+            <>
+                <LandingPage 
+                    onNavigate={setView} 
+                    onOpenLegal={setLegalModal} 
+                />
+                <PageControl />
+            </>
         )}
     </>
   );

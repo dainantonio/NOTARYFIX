@@ -17,7 +17,7 @@ dist
 .env.local
 EOF
 
-# GitHub Actions Workflow (Automates deployment)
+# GitHub Actions Workflow
 cat << 'EOF' > .github/workflows/deploy.yml
 name: Deploy to GitHub Pages
 
@@ -71,7 +71,7 @@ cat << 'EOF' > package.json
 {
   "name": "notary-pro-enterprise",
   "private": true,
-  "version": "4.2.0",
+  "version": "5.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -96,14 +96,13 @@ cat << 'EOF' > package.json
 }
 EOF
 
-# vite.config.js (FIXED: Added base path)
+# vite.config.js
 cat << 'EOF' > vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // IMPORTANT: This ./ base path allows the app to run in the github subdirectory
   base: './', 
 })
 EOF
@@ -129,8 +128,8 @@ export default {
           200: '#bae0ff',
           300: '#7cc2ff',
           400: '#369eff',
-          500: '#0077ff', // Vibrant Primary
-          600: '#005be6', // Interactive
+          500: '#0077ff', // Signature Blue
+          600: '#005be6',
           700: '#0047cc',
           800: '#003db3',
           900: '#00358f',
@@ -146,8 +145,7 @@ export default {
         'fade-in': 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'float': 'float 8s ease-in-out infinite',
-        'float-delayed': 'float 8s ease-in-out 4s infinite',
-        'bounce-slow': 'bounce 3s infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
@@ -156,7 +154,7 @@ export default {
       },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        'glow-brand': '0 0 60px -15px rgba(0, 119, 255, 0.3)',
+        'glow': '0 0 50px -10px rgba(0, 119, 255, 0.4)',
       }
     },
   },
@@ -181,8 +179,7 @@ cat << 'EOF' > index.html
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NotaryPro | The Enterprise OS for Modern Notaries</title>
-    <meta name="description" content="The all-in-one platform for mobile notaries and loan signing agents. Invoicing, scheduling, and AI compliance in one secure app." />
+    <title>NotaryPro | The OS for Modern Notaries</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body>
@@ -211,33 +208,18 @@ cat << 'EOF' > src/index.css
 }
 
 @layer components {
-  /* Ultra-Premium Glass Effect */
   .glass-panel {
     @apply bg-white/80 backdrop-blur-xl border border-white/50 shadow-xl;
   }
-  
   .glass-dark {
     @apply bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 shadow-2xl;
   }
-  
-  .glass-mockup {
-    @apply bg-white/95 backdrop-blur-md border border-white/20 shadow-xl;
-  }
-  
-  /* Feature Card Interaction */
   .visual-card {
     @apply bg-white border border-slate-100 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-brand-200;
   }
-  
   .animate-fade-in {
     animation: fadeIn 0.6s ease-out forwards;
   }
-  
-  .animate-slide-up {
-    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  /* Range Input Customization */
   input[type=range] {
     @apply appearance-none bg-transparent cursor-pointer;
   }
@@ -252,11 +234,6 @@ cat << 'EOF' > src/index.css
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
 }
 EOF
 
@@ -277,7 +254,7 @@ EOF
 # src/components/UI.jsx
 cat << 'EOF' > src/components/UI.jsx
 import React, { useEffect } from 'react';
-import { Loader2, X, Battery, Wifi, Signal } from 'lucide-react';
+import { Loader2, X, Battery, Wifi, Signal, ChevronUp, ChevronDown } from 'lucide-react';
 
 export const Button = ({ 
   children, 
@@ -291,7 +268,7 @@ export const Button = ({
   const base = "inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-300 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]";
   
   const sizes = { 
-    sm: "px-4 py-2 text-sm", 
+    sm: "px-4 py-2.5 text-sm", 
     md: "px-6 py-3 text-sm", 
     lg: "px-8 py-4 text-base" 
   };
@@ -342,22 +319,14 @@ export const Input = ({ label, error, className = '', ...props }) => (
 // High-Fidelity iPhone 15 Pro Max Mockup
 export const PhoneFrame = ({ children, className = "", darkMode = false }) => (
   <div className={`relative w-[300px] h-[600px] bg-slate-950 rounded-[55px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-[6px] border-slate-800 overflow-hidden ${className}`}>
-    {/* Frame Reflection */}
     <div className="absolute inset-0 rounded-[48px] ring-1 ring-white/10 pointer-events-none z-50"></div>
-    
-    {/* Dynamic Island */}
     <div className="absolute top-3 left-1/2 -translate-x-1/2 h-[28px] w-[90px] bg-black rounded-full z-40 flex items-center justify-center">
        <div className="w-16 h-3 bg-black rounded-full"></div>
     </div>
-
-    {/* Buttons */}
     <div className="absolute top-28 -left-[8px] w-[2px] h-8 bg-slate-700 rounded-l-md"></div>
     <div className="absolute top-44 -left-[8px] w-[2px] h-14 bg-slate-700 rounded-l-md"></div>
     <div className="absolute top-36 -right-[8px] w-[2px] h-20 bg-slate-700 rounded-r-md"></div>
-
-    {/* Screen */}
     <div className={`w-full h-full ${darkMode ? 'bg-slate-900' : 'bg-white'} overflow-hidden flex flex-col relative rounded-[48px]`}>
-        {/* Status Bar */}
         <div className={`h-12 w-full flex justify-between items-center px-7 pt-3 z-30 absolute top-0 text-[10px] font-bold tracking-wide ${darkMode ? 'text-white' : 'text-slate-900'}`}>
             <span>9:41</span>
             <div className="flex gap-1.5 items-center">
@@ -368,8 +337,6 @@ export const PhoneFrame = ({ children, className = "", darkMode = false }) => (
         </div>
         {children}
     </div>
-    
-    {/* Home Indicator */}
     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-black/20 rounded-full z-30 backdrop-blur-sm"></div>
   </div>
 );
@@ -380,23 +347,44 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         else document.body.style.overflow = 'unset';
         return () => { document.body.style.overflow = 'unset'; }
     }, [isOpen]);
-
     if (!isOpen) return null;
-
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
             <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl transform transition-all animate-fade-in flex flex-col max-h-[85vh]">
                 <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                     <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
+                    <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><X className="w-5 h-5" /></button>
                 </div>
-                <div className="p-8 overflow-y-auto">
-                    {children}
-                </div>
+                <div className="p-8 overflow-y-auto">{children}</div>
             </div>
+        </div>
+    );
+};
+
+// New Page Control Component
+export const PageControl = () => {
+    const scrollTo = (direction) => {
+        const height = window.innerHeight;
+        window.scrollBy({ top: direction === 'up' ? -height : height, behavior: 'smooth' });
+    };
+
+    return (
+        <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2">
+            <button 
+                onClick={() => scrollTo('up')}
+                className="w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg hover:bg-white text-slate-600 transition-all hover:-translate-y-0.5 active:scale-95"
+                title="Page Up"
+            >
+                <ChevronUp className="w-5 h-5" />
+            </button>
+            <button 
+                onClick={() => scrollTo('down')}
+                className="w-10 h-10 bg-brand-600 backdrop-blur-md border border-brand-500 rounded-full flex items-center justify-center shadow-lg hover:bg-brand-700 text-white transition-all hover:translate-y-0.5 active:scale-95"
+                title="Page Down"
+            >
+                <ChevronDown className="w-5 h-5" />
+            </button>
         </div>
     );
 };
@@ -418,54 +406,27 @@ export const Navbar = ({ onNavigate, onOpenLegal }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navClass = scrolled 
-    ? 'bg-white/95 backdrop-blur-lg border-b border-slate-200 py-3 shadow-sm' 
-    : 'bg-transparent py-5';
-
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${navClass}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-lg border-b border-slate-200 py-3 shadow-sm' : 'bg-transparent py-5'}`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
-        <div onClick={() => onNavigate('landing')} className="cursor-pointer">
-          <Logo />
-        </div>
-        
+        <div onClick={() => onNavigate('landing')} className="cursor-pointer"><Logo /></div>
         <div className="hidden md:flex items-center space-x-8">
-          {[
-            { id: 'features', label: 'Features' },
-            { id: 'how', label: 'How it Works' },
-            { id: 'pricing', label: 'Pricing' },
-            { id: 'faq', label: 'FAQ' }
-          ].map(item => (
-            <a 
-                key={item.id}
-                href={`#${item.id}`} 
-                className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors"
-            >
-                {item.label}
-            </a>
+          {[{ id: 'features', label: 'Features' }, { id: 'how', label: 'How it Works' }, { id: 'pricing', label: 'Pricing' }, { id: 'faq', label: 'FAQ' }].map(item => (
+            <a key={item.id} href={`#${item.id}`} className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">{item.label}</a>
           ))}
         </div>
-
         <div className="hidden md:flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => onNavigate('login')}>Log In</Button>
           <Button size="sm" onClick={() => onNavigate('signup')}>Start Free Trial</Button>
         </div>
-
-        <button className="md:hidden text-slate-600 p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X /> : <Menu />}
-        </button>
+        <button className="md:hidden text-slate-600 p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X /> : <Menu />}</button>
       </div>
-
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 shadow-xl p-6 flex flex-col gap-4 animate-fade-in z-50">
             <a href="#features" className="text-base font-medium text-slate-700 py-2 border-b border-slate-100">Features</a>
             <a href="#how" className="text-base font-medium text-slate-700 py-2 border-b border-slate-100">How it Works</a>
             <a href="#pricing" className="text-base font-medium text-slate-700 py-2 border-b border-slate-100">Pricing</a>
-            <div className="pt-4 flex flex-col gap-3">
-                <Button variant="secondary" className="w-full" onClick={() => onNavigate('login')}>Log In</Button>
-                <Button className="w-full" onClick={() => onNavigate('signup')}>Start Free Trial</Button>
-            </div>
+            <div className="pt-4 flex flex-col gap-3"><Button variant="secondary" className="w-full" onClick={() => onNavigate('login')}>Log In</Button><Button className="w-full" onClick={() => onNavigate('signup')}>Start Free Trial</Button></div>
         </div>
       )}
     </nav>
@@ -480,9 +441,7 @@ export const Footer = ({ onOpenLegal }) => (
         <p className="mb-6 leading-relaxed text-slate-400">The enterprise operating system for modern notary agencies and professionals.</p>
         <div className="flex gap-4">
           {[Twitter, Linkedin, Instagram].map((Icon, i) => (
-            <a key={i} href="#" className="w-10 h-10 bg-slate-900 rounded-full hover:bg-brand-600 hover:text-white transition-all duration-300 flex items-center justify-center border border-slate-800">
-                <Icon className="w-4 h-4" />
-            </a>
+            <a key={i} href="#" className="w-10 h-10 bg-slate-900 rounded-full hover:bg-brand-600 hover:text-white transition-all duration-300 flex items-center justify-center border border-slate-800"><Icon className="w-4 h-4" /></a>
           ))}
         </div>
       </div>
@@ -507,18 +466,13 @@ export const Footer = ({ onOpenLegal }) => (
         <ul className="space-y-4">
           <li className="hover:text-white cursor-pointer transition-colors">Help Center</li>
           <li className="hover:text-white cursor-pointer transition-colors">Contact Sales</li>
-          <li className="flex items-center gap-2 text-emerald-500 cursor-default font-medium">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            System Operational
-          </li>
+          <li className="flex items-center gap-2 text-emerald-500 cursor-default font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> System Operational</li>
         </ul>
       </div>
     </div>
     <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
       <p>© 2026 NotaryPro Inc. SOC 2 Type II Compliant.</p>
-      <div className="flex gap-6 mt-4 md:mt-0">
-        <span>San Francisco, CA</span>
-      </div>
+      <div className="flex gap-6 mt-4 md:mt-0"><span>San Francisco, CA</span></div>
     </div>
   </footer>
 );
@@ -527,14 +481,14 @@ EOF
 # src/pages/Landing.jsx
 cat << 'EOF' > src/pages/Landing.jsx
 import React, { useState, useMemo } from 'react';
-import { Button, PhoneFrame } from '../components/UI';
+import { Button, PhoneFrame, PageControl } from '../components/UI';
 import { Navbar, Footer } from '../components/Layout';
 import { 
     ShieldCheck, Lock, CheckCircle2, XCircle, CalendarClock, Map, 
     FileSignature, Smartphone, Fingerprint, WifiOff, 
     ChevronDown, ArrowRight, PlayCircle, Bot, CloudLightning, 
     Building2, Users2, Briefcase, FileText, Check, Shield, Star, 
-    Zap, Globe, Award, Inbox, Bell
+    Zap, Globe, Award, Inbox, Bell, Navigation, ArrowLeft
 } from 'lucide-react';
 
 /* --- SECTIONS --- */
@@ -542,13 +496,11 @@ import {
 const Hero = ({ onNavigate }) => {
   return (
     <section className="relative pt-32 pb-32 lg:pt-48 lg:pb-40 overflow-hidden bg-slate-50">
-        {/* Ambient Background - Clean Tech */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-200/50 rounded-full blur-[120px] opacity-60 -translate-y-1/2 translate-x-1/4 -z-10"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-200/50 rounded-full blur-[120px] opacity-60 translate-y-1/3 -translate-x-1/4 -z-10"></div>
         
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-24 items-center">
-                {/* Left: Text Content */}
                 <div className="max-w-2xl animate-fade-in relative z-10">
                     <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-brand-100 text-brand-700 text-xs font-bold uppercase tracking-wide mb-8 shadow-sm">
                         <span className="w-2 h-2 rounded-full bg-brand-600 animate-pulse"></span>
@@ -570,10 +522,9 @@ const Hero = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                {/* Right: Dual Phone Stack Visual */}
-                <div className="relative animate-slide-up hidden lg:block h-[700px] w-full">
-                    {/* Back Phone (Dashboard) - Tilted Left */}
-                    <div className="absolute top-10 left-10 z-10 transform -rotate-6 scale-95 transition-transform duration-700 hover:rotate-0 hover:scale-100 hover:z-30">
+                <div className="relative animate-slide-up h-[700px] w-full hidden lg:block">
+                    {/* Back Phone (Dashboard) */}
+                    <div className="absolute top-10 left-10 z-10 transform -rotate-6 scale-95 transition-transform duration-700 hover:rotate-0 hover:scale-100 origin-bottom-right">
                         <PhoneFrame className="shadow-2xl shadow-brand-900/20">
                             <div className="w-full h-full bg-slate-50 pt-16 px-4 relative flex flex-col">
                                 <div className="flex justify-between items-center mb-6">
@@ -600,8 +551,8 @@ const Hero = ({ onNavigate }) => {
                         </PhoneFrame>
                     </div>
 
-                    {/* Front Phone (Inbox/Activity) - Tilted Right */}
-                    <div className="absolute top-0 right-10 z-20 transform rotate-6 transition-transform duration-700 hover:rotate-0 hover:scale-105">
+                    {/* Front Phone (Inbox/Activity) */}
+                    <div className="absolute top-0 right-10 z-20 transform rotate-6 transition-transform duration-700 hover:rotate-0 hover:scale-105 origin-bottom-left">
                          <PhoneFrame className="shadow-[0_30px_60px_-12px_rgba(0,0,0,0.3)] border-slate-800">
                             <div className="w-full h-full bg-white pt-16 px-4 relative flex flex-col">
                                 <div className="flex justify-between items-center mb-6">
@@ -611,20 +562,16 @@ const Hero = ({ onNavigate }) => {
                                 <div className="space-y-4">
                                     <div className="flex gap-4 p-4 rounded-2xl bg-brand-50 border border-brand-100">
                                         <div className="w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center text-white shrink-0"><CheckCircle2 className="w-5 h-5" /></div>
-                                        <div><h4 className="text-sm font-bold text-slate-900">Invoice Paid</h4><p className="text-xs text-slate-500 mt-1">Payment of $150.00 received from Sarah Jenkins.</p></div>
+                                        <div><h4 className="text-sm font-bold text-slate-900">Invoice Paid</h4><p className="text-xs text-slate-500 mt-1">Payment of $150.00 received.</p></div>
                                     </div>
-                                    <div className="flex gap-4 p-4">
+                                    <div className="flex gap-4 p-4 border-b border-slate-50">
                                         <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0"><Bot className="w-5 h-5" /></div>
-                                        <div><h4 className="text-sm font-bold text-slate-900">AI Coach</h4><p className="text-xs text-slate-500 mt-1">Found 2 new compliance updates for Texas notaries.</p></div>
+                                        <div><h4 className="text-sm font-bold text-slate-900">AI Coach</h4><p className="text-xs text-slate-500 mt-1">New compliance updates available.</p></div>
                                     </div>
                                     <div className="flex gap-4 p-4">
                                         <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0"><CalendarClock className="w-5 h-5" /></div>
-                                        <div><h4 className="text-sm font-bold text-slate-900">New Appointment</h4><p className="text-xs text-slate-500 mt-1">Smart fill detected a new request via email.</p></div>
+                                        <div><h4 className="text-sm font-bold text-slate-900">New Appointment</h4><p className="text-xs text-slate-500 mt-1">Smart fill detected a request.</p></div>
                                     </div>
-                                </div>
-                                <div className="mt-auto mb-8 bg-slate-50 rounded-xl p-4 text-center">
-                                    <p className="text-xs text-slate-400 mb-2">You're all caught up!</p>
-                                    <div className="w-full h-1 bg-slate-200 rounded-full"><div className="w-full h-full bg-brand-500 rounded-full"></div></div>
                                 </div>
                             </div>
                          </PhoneFrame>
@@ -639,8 +586,8 @@ const Hero = ({ onNavigate }) => {
 const TrustBar = () => (
     <div className="border-b border-slate-100 bg-white py-12">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Trusted by signing agents who work with</p>
-            <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-10 opacity-50 grayscale transition-all duration-500 hover:grayscale-0 hover:opacity-100">
+            <p className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-8">Trusted by signing agents who work with</p>
+            <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-10">
                 <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-slate-900 rounded-full"></div> Fidelity</span>
                 <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-blue-700 rounded-md"></div> First American</span>
                 <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-orange-600 rounded-full"></div> Old Republic</span>
@@ -652,73 +599,29 @@ const TrustBar = () => (
 
 const BeforeAfter = () => {
     const [view, setView] = useState('new');
-    
     const items = [
-        { 
-            icon: FileText, 
-            title: "One-Click Invoicing", 
-            desc: "Generate professional PDF invoices instantly from your appointment data.",
-            oldTitle: "Manual Invoicing",
-            oldDesc: "Typing invoices in Word, saving as PDF, emailing manually, losing track."
-        },
-        { 
-            icon: Shield, 
-            title: "Compliance Coach", 
-            desc: "Your personal compliance coach answers state law questions 24/7.",
-            oldTitle: "Guesswork",
-            oldDesc: "Frantically searching Google or calling mentors when unsure about a document."
-        },
-        { 
-            icon: Map, 
-            title: "Auto-Mileage", 
-            desc: "GPS tracks every mile automatically in the background for tax deductions.",
-            oldTitle: "Lost Deductions",
-            oldDesc: "Trying to reconstruct driving logs from calendar entries at tax time."
-        },
-        { 
-            icon: CalendarClock, 
-            title: "Smart Scheduling", 
-            desc: "Intelligent routing calculates drive times and buffers between appointments.",
-            oldTitle: "Double Booking",
-            oldDesc: "Juggling Google Calendar and emails, getting stuck in traffic between jobs."
-        }
+        { icon: FileText, title: "One-Click Invoicing", desc: "Generate professional PDF invoices instantly.", oldTitle: "Manual Invoicing", oldDesc: "Typing invoices in Word, saving as PDF." },
+        { icon: Shield, title: "Compliance Coach", desc: "AI answers state law questions 24/7.", oldTitle: "Guesswork", oldDesc: "Frantically searching Google or calling mentors." },
+        { icon: Map, title: "Auto-Mileage", desc: "GPS tracks every mile automatically.", oldTitle: "Lost Deductions", oldDesc: "Reconstructing logs from calendar at tax time." },
+        { icon: CalendarClock, title: "Smart Scheduling", desc: "Intelligent routing calculates drive times.", oldTitle: "Double Booking", oldDesc: "Juggling Calendar and emails, stuck in traffic." }
     ];
-
     return (
         <section className="py-32 bg-white border-t border-slate-100">
              <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl font-bold text-slate-900 mb-6">Why switch?</h2>
-                    
                     <div className="inline-flex bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                        <button 
-                            onClick={() => setView('old')} 
-                            className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'old' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            The Old Way
-                        </button>
-                        <button 
-                            onClick={() => setView('new')} 
-                            className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'new' ? 'bg-white shadow-sm text-brand-600' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            With NotaryOS
-                        </button>
+                        <button onClick={() => setView('old')} className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'old' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>The Old Way</button>
+                        <button onClick={() => setView('new')} className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'new' ? 'bg-white shadow-sm text-brand-600' : 'text-slate-500 hover:text-slate-700'}`}>With NotaryOS</button>
                     </div>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     {items.map((item, i) => (
-                        <div key={i} className={`p-8 rounded-3xl border transition-all duration-300 flex gap-6 items-start ${view === 'new' ? 'bg-brand-50/30 border-brand-100 hover:border-brand-300 hover:bg-brand-50/50 hover:shadow-md' : 'bg-slate-50 border-slate-200 opacity-60 grayscale'}`}>
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${view === 'new' ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-400'}`}>
-                                <item.icon className="w-7 h-7" />
-                            </div>
+                        <div key={i} className={`p-8 rounded-3xl border transition-all duration-300 flex gap-6 items-start ${view === 'new' ? 'bg-brand-50/30 border-brand-100 hover:border-brand-300 hover:shadow-md' : 'bg-slate-50 border-slate-200 opacity-60 grayscale'}`}>
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${view === 'new' ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-400'}`}><item.icon className="w-7 h-7" /></div>
                             <div>
-                                <h4 className={`text-xl font-bold mb-2 ${view === 'new' ? 'text-slate-900' : 'text-slate-500'}`}>
-                                    {view === 'new' ? item.title : item.oldTitle}
-                                </h4>
-                                <p className={`text-sm leading-relaxed ${view === 'new' ? 'text-slate-600' : 'text-slate-400'}`}>
-                                    {view === 'new' ? item.desc : item.oldDesc}
-                                </p>
+                                <h4 className={`text-xl font-bold mb-2 ${view === 'new' ? 'text-slate-900' : 'text-slate-500'}`}>{view === 'new' ? item.title : item.oldTitle}</h4>
+                                <p className={`text-sm leading-relaxed ${view === 'new' ? 'text-slate-600' : 'text-slate-400'}`}>{view === 'new' ? item.desc : item.oldDesc}</p>
                             </div>
                         </div>
                     ))}
@@ -733,50 +636,20 @@ const AIHeroSection = () => {
         <section id="ai-coach" className="bg-slate-950 py-32 relative overflow-hidden text-white border-t border-slate-900">
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-500/10 rounded-full blur-[150px] translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-[150px] -translate-x-1/2 translate-y-1/2"></div>
-            
             <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-400/30 text-brand-400 text-xs font-bold uppercase tracking-wider mb-8">
-                            <Zap className="w-3 h-3" /> NEW: AI COMPLIANCE COACH
-                        </div>
-                        <h2 className="text-4xl md:text-6xl font-extrabold mb-8 leading-tight">
-                            Your compliance expert, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">available 24/7.</span>
-                        </h2>
-                        <p className="text-xl text-slate-400 mb-12 leading-relaxed font-light">
-                            Not just software—it's a mentor. Get instant answers to state-specific questions, fee limits, and ID rules without searching through a 100-page handbook.
-                        </p>
-                        
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-400/30 text-brand-400 text-xs font-bold uppercase tracking-wider mb-8"><Zap className="w-3 h-3" /> NEW: AI COMPLIANCE COACH</div>
+                        <h2 className="text-4xl md:text-6xl font-extrabold mb-8 leading-tight">Your compliance expert, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">available 24/7.</span></h2>
+                        <p className="text-xl text-slate-400 mb-12 leading-relaxed font-light">Not just software—it's a mentor. Get instant answers to state-specific questions, fee limits, and ID rules without searching through a 100-page handbook.</p>
                         <div className="relative max-w-lg group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-brand-500 to-indigo-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                            <div className="relative bg-slate-900 rounded-xl flex items-center p-2">
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g. What's the fee for a jurat in California?" 
-                                    className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 px-4 focus:ring-0 text-base"
-                                    readOnly
-                                />
-                                <button className="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm shadow-lg">
-                                    Ask AI
-                                </button>
-                            </div>
+                            <div className="relative bg-slate-900 rounded-xl flex items-center p-2"><input type="text" placeholder="e.g. What's the fee for a jurat in California?" className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 px-4 focus:ring-0 text-base" readOnly /><button className="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm shadow-lg">Ask AI</button></div>
                         </div>
                     </div>
-                    
                     <div className="relative">
                         <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8 shadow-2xl relative z-10">
-                            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-800">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
-                                    <Bot className="w-7 h-7" />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-white text-lg">NotaryOS AI</h4>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
-                                        <span className="text-xs font-medium text-slate-400">Online Now</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-800"><div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20"><Bot className="w-7 h-7" /></div><div><h4 className="font-bold text-white text-lg">NotaryOS AI</h4><div className="flex items-center gap-2 mt-1"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span className="text-xs font-medium text-slate-400">Online Now</span></div></div></div>
                             <div className="space-y-6">
                                 <div className="flex justify-end"><div className="bg-brand-600 text-white px-6 py-4 rounded-2xl rounded-tr-sm text-sm max-w-[85%] shadow-md leading-relaxed">What's the maximum fee for a jurat in California?</div></div>
                                 <div className="flex justify-start"><div className="bg-slate-800 text-slate-200 px-6 py-4 rounded-2xl rounded-tl-sm text-sm max-w-[90%] shadow-md border border-slate-700 leading-relaxed"><p className="font-semibold text-brand-400 mb-2">California Government Code § 8211</p>The maximum fee for a jurat is <span className="text-white font-bold">$15 per signature</span>, including the oath or affirmation.</div></div>
@@ -795,39 +668,34 @@ const MobileWorkflow = () => {
     const tabs = [
         { id: 'routing', icon: Map, title: 'Intelligent Routing', desc: 'Navigate to your next signing with one tap.', 
           screen: (
-            <div className="h-full bg-slate-900 pt-16 p-4 flex flex-col text-white">
-                <div className="flex-1 bg-slate-800 rounded-3xl relative overflow-hidden border border-slate-700 shadow-inner">
-                    <div className="absolute inset-0 flex items-center justify-center opacity-10"><Map className="w-32 h-32" /></div>
-                    <div className="absolute bottom-6 left-6 right-6 bg-white text-slate-900 p-4 rounded-2xl shadow-xl">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center text-white"><ArrowRight className="w-5 h-5 -rotate-45" /></div>
-                            <div><p className="font-bold text-base">Turn Right</p><p className="text-xs text-slate-500">0.2 mi • Main St.</p></div>
-                        </div>
-                    </div>
-                </div>
+            <div className="h-full bg-slate-900 flex flex-col text-white relative rounded-[48px] overflow-hidden">
+                 {/* Map Background Simulation */}
+                 <div className="absolute inset-0 bg-slate-800/50 z-0"><svg className="w-full h-full opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M20,100 L20,60 L50,40 L80,20" stroke="white" strokeWidth="2" fill="none"/><path d="M0,50 L100,50" stroke="white" strokeWidth="1" fill="none"/></svg></div>
+                 <div className="relative z-10 pt-16 px-4 h-full flex flex-col">
+                     <div className="bg-green-600 rounded-xl p-4 shadow-lg mb-4 flex gap-4 items-center"><ArrowLeft className="w-8 h-8 text-white" /><div><p className="text-xs font-bold uppercase opacity-80">Turn Left</p><h3 className="text-xl font-bold">Main St.</h3></div></div>
+                     <div className="flex-1 relative"><div className="absolute top-10 left-1/2 w-2 h-32 bg-blue-500 -translate-x-1/2 rounded-full"></div><div className="absolute top-40 left-1/2 w-6 h-6 bg-blue-500 border-4 border-white rounded-full -translate-x-1/2 z-20"></div></div>
+                     <div className="bg-white rounded-2xl p-4 shadow-2xl mb-8"><div className="flex justify-between items-center"><div><h4 className="text-slate-900 font-bold text-lg">14 min <span className="text-slate-400 font-normal text-sm">(5.2 mi)</span></h4><p className="text-xs text-green-600 font-bold">Fastest route</p></div><button className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold">End</button></div></div>
+                 </div>
             </div>
           ) 
         },
         { id: 'biometric', icon: Fingerprint, title: 'Biometric Security', desc: 'FaceID/TouchID protection for client data.',
           screen: (
-            <div className="h-full bg-slate-950 flex flex-col items-center justify-center text-center p-8">
-                <div className="w-24 h-24 border-2 border-brand-500/50 rounded-3xl flex items-center justify-center text-brand-500 mb-8 animate-pulse"><Fingerprint className="w-12 h-12" /></div>
-                <h3 className="text-white font-bold text-xl mb-2">NotaryPro Locked</h3>
-                <p className="text-slate-500 text-sm">Face ID Required</p>
+            <div className="h-full bg-slate-950 flex flex-col items-center justify-center text-center p-8 relative">
+                 <div className="w-24 h-24 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-8 relative overflow-hidden">
+                     <Fingerprint className="w-12 h-12 text-brand-500 z-10" />
+                     <div className="absolute top-0 left-0 w-full h-1 bg-brand-500 shadow-[0_0_15px_rgba(43,115,255,0.8)] animate-scan"></div>
+                 </div>
+                 <h3 className="text-xl font-bold text-white mb-2">NotaryOS Locked</h3>
+                 <p className="text-slate-500 text-sm">Face ID Required</p>
             </div>
           )
         },
         { id: 'offline', icon: WifiOff, title: 'Offline Mode', desc: 'Syncs automatically when you reconnect.',
           screen: (
             <div className="h-full bg-slate-50 pt-16 flex flex-col">
-                <div className="bg-amber-500 text-white text-xs py-1.5 text-center font-bold tracking-widest uppercase shadow-sm">Offline Mode Active</div>
-                <div className="p-6 space-y-4 opacity-100">
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-28 animate-pulse"></div>
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500 flex items-center justify-between">
-                        <span className="font-bold text-slate-700 text-sm">Entry #802</span>
-                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-bold">Pending Sync</span>
-                    </div>
-                </div>
+                <div className="bg-amber-500 text-white text-[10px] py-1.5 text-center font-bold tracking-widest uppercase shadow-sm z-20">Offline Mode Active</div>
+                <div className="p-6 space-y-4"><div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500 flex justify-between items-center"><div><p className="font-bold text-slate-800 text-sm">Entry #1024</p><p className="text-xs text-slate-500">Waiting for network...</p></div><div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div></div><div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 opacity-60"><div className="h-4 w-24 bg-slate-200 rounded mb-2"></div><div className="h-3 w-16 bg-slate-100 rounded"></div></div></div>
             </div>
           )
         }
@@ -837,14 +705,7 @@ const MobileWorkflow = () => {
         <section id="mobile-workflow" className="py-32 bg-white overflow-hidden relative">
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
-                    {/* Left: Phone */}
-                    <div className="relative mx-auto lg:mr-0 flex items-center justify-center order-2 lg:order-1">
-                         <PhoneFrame className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]">
-                            {tabs.find(t => t.id === activeTab).screen}
-                         </PhoneFrame>
-                    </div>
-
-                    {/* Right: Content */}
+                    <div className="relative mx-auto lg:mr-0 flex items-center justify-center order-2 lg:order-1"><PhoneFrame className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]">{tabs.find(t => t.id === activeTab).screen}</PhoneFrame></div>
                     <div className="order-1 lg:order-2">
                         <div className="inline-block bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full mb-6 border border-slate-200">MOBILE FIRST</div>
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-8 text-slate-900 leading-tight">Run your business from your pocket.</h2>
@@ -868,26 +729,23 @@ const HowItWorks = () => {
     return (
         <section id="how" className="bg-slate-50 py-32 w-full border-t border-slate-200">
             <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">How NotaryOS works</h2>
-                    <p className="text-xl text-slate-500 max-w-2xl mx-auto">A streamlined workflow designed to take you from booking to payout in record time.</p>
-                </div>
+                <div className="text-center mb-20"><h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">How NotaryOS works</h2><p className="text-xl text-slate-500 max-w-2xl mx-auto">A streamlined workflow designed to take you from booking to payout in record time.</p></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div className="visual-card bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><CalendarClock className="w-24 h-24 text-brand-600" /></div>
-                        <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-6">Step 1</div>
+                        <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-200"><CalendarClock className="w-8 h-8" /></div>
+                        <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-4">Step 1</div>
                         <h4 className="text-2xl font-bold text-slate-900 mb-4">Book the Job</h4>
                         <p className="text-slate-500 leading-relaxed">Capture client info instantly. Forward confirmation emails to your agent address and let AI do the rest.</p>
                     </div>
                     <div className="visual-card bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><Smartphone className="w-24 h-24 text-brand-600" /></div>
-                        <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-6">Step 2</div>
+                        <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-200"><Smartphone className="w-8 h-8" /></div>
+                        <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-4">Step 2</div>
                         <h4 className="text-2xl font-bold text-slate-900 mb-4">Do the Signing</h4>
                         <p className="text-slate-500 leading-relaxed">Use the Mobile Journal flow to capture ID images, signatures, and thumbprints securely offline.</p>
                     </div>
                     <div className="visual-card bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><FileSignature className="w-24 h-24 text-brand-600" /></div>
-                        <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-6">Step 3</div>
+                        <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-200"><FileSignature className="w-8 h-8" /></div>
+                        <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-4">Step 3</div>
                         <h4 className="text-2xl font-bold text-slate-900 mb-4">Get Paid</h4>
                         <p className="text-slate-500 leading-relaxed">Auto-generate invoices, track payment status, and close the accounting loop instantly.</p>
                     </div>
@@ -900,7 +758,6 @@ const HowItWorks = () => {
 const ROICalculator = () => {
     const [weeklyAppts, setWeeklyAppts] = useState(10);
     const [adminMins, setAdminMins] = useState(20);
-
     const hoursSaved = useMemo(() => Math.round((weeklyAppts * adminMins * 52) / 60), [weeklyAppts, adminMins]);
     const moneySaved = useMemo(() => (hoursSaved * 50).toLocaleString(), [hoursSaved]);
 
@@ -923,16 +780,8 @@ const ROICalculator = () => {
                         </div>
                     </div>
                     <div className="bg-brand-600 rounded-[2.5rem] p-10 text-center border border-brand-500 relative shadow-xl transform transition-transform hover:scale-105 duration-300 text-white">
-                        <div className="mb-8">
-                            <p className="text-brand-100 font-medium mb-2">You could reclaim</p>
-                            <div className="text-6xl font-extrabold text-white mb-2">{hoursSaved} <span className="text-2xl text-brand-200 font-normal">hours/yr</span></div>
-                            <p className="text-sm text-brand-200">of personal time</p>
-                        </div>
-                        <div className="pt-8 border-t border-brand-500">
-                            <p className="text-brand-100 font-medium mb-2">Potential Extra Revenue</p>
-                            <div className="text-5xl font-bold text-white">${moneySaved}</div>
-                            <p className="text-xs text-brand-200 mt-2">Based on $50/hr billable rate</p>
-                        </div>
+                        <div className="mb-8"><p className="text-brand-100 font-medium mb-2">You could reclaim</p><div className="text-6xl font-extrabold text-white mb-2">{hoursSaved} <span className="text-2xl text-brand-200 font-normal">hours/yr</span></div><p className="text-sm text-brand-200">of personal time</p></div>
+                        <div className="pt-8 border-t border-brand-500"><p className="text-brand-100 font-medium mb-2">Potential Extra Revenue</p><div className="text-5xl font-bold text-white">${moneySaved}</div><p className="text-xs text-brand-200 mt-2">Based on $50/hr billable rate</p></div>
                     </div>
                 </div>
             </div>
@@ -944,26 +793,11 @@ const BusinessModels = () => {
     return (
         <section className="bg-white py-32 w-full border-t border-slate-200 font-sans">
             <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h3 className="text-3xl md:text-4xl font-extrabold mb-6 text-slate-900">Built for every business model</h3>
-                    <p className="text-slate-500 text-lg">Whether you are solo or scaling an agency, we have you covered.</p>
-                </div>
+                <div className="text-center mb-20"><h3 className="text-3xl md:text-4xl font-extrabold mb-6 text-slate-900">Built for every business model</h3><p className="text-slate-500 text-lg">Whether you are solo or scaling an agency, we have you covered.</p></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group">
-                        <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center text-brand-600 mb-8 group-hover:scale-110 transition-transform"><Map className="w-8 h-8" /></div>
-                        <h4 className="text-2xl font-bold mb-4 text-slate-900">Mobile Notaries</h4>
-                        <p className="text-slate-500 leading-relaxed">Run route-based signings, capture compliant entries on-site, and complete admin later from desktop.</p>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group">
-                        <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-8 group-hover:scale-110 transition-transform"><Briefcase className="w-8 h-8" /></div>
-                        <h4 className="text-2xl font-bold mb-4 text-slate-900">Loan Signing Agents</h4>
-                        <p className="text-slate-500 leading-relaxed">Manage high-volume closings with reliable documentation, invoicing, and audit-ready workflows.</p>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group">
-                        <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform"><Users2 className="w-8 h-8" /></div>
-                        <h4 className="text-2xl font-bold mb-4 text-slate-900">Signing Agencies</h4>
-                        <p className="text-slate-500 leading-relaxed">Coordinate team dispatch, centralize records, and scale operations with standardized processes.</p>
-                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group"><div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center text-brand-600 mb-8 group-hover:scale-110 transition-transform"><Map className="w-8 h-8" /></div><h4 className="text-2xl font-bold mb-4 text-slate-900">Mobile Notaries</h4><p className="text-slate-500 leading-relaxed">Run route-based signings, capture compliant entries on-site, and complete admin later from desktop.</p></div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group"><div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-8 group-hover:scale-110 transition-transform"><Briefcase className="w-8 h-8" /></div><h4 className="text-2xl font-bold mb-4 text-slate-900">Loan Signing Agents</h4><p className="text-slate-500 leading-relaxed">Manage high-volume closings with reliable documentation, invoicing, and audit-ready workflows.</p></div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group"><div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform"><Users2 className="w-8 h-8" /></div><h4 className="text-2xl font-bold mb-4 text-slate-900">Signing Agencies</h4><p className="text-slate-500 leading-relaxed">Coordinate team dispatch, centralize records, and scale operations with standardized processes.</p></div>
                 </div>
             </div>
         </section>
@@ -1217,6 +1051,7 @@ export default function LandingPage({ onNavigate, onOpenLegal }) {
       <Pricing onSelect={() => onNavigate('signup')} />
       <FAQ />
       <Footer onNavigate={onNavigate} onOpenLegal={onOpenLegal} />
+      <PageControl />
     </>
   );
 }
@@ -1268,53 +1103,116 @@ export default function AuthScreen({ mode = 'login', onComplete, onSwitchMode, o
   };
 
   return (
-    <div className="min-h-screen flex bg-white animate-fade-in">
-        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24 relative z-10">
-             <button onClick={onBack} className="absolute top-8 left-8 text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2 font-medium">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white animate-fade-in">
+        {/* Left: Form */}
+        <div className="flex-1 flex flex-col justify-center px-6 lg:px-20 xl:px-24 relative z-10 py-12 lg:py-0">
+             <button onClick={onBack} className="absolute top-8 left-8 text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-2 font-medium">
                 <ArrowLeft className="w-4 h-4" /> Back to Home
             </button>
-            <div className="mx-auto w-full max-w-sm lg:w-96">
-                <Logo className="mb-8" />
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                    {mode === 'login' ? 'Welcome back' : 'Start free trial'}
-                </h2>
-                <p className="text-slate-500 mb-8">
-                    {mode === 'login' ? 'Secure login to your workspace.' : 'No credit card required.'}
-                </p>
+            <div className="mx-auto w-full max-w-sm">
+                <div className="mb-10">
+                    <Logo className="mb-8" />
+                    <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                        {mode === 'login' ? 'Welcome back' : 'Start your free trial'}
+                    </h2>
+                    <p className="text-slate-500">
+                        {mode === 'login' ? 'Access your dashboard and manage appointments.' : 'No credit card required for the 14-day trial.'}
+                    </p>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                    <button className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-3 rounded-lg font-medium transition-colors shadow-sm">
+                        {/* Google SVG */}
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.49-1.93-6.36-4.52H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.64 14.11c-.23-.69-.36-1.41-.36-2.11 0-.7.13-1.42.36-2.11V7.05H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.95l3.46-2.84z" fill="#FBBC05" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.46 2.84c.87-2.6 3.49-4.51 6.36-4.51z" fill="#EA4335" />
+                        </svg>
+                        Continue with Google
+                    </button>
+                     <button className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-3 rounded-lg font-medium transition-colors shadow-sm">
+                        {/* Apple SVG */}
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05 1.08-3.08.35-1.09-.75-2.58-.75-3.58 0-.96.72-2.06.66-3.08-.31-2.14-2.1-3.64-7.53-1.44-9.54 1.1-.98 2.86-.98 3.66.02.69.86 1.76.86 2.62-.05.9-.98 2.92-.98 3.66-.02 2.16 2.85 2.87 5.75.52 7.08-.47 1.14-1.04 1.95-1.45 2.47zM12 3.98c.55-.95 1.69-1.61 2.68-1.58.46 2.45-2.66 3.9-4.32 3.14-.15-1.05.28-2.12 1.64-1.56z" />
+                        </svg>
+                        Continue with Apple
+                    </button>
+                </div>
+
+                <div className="relative mb-8">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+                    <div className="relative flex justify-center text-xs uppercase tracking-wider text-slate-400 font-bold bg-white px-3">Or continue with email</div>
+                </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {mode === 'signup' && <Input placeholder="Full Name" required />}
                     <Input type="email" placeholder="Email Address" required />
-                    <Input type="password" placeholder="Password" required />
+                    <div>
+                         <Input type="password" placeholder="Password" required />
+                         {mode === 'login' && (
+                             <div className="flex justify-between items-center mt-2">
+                                <label className="flex items-center gap-2 text-sm text-slate-500 cursor-pointer">
+                                    <input type="checkbox" className="rounded border-slate-300 text-brand-600 focus:ring-brand-500" /> Remember me
+                                </label>
+                                <button type="button" className="text-sm font-medium text-brand-600 hover:text-brand-700">Forgot password?</button>
+                             </div>
+                         )}
+                    </div>
                     
                     <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
                         {mode === 'login' ? 'Sign In' : 'Create Account'}
                     </Button>
                 </form>
                 
-                <div className="mt-6 text-center text-sm text-slate-500">
-                    {mode === 'login' ? "New here? " : "Have an account? "}
-                    <button onClick={onSwitchMode} className="font-bold text-brand-600 hover:text-brand-700">
-                        {mode === 'login' ? 'Sign up' : 'Log in'}
-                    </button>
+                <div className="mt-8 text-center">
+                    <p className="text-sm text-slate-500">
+                        {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                        <button onClick={onSwitchMode} className="font-bold text-brand-600 hover:text-brand-700">
+                            {mode === 'login' ? 'Sign up' : 'Log in'}
+                        </button>
+                    </p>
                 </div>
-                
-                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
-                    <Lock className="w-3 h-3 text-green-500" /> 256-bit Secure Connection
+
+                <div className="mt-12 border-t border-slate-100 pt-6">
+                     <p className="text-xs text-center text-slate-400 mb-4">Join 10,000+ notaries trusting us</p>
+                     <div className="flex justify-center -space-x-2">
+                        {[1,2,3,4].map(i => (
+                            <img key={i} className="w-8 h-8 rounded-full border-2 border-white" src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+                        ))}
+                        <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">+2k</div>
+                     </div>
                 </div>
             </div>
         </div>
         
+        {/* Right: Feature/Trust Panel */}
         <div className="hidden lg:flex flex-1 bg-slate-950 items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-brand-900 opacity-20 mix-blend-multiply"></div>
-            <div className="relative z-10 text-center px-12 text-white max-w-lg">
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Shield className="w-8 h-8 text-brand-300" />
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-500 rounded-full blur-[150px] opacity-20 translate-x-1/3 -translate-y-1/3"></div>
+            
+            <div className="relative z-10 max-w-md">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                            <Shield className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-white">Bank-Grade Security</h3>
+                            <p className="text-brand-100 text-sm">SOC 2 Type II Certified</p>
+                        </div>
+                    </div>
+                    <p className="text-slate-300 leading-relaxed text-sm mb-6">
+                        "NotaryOS is the only platform I trust with my client's sensitive loan documents. The biometric lock and encryption standards are exactly what title companies demand."
+                    </p>
+                    <div className="flex items-center gap-3">
+                         <img src="https://i.pravatar.cc/100?img=33" alt="Reviewer" className="w-10 h-10 rounded-full border border-white/20" />
+                         <div>
+                             <p className="text-white font-bold text-sm">Elena Rodriguez</p>
+                             <p className="text-slate-400 text-xs">Signing Agent, Florida</p>
+                         </div>
+                    </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Bank-Grade Security Standard</h3>
-                <p className="text-brand-100 leading-relaxed">
-                    Your client data is encrypted and protected by SOC 2 Type II compliant infrastructure. Trusted by major lenders and title companies.
-                </p>
             </div>
         </div>
     </div>
@@ -1421,13 +1319,177 @@ export default function Onboarding({ onComplete }) {
 }
 EOF
 
+# src/pages/Dashboard.jsx
+cat << 'EOF' > src/pages/Dashboard.jsx
+import React from 'react';
+import { Logo } from '../components/UI';
+import { 
+    LayoutDashboard, Calendar, FileText, Users, Settings, 
+    Bell, Search, Plus, MoreHorizontal, ArrowUpRight
+} from 'lucide-react';
+
+export default function Dashboard({ onLogout }) {
+    return (
+        <div className="min-h-screen bg-slate-50 flex animate-fade-in font-sans">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full z-20">
+                <div className="p-6">
+                    <Logo />
+                </div>
+                <div className="px-4 py-2">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Main Menu</p>
+                    <nav className="space-y-1">
+                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 bg-brand-50 text-brand-700 rounded-lg font-medium transition-colors">
+                            <LayoutDashboard className="w-5 h-5" /> Dashboard
+                        </a>
+                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg font-medium transition-colors">
+                            <Calendar className="w-5 h-5" /> Schedule
+                        </a>
+                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg font-medium transition-colors">
+                            <FileText className="w-5 h-5" /> Journal
+                        </a>
+                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg font-medium transition-colors">
+                            <Users className="w-5 h-5" /> Clients
+                        </a>
+                    </nav>
+                </div>
+                <div className="mt-auto p-4 border-t border-slate-100">
+                    <button onClick={onLogout} className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-red-600 font-medium w-full transition-colors rounded-lg hover:bg-red-50">
+                        <Settings className="w-5 h-5" /> Sign Out
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 md:ml-64">
+                {/* Header */}
+                <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+                    <div className="flex items-center gap-4 w-1/3">
+                        <div className="relative w-full max-w-sm">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input 
+                                type="text" 
+                                placeholder="Search clients, invoices..." 
+                                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-full relative">
+                            <Bell className="w-5 h-5" />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        </button>
+                        <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-bold text-xs border border-brand-200">
+                            SJ
+                        </div>
+                    </div>
+                </header>
+
+                <div className="p-8 max-w-7xl mx-auto">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+                            <p className="text-slate-500">Welcome back, Sarah.</p>
+                        </div>
+                        <button className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors">
+                            <Plus className="w-4 h-4" /> New Appointment
+                        </button>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="p-2 bg-green-50 rounded-lg text-green-600"><span className="text-2xl font-bold">$</span></div>
+                                <span className="flex items-center text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full"><ArrowUpRight className="w-3 h-3 mr-1"/> 12%</span>
+                            </div>
+                            <div>
+                                <p className="text-slate-500 text-sm font-medium">Total Revenue</p>
+                                <h3 className="text-3xl font-bold text-slate-900">$4,250.00</h3>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                             <div className="flex justify-between items-start mb-4">
+                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Calendar className="w-6 h-6" /></div>
+                                <span className="flex items-center text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded-full">This Month</span>
+                            </div>
+                            <div>
+                                <p className="text-slate-500 text-sm font-medium">Appointments</p>
+                                <h3 className="text-3xl font-bold text-slate-900">24</h3>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                             <div className="flex justify-between items-start mb-4">
+                                <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><FileText className="w-6 h-6" /></div>
+                                <span className="flex items-center text-purple-600 text-xs font-bold bg-purple-50 px-2 py-1 rounded-full">Pending</span>
+                            </div>
+                            <div>
+                                <p className="text-slate-500 text-sm font-medium">Open Invoices</p>
+                                <h3 className="text-3xl font-bold text-slate-900">3</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Recent Activity Table */}
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-900">Recent Appointments</h3>
+                            <button className="text-sm text-brand-600 font-medium hover:underline">View All</button>
+                        </div>
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
+                                <tr>
+                                    <th className="px-6 py-3">Client</th>
+                                    <th className="px-6 py-3">Service</th>
+                                    <th className="px-6 py-3">Date</th>
+                                    <th className="px-6 py-3">Status</th>
+                                    <th className="px-6 py-3 text-right">Amount</th>
+                                    <th className="px-6 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                <tr className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-slate-900">Michael Scott</td>
+                                    <td className="px-6 py-4 text-slate-500">Loan Signing</td>
+                                    <td className="px-6 py-4 text-slate-500">Oct 24, 2:00 PM</td>
+                                    <td className="px-6 py-4"><span className="bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-xs font-bold">Paid</span></td>
+                                    <td className="px-6 py-4 text-right font-medium text-slate-900">$150.00</td>
+                                    <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="w-5 h-5" /></button></td>
+                                </tr>
+                                <tr className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-slate-900">Dwight Schrute</td>
+                                    <td className="px-6 py-4 text-slate-500">General Notary</td>
+                                    <td className="px-6 py-4 text-slate-500">Oct 25, 10:00 AM</td>
+                                    <td className="px-6 py-4"><span className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-xs font-bold">Pending</span></td>
+                                    <td className="px-6 py-4 text-right font-medium text-slate-900">$45.00</td>
+                                    <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="w-5 h-5" /></button></td>
+                                </tr>
+                                <tr className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-slate-900">Jim Halpert</td>
+                                    <td className="px-6 py-4 text-slate-500">Refinance</td>
+                                    <td className="px-6 py-4 text-slate-500">Oct 26, 9:00 AM</td>
+                                    <td className="px-6 py-4"><span className="bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full text-xs font-bold">Scheduled</span></td>
+                                    <td className="px-6 py-4 text-right font-medium text-slate-900">$125.00</td>
+                                    <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="w-5 h-5" /></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
+}
+EOF
+
 # src/App.jsx
 cat << 'EOF' > src/App.jsx
 import React, { useState, useEffect } from 'react';
 import LandingPage from './pages/Landing';
 import AuthScreen from './pages/Auth';
 import Onboarding from './pages/Onboarding';
-import { Modal } from './components/UI';
+import Dashboard from './pages/Dashboard';
+import { Modal, PageControl } from './components/UI';
 import { LegalContent } from './pages/Legal';
 
 export default function App() {
@@ -1472,25 +1534,17 @@ export default function App() {
         )}
 
         {view === 'dashboard' && (
-            <div className="flex h-screen items-center justify-center bg-slate-50">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold">Dashboard Placeholder</h1>
-                    <p className="text-slate-500 mb-4">You are authenticated.</p>
-                    <button 
-                        onClick={() => setView('landing')} 
-                        className="text-brand-600 hover:underline"
-                    >
-                        Sign Out
-                    </button>
-                </div>
-            </div>
+            <Dashboard onLogout={() => setView('landing')} />
         )}
 
         {view === 'landing' && (
-            <LandingPage 
-                onNavigate={setView} 
-                onOpenLegal={setLegalModal} 
-            />
+            <>
+                <LandingPage 
+                    onNavigate={setView} 
+                    onOpenLegal={setLegalModal} 
+                />
+                <PageControl />
+            </>
         )}
     </>
   );
