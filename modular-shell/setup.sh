@@ -4,10 +4,11 @@
 echo "Creating enterprise directory structure..."
 mkdir -p src/components
 mkdir -p src/pages
+mkdir -p .github/workflows
 
 # 2. Create Configuration Files
 
-# .gitignore (CRITICAL for Git)
+# .gitignore
 cat << 'EOF' > .gitignore
 node_modules
 dist
@@ -16,12 +17,61 @@ dist
 .env.local
 EOF
 
+# GitHub Actions Workflow (Automates deployment)
+cat << 'EOF' > .github/workflows/deploy.yml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+EOF
+
 # package.json
 cat << 'EOF' > package.json
 {
   "name": "notary-pro-enterprise",
   "private": true,
-  "version": "4.1.0",
+  "version": "4.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -46,13 +96,14 @@ cat << 'EOF' > package.json
 }
 EOF
 
-# vite.config.js
+# vite.config.js (FIXED: Added base path)
 cat << 'EOF' > vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  base: './', // Fixes blank page on GitHub Pages
 })
 EOF
 
@@ -85,7 +136,7 @@ export default {
           950: '#002159',
         },
         slate: {
-          850: '#151e2e', // Custom dark depth
+          850: '#151e2e',
           900: '#0f172a',
           950: '#020617',
         }
@@ -95,6 +146,7 @@ export default {
         'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'float': 'float 8s ease-in-out infinite',
         'float-delayed': 'float 8s ease-in-out 4s infinite',
+        'bounce-slow': 'bounce 3s infinite',
       },
       keyframes: {
         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
@@ -102,7 +154,7 @@ export default {
         float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-15px)' } }
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
         'glow-brand': '0 0 60px -15px rgba(0, 119, 255, 0.3)',
       }
     },
@@ -167,10 +219,43 @@ cat << 'EOF' > src/index.css
     @apply bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 shadow-2xl;
   }
   
+  .glass-mockup {
+    @apply bg-white/95 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+  
   /* Feature Card Interaction */
   .visual-card {
     @apply bg-white border border-slate-100 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-brand-200;
   }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Range Input Customization */
+  input[type=range] {
+    @apply appearance-none bg-transparent cursor-pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    @apply w-full h-2 bg-slate-200 rounded-full;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    @apply appearance-none h-6 w-6 rounded-full bg-brand-600 -mt-2 shadow-lg ring-4 ring-white transition-transform hover:scale-110;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 EOF
 
