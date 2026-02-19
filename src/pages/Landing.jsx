@@ -368,12 +368,8 @@ const HowItWorks = () => {
     return (
         <section id="how" className="bg-slate-50 py-32 w-full border-t border-slate-200">
             <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">How NotaryOS works</h2>
-                    <p className="text-xl text-slate-500 max-w-2xl mx-auto">A streamlined workflow designed to take you from booking to payout in record time.</p>
-                </div>
+                <div className="text-center mb-20"><h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">How NotaryOS works</h2><p className="text-xl text-slate-500 max-w-2xl mx-auto">A streamlined workflow designed to take you from booking to payout in record time.</p></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                    {/* Step Cards with pronounced icons */}
                     <div className="visual-card bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
                         <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-200"><CalendarClock className="w-8 h-8" /></div>
                         <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-4">Step 1</div>
