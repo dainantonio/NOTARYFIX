@@ -1,159 +1,217 @@
-import React from 'react';
-import { Logo } from '../components/UI';
+import React, { useState } from 'react';
 import { 
-    LayoutDashboard, Calendar, FileText, Users, Settings, 
-    Bell, Search, Plus, MoreHorizontal, ArrowUpRight
+  Users, 
+  FileSignature, 
+  DollarSign, 
+  MapPin, 
+  Plus, 
+  Calendar as CalendarIcon, 
+  ChevronRight, 
+  Clock,
+  TrendingUp,
+  CheckCircle2
 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '../components/UI';
+import AppointmentModal from '../components/AppointmentModal';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function Dashboard({ onLogout }) {
-    return (
-        <div className="min-h-screen bg-slate-50 flex animate-fade-in font-sans">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full z-20">
-                <div className="p-6">
-                    <Logo />
-                </div>
-                <div className="px-4 py-2">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Main Menu</p>
-                    <nav className="space-y-1">
-                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 bg-brand-50 text-brand-700 rounded-lg font-medium transition-colors">
-                            <LayoutDashboard className="w-5 h-5" /> Dashboard
-                        </a>
-                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg font-medium transition-colors">
-                            <Calendar className="w-5 h-5" /> Schedule
-                        </a>
-                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg font-medium transition-colors">
-                            <FileText className="w-5 h-5" /> Journal
-                        </a>
-                        <a href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg font-medium transition-colors">
-                            <Users className="w-5 h-5" /> Clients
-                        </a>
-                    </nav>
-                </div>
-                <div className="mt-auto p-4 border-t border-slate-100">
-                    <button onClick={onLogout} className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-red-600 font-medium w-full transition-colors rounded-lg hover:bg-red-50">
-                        <Settings className="w-5 h-5" /> Sign Out
-                    </button>
-                </div>
-            </aside>
+const revenueData = [
+  { name: 'Jan', amount: 2400 },
+  { name: 'Feb', amount: 1398 },
+  { name: 'Mar', amount: 9800 },
+  { name: 'Apr', amount: 3908 },
+  { name: 'May', amount: 4800 },
+  { name: 'Jun', amount: 3800 },
+];
 
-            {/* Main Content */}
-            <main className="flex-1 md:ml-64">
-                {/* Header */}
-                <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-                    <div className="flex items-center gap-4 w-1/3">
-                        <div className="relative w-full max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input 
-                                type="text" 
-                                placeholder="Search clients, invoices..." 
-                                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-full relative">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                        </button>
-                        <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-bold text-xs border border-brand-200">
-                            SJ
-                        </div>
-                    </div>
-                </header>
-
-                <div className="p-8 max-w-7xl mx-auto">
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-                            <p className="text-slate-500">Welcome back, Sarah.</p>
-                        </div>
-                        <button className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors">
-                            <Plus className="w-4 h-4" /> New Appointment
-                        </button>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-2 bg-green-50 rounded-lg text-green-600"><span className="text-2xl font-bold">$</span></div>
-                                <span className="flex items-center text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full"><ArrowUpRight className="w-3 h-3 mr-1"/> 12%</span>
-                            </div>
-                            <div>
-                                <p className="text-slate-500 text-sm font-medium">Total Revenue</p>
-                                <h3 className="text-3xl font-bold text-slate-900">$4,250.00</h3>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                             <div className="flex justify-between items-start mb-4">
-                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Calendar className="w-6 h-6" /></div>
-                                <span className="flex items-center text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded-full">This Month</span>
-                            </div>
-                            <div>
-                                <p className="text-slate-500 text-sm font-medium">Appointments</p>
-                                <h3 className="text-3xl font-bold text-slate-900">24</h3>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                             <div className="flex justify-between items-start mb-4">
-                                <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><FileText className="w-6 h-6" /></div>
-                                <span className="flex items-center text-purple-600 text-xs font-bold bg-purple-50 px-2 py-1 rounded-full">Pending</span>
-                            </div>
-                            <div>
-                                <p className="text-slate-500 text-sm font-medium">Open Invoices</p>
-                                <h3 className="text-3xl font-bold text-slate-900">3</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Recent Activity Table */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-900">Recent Appointments</h3>
-                            <button className="text-sm text-brand-600 font-medium hover:underline">View All</button>
-                        </div>
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
-                                <tr>
-                                    <th className="px-6 py-3">Client</th>
-                                    <th className="px-6 py-3">Service</th>
-                                    <th className="px-6 py-3">Date</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3 text-right">Amount</th>
-                                    <th className="px-6 py-3"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                <tr className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-slate-900">Michael Scott</td>
-                                    <td className="px-6 py-4 text-slate-500">Loan Signing</td>
-                                    <td className="px-6 py-4 text-slate-500">Oct 24, 2:00 PM</td>
-                                    <td className="px-6 py-4"><span className="bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-xs font-bold">Paid</span></td>
-                                    <td className="px-6 py-4 text-right font-medium text-slate-900">$150.00</td>
-                                    <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="w-5 h-5" /></button></td>
-                                </tr>
-                                <tr className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-slate-900">Dwight Schrute</td>
-                                    <td className="px-6 py-4 text-slate-500">General Notary</td>
-                                    <td className="px-6 py-4 text-slate-500">Oct 25, 10:00 AM</td>
-                                    <td className="px-6 py-4"><span className="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full text-xs font-bold">Pending</span></td>
-                                    <td className="px-6 py-4 text-right font-medium text-slate-900">$45.00</td>
-                                    <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="w-5 h-5" /></button></td>
-                                </tr>
-                                <tr className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-slate-900">Jim Halpert</td>
-                                    <td className="px-6 py-4 text-slate-500">Refinance</td>
-                                    <td className="px-6 py-4 text-slate-500">Oct 26, 9:00 AM</td>
-                                    <td className="px-6 py-4"><span className="bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full text-xs font-bold">Scheduled</span></td>
-                                    <td className="px-6 py-4 text-right font-medium text-slate-900">$125.00</td>
-                                    <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="w-5 h-5" /></button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
+const StatsCard = ({ title, value, change, icon: Icon, trend }) => (
+  <Card>
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-slate-500 text-sm font-medium">{title}</span>
+        <div className="p-2 bg-slate-50 rounded-lg">
+          <Icon className="w-5 h-5 text-slate-600" />
         </div>
-    );
-}
+      </div>
+      <div className="flex items-baseline gap-2">
+        <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+      </div>
+      <p className={`text-xs mt-1 font-medium ${
+        trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-slate-500'
+      }`}>
+        {change}
+      </p>
+    </CardContent>
+  </Card>
+);
+
+const Dashboard = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [appointments, setAppointments] = useState([
+    { id: 1, client: 'Sarah Johnson', type: 'Loan Signing', date: 'Today', time: '2:00 PM', status: 'upcoming', amount: 150 },
+    { id: 2, client: 'TechCorp Inc', type: 'I-9 Verification', date: 'Today', time: '4:30 PM', status: 'upcoming', amount: 45 },
+    { id: 3, client: 'Michael Smith', type: 'Power of Attorney', date: 'Yesterday', time: '10:00 AM', status: 'completed', amount: 75 },
+  ]);
+
+  const totalRevenue = 12450 + appointments.reduce((sum, apt) => sum + (typeof apt.amount === 'number' ? apt.amount : 0), 0);
+  const completedSignings = 48 + appointments.filter(a => a.status === 'completed').length;
+  const upcomingCount = appointments.filter(a => a.status === 'upcoming').length;
+
+  const handleSaveAppointment = (data) => {
+    const newApt = {
+      id: Date.now(),
+      client: data.client,
+      type: data.type,
+      date: 'Upcoming', 
+      time: data.time,
+      status: 'upcoming',
+      amount: parseFloat(data.fee) || 0
+    };
+    setAppointments([newApt, ...appointments]);
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <AppointmentModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={handleSaveAppointment}
+      />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-slate-500 mt-1">
+            You have <span className="font-semibold text-blue-600">{upcomingCount} upcoming appointments</span> today.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" size="default">
+            <CalendarIcon className="w-4 h-4 mr-2" />
+            Schedule
+          </Button>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Appointment
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} change="+12.5%" icon={DollarSign} trend="up" />
+        <StatsCard title="Signings Completed" value={completedSignings} change="+4 this week" icon={FileSignature} trend="up" />
+        <StatsCard title="Miles Drove" value="842" change="Tax Ded: $564" icon={MapPin} trend="neutral" />
+        <StatsCard title="Active Clients" value="124" change="+8 this month" icon={Users} trend="up" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Recent Activity</CardTitle>
+              <Button variant="ghost" size="sm" className="text-blue-600">View Calendar</Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-slate-100">
+                {appointments.map((apt) => (
+                  <div key={apt.id} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                        apt.status === 'upcoming' ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-100' : 'bg-green-50 text-green-600 group-hover:bg-green-100'
+                      }`}>
+                        {apt.status === 'upcoming' ? <Clock className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">{apt.client}</p>
+                        <p className="text-sm text-slate-500">{apt.type} • {apt.date} at {apt.time}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-slate-900">${apt.amount}</p>
+                      <Badge variant={apt.status === 'upcoming' ? 'blue' : 'success'}>
+                        {apt.status === 'upcoming' ? 'Scheduled' : 'Completed'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Revenue Overview</CardTitle>
+              <select className="text-sm border-slate-200 rounded-md text-slate-600 focus:ring-blue-500">
+                <option>Last 6 Months</option>
+              </select>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
+                    <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-8">
+          <Card className="bg-slate-900 text-white border-slate-800">
+            <CardHeader className="border-slate-800"><CardTitle className="text-white">Quick Actions</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors group">
+                <span className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500 rounded-md group-hover:bg-blue-400 transition-colors"><Plus className="w-4 h-4" /></div>
+                  <span className="font-medium">New Appointment</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+              <button className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors group">
+                <span className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500 rounded-md group-hover:bg-purple-400 transition-colors"><Users className="w-4 h-4" /></div>
+                  <span className="font-medium">Add New Client</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+              <button className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors group">
+                <span className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500 rounded-md group-hover:bg-emerald-400 transition-colors"><MapPin className="w-4 h-4" /></div>
+                  <span className="font-medium">Log Mileage</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Tasks & Reminders</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { text: 'Confirm appointment with Sarah', done: false },
+                  { text: 'Send invoice to TechCorp', done: true },
+                  { text: 'Update notary journal logs', done: false },
+                  { text: 'Order new stamp ink', done: false },
+                ].map((task, i) => (
+                  <label key={i} className="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" defaultChecked={task.done} className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <span className={`text-sm ${task.done ? 'text-slate-400 line-through' : 'text-slate-600 group-hover:text-slate-900'}`}>{task.text}</span>
+                  </label>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

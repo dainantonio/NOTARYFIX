@@ -1,65 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import LandingPage from './pages/Landing';
-import AuthScreen from './pages/Auth';
-import Onboarding from './pages/Onboarding';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import { Modal, PageControl } from './components/UI';
-import { LegalContent } from './pages/Legal';
 
-export default function App() {
-  const [view, setView] = useState('landing'); 
-  const [legalModal, setLegalModal] = useState(null); // 'terms' | 'privacy' | 'security' | null
+// Simple placeholder for pages that aren't ready yet
+const Placeholder = ({ title }) => (
+  <div className="flex flex-col items-center justify-center h-[50vh] text-center">
+    <h2 className="text-2xl font-bold text-slate-800 mb-2">{title}</h2>
+    <p className="text-slate-500">This module is being built.</p>
+  </div>
+);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [view]);
-
+function App() {
   return (
-    <>
-        {/* Global Legal Modal */}
-        <Modal 
-            isOpen={!!legalModal} 
-            onClose={() => setLegalModal(null)} 
-            title={legalModal === 'terms' ? 'Terms of Service' : legalModal === 'privacy' ? 'Privacy Policy' : 'Security Overview'}
-        >
-            {legalModal && <LegalContent type={legalModal} />}
-        </Modal>
-
-        {view === 'login' && (
-            <AuthScreen 
-                mode="login" 
-                onComplete={() => setView('dashboard')} 
-                onSwitchMode={() => setView('signup')} 
-                onBack={() => setView('landing')} 
-            />
-        )}
-
-        {view === 'signup' && (
-            <AuthScreen 
-                mode="signup" 
-                onComplete={() => setView('onboarding')} 
-                onSwitchMode={() => setView('login')} 
-                onBack={() => setView('landing')} 
-            />
-        )}
-
-        {view === 'onboarding' && (
-            <Onboarding onComplete={() => setView('dashboard')} />
-        )}
-
-        {view === 'dashboard' && (
-            <Dashboard onLogout={() => setView('landing')} />
-        )}
-
-        {view === 'landing' && (
-            <>
-                <LandingPage 
-                    onNavigate={setView} 
-                    onOpenLegal={setLegalModal} 
-                />
-                <PageControl />
-            </>
-        )}
-    </>
+    <Router>
+      <Layout>
+        <Routes>
+          {/* Redirect root to dashboard immediately */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* The Main Dashboard */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* Safe Placeholders for unwired pages */}
+          <Route path="/auth" element={<Placeholder title="Login Page" />} />
+          <Route path="/legal" element={<Placeholder title="Legal Page" />} />
+          <Route path="/schedule" element={<Placeholder title="Schedule" />} />
+          <Route path="/clients" element={<Placeholder title="Clients" />} />
+          <Route path="/invoices" element={<Placeholder title="Invoices" />} />
+          <Route path="/settings" element={<Placeholder title="Settings" />} />
+          
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
+
+export default App;
