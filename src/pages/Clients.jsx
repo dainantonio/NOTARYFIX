@@ -1,17 +1,14 @@
 import React from 'react';
 import { Search, MoreHorizontal, Mail, Phone, Plus, Filter, Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '../components/UI';
+import { Card, CardContent, CardHeader, Button, Badge } from '../components/UI';
+import { useData } from '../context/DataContext';
 
 const Clients = () => {
-  const clients = [
-    { id: 1, name: 'TechCorp Inc', contact: 'Sarah Smith', email: 'sarah@techcorp.com', phone: '(555) 123-4567', type: 'Corporate', status: 'Active', lastActive: '2 days ago' },
-    { id: 2, name: 'Estate Realty', contact: 'Mike Johnson', email: 'mike@estate.com', phone: '(555) 987-6543', type: 'Title Company', status: 'Active', lastActive: '5 days ago' },
-    { id: 3, name: 'John Doe', contact: 'John Doe', email: 'john.doe@gmail.com', phone: '(555) 456-7890', type: 'Individual', status: 'Inactive', lastActive: '1 month ago' },
-    { id: 4, name: 'Legal Partners LLP', contact: 'Jane Doe', email: 'jane@legalpartners.com', phone: '(555) 111-2222', type: 'Law Firm', status: 'Active', lastActive: '1 week ago' },
-  ];
+  const { data } = useData();
+  const clients = data.clients || [];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Clients</h1>
@@ -45,7 +42,6 @@ const Clients = () => {
                 <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4">Contact Info</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Last Active</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -77,7 +73,6 @@ const Clients = () => {
                   <td className="px-6 py-4">
                     <Badge variant={client.status === 'Active' ? 'success' : 'default'}>{client.status}</Badge>
                   </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{client.lastActive}</td>
                   <td className="px-6 py-4 text-right">
                     <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <MoreHorizontal className="w-4 h-4" />
