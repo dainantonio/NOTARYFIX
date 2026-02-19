@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Schedule from './pages/Schedule';
 import Clients from './pages/Clients';
 import Invoices from './pages/Invoices';
+import Settings from './pages/Settings';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Legal from './pages/Legal';
@@ -21,14 +22,6 @@ const AppLayout = ({ children }) => {
   return <Layout>{children}</Layout>;
 };
 
-// Placeholder components for routes not yet built
-const Placeholder = ({ title }) => (
-  <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-    <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{title}</h2>
-    <p className="text-slate-500 dark:text-slate-400">This module is coming in the next update.</p>
-  </div>
-);
-
 function App() {
   return (
     <Router>
@@ -44,7 +37,7 @@ function App() {
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/invoices" element={<Invoices />} />
-          <Route path="/settings" element={<Placeholder title="Settings" />} />
+          <Route path="/settings" element={<Settings />} />
           
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />

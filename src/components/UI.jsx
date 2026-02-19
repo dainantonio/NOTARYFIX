@@ -6,8 +6,7 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// --- CORE PRIMITIVES ---
-
+// --- LAYOUT ---
 export const Card = ({ children, className }) => (
   <div className={cn(
     "bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-200 hover:shadow-md dark:shadow-slate-900/50", 
@@ -35,6 +34,7 @@ export const CardContent = ({ children, className }) => (
   </div>
 );
 
+// --- INTERACTIVE ---
 export const Button = ({ children, variant = 'primary', size = 'default', className, ...props }) => {
   const variants = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 shadow-sm shadow-blue-500/20 hover:shadow-blue-500/40 border border-transparent",
@@ -84,8 +84,50 @@ export const Badge = ({ children, variant = 'default', className }) => {
   );
 };
 
-// --- DATA VISUALIZATION COMPONENTS ---
+// --- FORM ELEMENTS ---
+export const Input = ({ className, ...props }) => (
+  <input
+    className={cn(
+      "flex h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 dark:text-white disabled:cursor-not-allowed disabled:opacity-50 transition-all",
+      className
+    )}
+    {...props}
+  />
+);
 
+export const Label = ({ className, children, ...props }) => (
+  <label
+    className={cn(
+      "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-700 dark:text-slate-300 mb-2 block",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </label>
+);
+
+export const Select = ({ value, onChange, options, className }) => (
+  <div className="relative">
+    <select
+      value={value}
+      onChange={onChange}
+      className={cn(
+        "appearance-none w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2 px-3 pr-8 rounded-lg leading-tight focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm h-10",
+        className
+      )}
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+    </div>
+  </div>
+);
+
+// --- VISUALIZATION ---
 export const Progress = ({ value, max = 100, className, indicatorClassName }) => {
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
   return (
@@ -107,7 +149,6 @@ export const CircularProgress = ({ value, max = 100, size = 120, strokeWidth = 1
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="transform -rotate-90">
-        {/* Background Circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -117,7 +158,6 @@ export const CircularProgress = ({ value, max = 100, size = 120, strokeWidth = 1
           fill="transparent"
           className="text-slate-100 dark:text-slate-800"
         />
-        {/* Progress Circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -140,26 +180,4 @@ export const CircularProgress = ({ value, max = 100, size = 120, strokeWidth = 1
 
 export const Skeleton = ({ className }) => (
   <div className={cn("animate-pulse bg-slate-200 dark:bg-slate-700 rounded", className)} />
-);
-
-// --- INPUT COMPONENTS ---
-
-export const Select = ({ value, onChange, options, className }) => (
-  <div className="relative">
-    <select
-      value={value}
-      onChange={onChange}
-      className={cn(
-        "appearance-none w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2 px-3 pr-8 rounded-lg leading-tight focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm",
-        className
-      )}
-    >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
-    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-    </div>
-  </div>
 );
