@@ -107,7 +107,6 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 
-// New Page Control Component
 export const PageControl = () => {
     const scrollTo = (direction) => {
         const height = window.innerHeight;
@@ -116,18 +115,10 @@ export const PageControl = () => {
 
     return (
         <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2">
-            <button 
-                onClick={() => scrollTo('up')}
-                className="w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg hover:bg-white text-slate-600 transition-all hover:-translate-y-0.5 active:scale-95"
-                title="Page Up"
-            >
+            <button onClick={() => scrollTo('up')} className="w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg hover:bg-white text-slate-600 transition-all hover:-translate-y-0.5 active:scale-95" title="Page Up">
                 <ChevronUp className="w-5 h-5" />
             </button>
-            <button 
-                onClick={() => scrollTo('down')}
-                className="w-10 h-10 bg-brand-600 backdrop-blur-md border border-brand-500 rounded-full flex items-center justify-center shadow-lg hover:bg-brand-700 text-white transition-all hover:translate-y-0.5 active:scale-95"
-                title="Page Down"
-            >
+            <button onClick={() => scrollTo('down')} className="w-10 h-10 bg-brand-600 backdrop-blur-md border border-brand-500 rounded-full flex items-center justify-center shadow-lg hover:bg-brand-700 text-white transition-all hover:translate-y-0.5 active:scale-95" title="Page Down">
                 <ChevronDown className="w-5 h-5" />
             </button>
         </div>

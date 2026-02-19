@@ -12,8 +12,12 @@ export const Navbar = ({ onNavigate, onOpenLegal }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navClass = scrolled 
+    ? 'bg-white/95 backdrop-blur-lg border-b border-slate-200 py-3 shadow-sm' 
+    : 'bg-transparent py-5';
+
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-lg border-b border-slate-200 py-3 shadow-sm' : 'bg-transparent py-5'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${navClass}`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
         <div onClick={() => onNavigate('landing')} className="cursor-pointer"><Logo /></div>
         <div className="hidden md:flex items-center space-x-8">

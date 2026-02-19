@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Button, PhoneFrame, PageControl } from '../components/UI';
+import { Button, PhoneFrame } from '../components/UI';
 import { Navbar, Footer } from '../components/Layout';
 import { 
     ShieldCheck, Lock, CheckCircle2, XCircle, CalendarClock, Map, 
@@ -40,9 +40,11 @@ const Hero = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                <div className="relative animate-slide-up h-[700px] w-full hidden lg:block">
+                {/* Right: Dual Phone Stack Visual - VISIBLE ON MOBILE */}
+                {/* Applied MB-[-250px] on mobile to close the whitespace gap */}
+                <div className="relative animate-slide-up h-[600px] lg:h-[700px] w-full flex justify-center lg:block mt-12 lg:mt-0 mb-[-250px] lg:mb-0 scale-[0.6] sm:scale-[0.75] lg:scale-100 origin-top">
                     {/* Back Phone (Dashboard) */}
-                    <div className="absolute top-10 left-10 z-10 transform -rotate-6 scale-95 transition-transform duration-700 hover:rotate-0 hover:scale-100 origin-bottom-right">
+                    <div className="absolute top-10 left-auto lg:left-10 z-10 transform -rotate-6 scale-95 transition-transform duration-700 hover:rotate-0 hover:scale-100 origin-bottom-right">
                         <PhoneFrame className="shadow-2xl shadow-brand-900/20">
                             <div className="w-full h-full bg-slate-50 pt-16 px-4 relative flex flex-col">
                                 <div className="flex justify-between items-center mb-6">
@@ -70,7 +72,7 @@ const Hero = ({ onNavigate }) => {
                     </div>
 
                     {/* Front Phone (Inbox/Activity) */}
-                    <div className="absolute top-0 right-10 z-20 transform rotate-6 transition-transform duration-700 hover:rotate-0 hover:scale-105 origin-bottom-left">
+                    <div className="absolute top-0 right-auto lg:right-10 z-20 transform rotate-6 transition-transform duration-700 hover:rotate-0 hover:scale-105 origin-bottom-left ml-20 lg:ml-0">
                          <PhoneFrame className="shadow-[0_30px_60px_-12px_rgba(0,0,0,0.3)] border-slate-800">
                             <div className="w-full h-full bg-white pt-16 px-4 relative flex flex-col">
                                 <div className="flex justify-between items-center mb-6">
@@ -105,11 +107,11 @@ const TrustBar = () => (
     <div className="border-b border-slate-100 bg-white py-12">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
             <p className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-8">Trusted by signing agents who work with</p>
-            <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-10">
-                <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-slate-900 rounded-full"></div> Fidelity</span>
-                <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-blue-700 rounded-md"></div> First American</span>
-                <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-orange-600 rounded-full"></div> Old Republic</span>
-                <span className="flex items-center gap-2 text-xl font-bold text-slate-800"><div className="w-6 h-6 bg-indigo-700 rounded-sm"></div> Stewart</span>
+            <div className="flex flex-wrap justify-center items-center gap-x-12 lg:gap-x-20 gap-y-10">
+                <span className="flex items-center gap-3 text-2xl font-bold text-slate-900"><div className="w-8 h-8 bg-slate-900 rounded-full"></div> Fidelity</span>
+                <span className="flex items-center gap-3 text-2xl font-bold text-slate-900"><div className="w-8 h-8 bg-blue-700 rounded-md"></div> First American</span>
+                <span className="flex items-center gap-3 text-2xl font-bold text-slate-900"><div className="w-8 h-8 bg-orange-600 rounded-full"></div> Old Republic</span>
+                <span className="flex items-center gap-3 text-2xl font-bold text-slate-900"><div className="w-8 h-8 bg-indigo-700 rounded-sm"></div> Stewart</span>
             </div>
         </div>
     </div>
@@ -117,29 +119,73 @@ const TrustBar = () => (
 
 const BeforeAfter = () => {
     const [view, setView] = useState('new');
+    
     const items = [
-        { icon: FileText, title: "One-Click Invoicing", desc: "Generate professional PDF invoices instantly.", oldTitle: "Manual Invoicing", oldDesc: "Typing invoices in Word, saving as PDF." },
-        { icon: Shield, title: "Compliance Coach", desc: "AI answers state law questions 24/7.", oldTitle: "Guesswork", oldDesc: "Frantically searching Google or calling mentors." },
-        { icon: Map, title: "Auto-Mileage", desc: "GPS tracks every mile automatically.", oldTitle: "Lost Deductions", oldDesc: "Reconstructing logs from calendar at tax time." },
-        { icon: CalendarClock, title: "Smart Scheduling", desc: "Intelligent routing calculates drive times.", oldTitle: "Double Booking", oldDesc: "Juggling Calendar and emails, stuck in traffic." }
+        { 
+            icon: FileText, 
+            title: "One-Click Invoicing", 
+            desc: "Generate professional PDF invoices instantly.",
+            oldTitle: "Manual Invoicing",
+            oldDesc: "Typing invoices in Word, saving as PDF, emailing manually."
+        },
+        { 
+            icon: Shield, 
+            title: "Compliance Coach", 
+            desc: "AI answers state law questions 24/7.",
+            oldTitle: "Guesswork",
+            oldDesc: "Frantically searching Google or calling mentors."
+        },
+        { 
+            icon: Map, 
+            title: "Auto-Mileage", 
+            desc: "GPS tracks every mile automatically.",
+            oldTitle: "Lost Deductions",
+            oldDesc: "Reconstructing logs from calendar at tax time."
+        },
+        { 
+            icon: CalendarClock, 
+            title: "Smart Scheduling", 
+            desc: "Intelligent routing calculates drive times.",
+            oldTitle: "Double Booking",
+            oldDesc: "Juggling Calendar and emails, stuck in traffic."
+        }
     ];
+
     return (
         <section className="py-32 bg-white border-t border-slate-100">
              <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl font-bold text-slate-900 mb-6">Why switch?</h2>
+                    
                     <div className="inline-flex bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                        <button onClick={() => setView('old')} className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'old' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>The Old Way</button>
-                        <button onClick={() => setView('new')} className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'new' ? 'bg-white shadow-sm text-brand-600' : 'text-slate-500 hover:text-slate-700'}`}>With NotaryOS</button>
+                        <button 
+                            onClick={() => setView('old')} 
+                            className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'old' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            The Old Way
+                        </button>
+                        <button 
+                            onClick={() => setView('new')} 
+                            className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${view === 'new' ? 'bg-white shadow-sm text-brand-600' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            With NotaryOS
+                        </button>
                     </div>
                 </div>
+
                 <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     {items.map((item, i) => (
                         <div key={i} className={`p-8 rounded-3xl border transition-all duration-300 flex gap-6 items-start ${view === 'new' ? 'bg-brand-50/30 border-brand-100 hover:border-brand-300 hover:shadow-md' : 'bg-slate-50 border-slate-200 opacity-60 grayscale'}`}>
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${view === 'new' ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-400'}`}><item.icon className="w-7 h-7" /></div>
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${view === 'new' ? 'bg-brand-100 text-brand-600' : 'bg-slate-200 text-slate-400'}`}>
+                                <item.icon className="w-7 h-7" />
+                            </div>
                             <div>
-                                <h4 className={`text-xl font-bold mb-2 ${view === 'new' ? 'text-slate-900' : 'text-slate-500'}`}>{view === 'new' ? item.title : item.oldTitle}</h4>
-                                <p className={`text-sm leading-relaxed ${view === 'new' ? 'text-slate-600' : 'text-slate-400'}`}>{view === 'new' ? item.desc : item.oldDesc}</p>
+                                <h4 className={`text-xl font-bold mb-2 ${view === 'new' ? 'text-slate-900' : 'text-slate-500'}`}>
+                                    {view === 'new' ? item.title : item.oldTitle}
+                                </h4>
+                                <p className={`text-sm leading-relaxed ${view === 'new' ? 'text-slate-600' : 'text-slate-400'}`}>
+                                    {view === 'new' ? item.desc : item.oldDesc}
+                                </p>
                             </div>
                         </div>
                     ))}
@@ -154,20 +200,50 @@ const AIHeroSection = () => {
         <section id="ai-coach" className="bg-slate-950 py-32 relative overflow-hidden text-white border-t border-slate-900">
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-500/10 rounded-full blur-[150px] translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-[150px] -translate-x-1/2 translate-y-1/2"></div>
+            
             <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-400/30 text-brand-400 text-xs font-bold uppercase tracking-wider mb-8"><Zap className="w-3 h-3" /> NEW: AI COMPLIANCE COACH</div>
-                        <h2 className="text-4xl md:text-6xl font-extrabold mb-8 leading-tight">Your compliance expert, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">available 24/7.</span></h2>
-                        <p className="text-xl text-slate-400 mb-12 leading-relaxed font-light">Not just software—it's a mentor. Get instant answers to state-specific questions, fee limits, and ID rules without searching through a 100-page handbook.</p>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-400/30 text-brand-400 text-xs font-bold uppercase tracking-wider mb-8">
+                            <Zap className="w-3 h-3" /> NEW: AI COMPLIANCE COACH
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-extrabold mb-8 leading-tight">
+                            Your compliance expert, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">available 24/7.</span>
+                        </h2>
+                        <p className="text-xl text-slate-400 mb-12 leading-relaxed font-light">
+                            Not just software—it's a mentor. Get instant answers to state-specific questions, fee limits, and ID rules without searching through a 100-page handbook.
+                        </p>
+                        
                         <div className="relative max-w-lg group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-brand-500 to-indigo-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                            <div className="relative bg-slate-900 rounded-xl flex items-center p-2"><input type="text" placeholder="e.g. What's the fee for a jurat in California?" className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 px-4 focus:ring-0 text-base" readOnly /><button className="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm shadow-lg">Ask AI</button></div>
+                            <div className="relative bg-slate-900 rounded-xl flex items-center p-2">
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. What's the fee for a jurat in California?" 
+                                    className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 px-4 focus:ring-0 text-base"
+                                    readOnly
+                                />
+                                <button className="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm shadow-lg">
+                                    Ask AI
+                                </button>
+                            </div>
                         </div>
                     </div>
+                    
                     <div className="relative">
                         <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8 shadow-2xl relative z-10">
-                            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-800"><div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20"><Bot className="w-7 h-7" /></div><div><h4 className="font-bold text-white text-lg">NotaryOS AI</h4><div className="flex items-center gap-2 mt-1"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span className="text-xs font-medium text-slate-400">Online Now</span></div></div></div>
+                            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-800">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
+                                    <Bot className="w-7 h-7" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-lg">NotaryOS AI</h4>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
+                                        <span className="text-xs font-medium text-slate-400">Online Now</span>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="space-y-6">
                                 <div className="flex justify-end"><div className="bg-brand-600 text-white px-6 py-4 rounded-2xl rounded-tr-sm text-sm max-w-[85%] shadow-md leading-relaxed">What's the maximum fee for a jurat in California?</div></div>
                                 <div className="flex justify-start"><div className="bg-slate-800 text-slate-200 px-6 py-4 rounded-2xl rounded-tl-sm text-sm max-w-[90%] shadow-md border border-slate-700 leading-relaxed"><p className="font-semibold text-brand-400 mb-2">California Government Code § 8211</p>The maximum fee for a jurat is <span className="text-white font-bold">$15 per signature</span>, including the oath or affirmation.</div></div>
@@ -183,16 +259,41 @@ const AIHeroSection = () => {
 const MobileWorkflow = () => {
     const [activeTab, setActiveTab] = useState('routing');
     
+    // Updated with Realistic Mockups
     const tabs = [
         { id: 'routing', icon: Map, title: 'Intelligent Routing', desc: 'Navigate to your next signing with one tap.', 
           screen: (
             <div className="h-full bg-slate-900 flex flex-col text-white relative rounded-[48px] overflow-hidden">
                  {/* Map Background Simulation */}
                  <div className="absolute inset-0 bg-slate-800/50 z-0"><svg className="w-full h-full opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M20,100 L20,60 L50,40 L80,20" stroke="white" strokeWidth="2" fill="none"/><path d="M0,50 L100,50" stroke="white" strokeWidth="1" fill="none"/></svg></div>
+                 
+                 {/* Navigation UI Overlay */}
                  <div className="relative z-10 pt-16 px-4 h-full flex flex-col">
-                     <div className="bg-green-600 rounded-xl p-4 shadow-lg mb-4 flex gap-4 items-center"><ArrowLeft className="w-8 h-8 text-white" /><div><p className="text-xs font-bold uppercase opacity-80">Turn Left</p><h3 className="text-xl font-bold">Main St.</h3></div></div>
-                     <div className="flex-1 relative"><div className="absolute top-10 left-1/2 w-2 h-32 bg-blue-500 -translate-x-1/2 rounded-full"></div><div className="absolute top-40 left-1/2 w-6 h-6 bg-blue-500 border-4 border-white rounded-full -translate-x-1/2 z-20"></div></div>
-                     <div className="bg-white rounded-2xl p-4 shadow-2xl mb-8"><div className="flex justify-between items-center"><div><h4 className="text-slate-900 font-bold text-lg">14 min <span className="text-slate-400 font-normal text-sm">(5.2 mi)</span></h4><p className="text-xs text-green-600 font-bold">Fastest route</p></div><button className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold">End</button></div></div>
+                     {/* Top Direction Banner */}
+                     <div className="bg-green-600 rounded-xl p-4 shadow-lg mb-4 flex gap-4 items-center">
+                        <ArrowLeft className="w-8 h-8 text-white" />
+                        <div>
+                            <p className="text-xs font-bold uppercase opacity-80">Turn Left</p>
+                            <h3 className="text-xl font-bold">Main St.</h3>
+                        </div>
+                     </div>
+                     
+                     {/* Route Line on Map */}
+                     <div className="flex-1 relative">
+                        <div className="absolute top-10 left-1/2 w-2 h-32 bg-blue-500 -translate-x-1/2 rounded-full"></div>
+                        <div className="absolute top-40 left-1/2 w-6 h-6 bg-blue-500 border-4 border-white rounded-full -translate-x-1/2 z-20 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-pulse"></div>
+                     </div>
+
+                     {/* Bottom Trip Info */}
+                     <div className="bg-white rounded-2xl p-4 shadow-2xl mb-8">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h4 className="text-slate-900 font-bold text-lg">14 min <span className="text-slate-400 font-normal text-sm">(5.2 mi)</span></h4>
+                                <p className="text-xs text-green-600 font-bold">Fastest route</p>
+                            </div>
+                            <button className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold">End</button>
+                        </div>
+                     </div>
                  </div>
             </div>
           ) 
@@ -202,6 +303,7 @@ const MobileWorkflow = () => {
             <div className="h-full bg-slate-950 flex flex-col items-center justify-center text-center p-8 relative">
                  <div className="w-24 h-24 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-8 relative overflow-hidden">
                      <Fingerprint className="w-12 h-12 text-brand-500 z-10" />
+                     {/* Scanning Animation */}
                      <div className="absolute top-0 left-0 w-full h-1 bg-brand-500 shadow-[0_0_15px_rgba(43,115,255,0.8)] animate-scan"></div>
                  </div>
                  <h3 className="text-xl font-bold text-white mb-2">NotaryOS Locked</h3>
@@ -213,7 +315,19 @@ const MobileWorkflow = () => {
           screen: (
             <div className="h-full bg-slate-50 pt-16 flex flex-col">
                 <div className="bg-amber-500 text-white text-[10px] py-1.5 text-center font-bold tracking-widest uppercase shadow-sm z-20">Offline Mode Active</div>
-                <div className="p-6 space-y-4"><div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500 flex justify-between items-center"><div><p className="font-bold text-slate-800 text-sm">Entry #1024</p><p className="text-xs text-slate-500">Waiting for network...</p></div><div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div></div><div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 opacity-60"><div className="h-4 w-24 bg-slate-200 rounded mb-2"></div><div className="h-3 w-16 bg-slate-100 rounded"></div></div></div>
+                <div className="p-6 space-y-4">
+                    <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500 flex justify-between items-center">
+                         <div>
+                             <p className="font-bold text-slate-800 text-sm">Entry #1024</p>
+                             <p className="text-xs text-slate-500">Waiting for network...</p>
+                         </div>
+                         <div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 opacity-60">
+                         <div className="h-4 w-24 bg-slate-200 rounded mb-2"></div>
+                         <div className="h-3 w-16 bg-slate-100 rounded"></div>
+                    </div>
+                </div>
             </div>
           )
         }
@@ -223,7 +337,14 @@ const MobileWorkflow = () => {
         <section id="mobile-workflow" className="py-32 bg-white overflow-hidden relative">
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
-                    <div className="relative mx-auto lg:mr-0 flex items-center justify-center order-2 lg:order-1"><PhoneFrame className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]">{tabs.find(t => t.id === activeTab).screen}</PhoneFrame></div>
+                    {/* Left: Phone */}
+                    <div className="relative mx-auto lg:mr-0 flex items-center justify-center order-2 lg:order-1">
+                         <PhoneFrame className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]">
+                            {tabs.find(t => t.id === activeTab).screen}
+                         </PhoneFrame>
+                    </div>
+
+                    {/* Right: Content */}
                     <div className="order-1 lg:order-2">
                         <div className="inline-block bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full mb-6 border border-slate-200">MOBILE FIRST</div>
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-8 text-slate-900 leading-tight">Run your business from your pocket.</h2>
@@ -247,8 +368,12 @@ const HowItWorks = () => {
     return (
         <section id="how" className="bg-slate-50 py-32 w-full border-t border-slate-200">
             <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-20"><h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">How NotaryOS works</h2><p className="text-xl text-slate-500 max-w-2xl mx-auto">A streamlined workflow designed to take you from booking to payout in record time.</p></div>
+                <div className="text-center mb-20">
+                    <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">How NotaryOS works</h2>
+                    <p className="text-xl text-slate-500 max-w-2xl mx-auto">A streamlined workflow designed to take you from booking to payout in record time.</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    {/* Step Cards with pronounced icons */}
                     <div className="visual-card bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
                         <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-brand-200"><CalendarClock className="w-8 h-8" /></div>
                         <div className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-4">Step 1</div>
@@ -276,6 +401,7 @@ const HowItWorks = () => {
 const ROICalculator = () => {
     const [weeklyAppts, setWeeklyAppts] = useState(10);
     const [adminMins, setAdminMins] = useState(20);
+
     const hoursSaved = useMemo(() => Math.round((weeklyAppts * adminMins * 52) / 60), [weeklyAppts, adminMins]);
     const moneySaved = useMemo(() => (hoursSaved * 50).toLocaleString(), [hoursSaved]);
 
@@ -298,8 +424,16 @@ const ROICalculator = () => {
                         </div>
                     </div>
                     <div className="bg-brand-600 rounded-[2.5rem] p-10 text-center border border-brand-500 relative shadow-xl transform transition-transform hover:scale-105 duration-300 text-white">
-                        <div className="mb-8"><p className="text-brand-100 font-medium mb-2">You could reclaim</p><div className="text-6xl font-extrabold text-white mb-2">{hoursSaved} <span className="text-2xl text-brand-200 font-normal">hours/yr</span></div><p className="text-sm text-brand-200">of personal time</p></div>
-                        <div className="pt-8 border-t border-brand-500"><p className="text-brand-100 font-medium mb-2">Potential Extra Revenue</p><div className="text-5xl font-bold text-white">${moneySaved}</div><p className="text-xs text-brand-200 mt-2">Based on $50/hr billable rate</p></div>
+                        <div className="mb-8">
+                            <p className="text-brand-100 font-medium mb-2">You could reclaim</p>
+                            <div className="text-6xl font-extrabold text-white mb-2">{hoursSaved} <span className="text-2xl text-brand-200 font-normal">hours/yr</span></div>
+                            <p className="text-sm text-brand-200">of personal time</p>
+                        </div>
+                        <div className="pt-8 border-t border-brand-500">
+                            <p className="text-brand-100 font-medium mb-2">Potential Extra Revenue</p>
+                            <div className="text-5xl font-bold text-white">${moneySaved}</div>
+                            <p className="text-xs text-brand-200 mt-2">Based on $50/hr billable rate</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -311,11 +445,26 @@ const BusinessModels = () => {
     return (
         <section className="bg-white py-32 w-full border-t border-slate-200 font-sans">
             <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-20"><h3 className="text-3xl md:text-4xl font-extrabold mb-6 text-slate-900">Built for every business model</h3><p className="text-slate-500 text-lg">Whether you are solo or scaling an agency, we have you covered.</p></div>
+                <div className="text-center mb-20">
+                    <h3 className="text-3xl md:text-4xl font-extrabold mb-6 text-slate-900">Built for every business model</h3>
+                    <p className="text-slate-500 text-lg">Whether you are solo or scaling an agency, we have you covered.</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group"><div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center text-brand-600 mb-8 group-hover:scale-110 transition-transform"><Map className="w-8 h-8" /></div><h4 className="text-2xl font-bold mb-4 text-slate-900">Mobile Notaries</h4><p className="text-slate-500 leading-relaxed">Run route-based signings, capture compliant entries on-site, and complete admin later from desktop.</p></div>
-                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group"><div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-8 group-hover:scale-110 transition-transform"><Briefcase className="w-8 h-8" /></div><h4 className="text-2xl font-bold mb-4 text-slate-900">Loan Signing Agents</h4><p className="text-slate-500 leading-relaxed">Manage high-volume closings with reliable documentation, invoicing, and audit-ready workflows.</p></div>
-                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group"><div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform"><Users2 className="w-8 h-8" /></div><h4 className="text-2xl font-bold mb-4 text-slate-900">Signing Agencies</h4><p className="text-slate-500 leading-relaxed">Coordinate team dispatch, centralize records, and scale operations with standardized processes.</p></div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group">
+                        <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center text-brand-600 mb-8 group-hover:scale-110 transition-transform"><Map className="w-8 h-8" /></div>
+                        <h4 className="text-2xl font-bold mb-4 text-slate-900">Mobile Notaries</h4>
+                        <p className="text-slate-500 leading-relaxed">Run route-based signings, capture compliant entries on-site, and complete admin later from desktop.</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group">
+                        <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-8 group-hover:scale-110 transition-transform"><Briefcase className="w-8 h-8" /></div>
+                        <h4 className="text-2xl font-bold mb-4 text-slate-900">Loan Signing Agents</h4>
+                        <p className="text-slate-500 leading-relaxed">Manage high-volume closings with reliable documentation, invoicing, and audit-ready workflows.</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-10 hover:bg-white hover:shadow-xl transition-all group">
+                        <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform"><Users2 className="w-8 h-8" /></div>
+                        <h4 className="text-2xl font-bold mb-4 text-slate-900">Signing Agencies</h4>
+                        <p className="text-slate-500 leading-relaxed">Coordinate team dispatch, centralize records, and scale operations with standardized processes.</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -569,7 +718,6 @@ export default function LandingPage({ onNavigate, onOpenLegal }) {
       <Pricing onSelect={() => onNavigate('signup')} />
       <FAQ />
       <Footer onNavigate={onNavigate} onOpenLegal={onOpenLegal} />
-      <PageControl />
     </>
   );
 }
