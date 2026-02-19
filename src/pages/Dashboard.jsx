@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
@@ -6,18 +6,18 @@ import {
   DollarSign, 
   MapPin, 
   Plus, 
-  Calendar as CalendarIcon, 
   ChevronRight, 
   Clock,
   TrendingUp,
   CheckCircle2,
-  MoreHorizontal,
   Bell,
   Search,
   ArrowUpRight,
   ArrowDownRight,
-  Filter,
-  Download
+  Download,
+  Target,
+  Zap,
+  Briefcase
 } from 'lucide-react';
 import { 
   Card, 
@@ -26,10 +26,12 @@ import {
   CardTitle, 
   Button, 
   Badge, 
-  Progress,
-  Select 
+  Select,
+  CircularProgress,
+  Skeleton
 } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
+import { useTheme } from '../context/ThemeContext';
 import { 
   AreaChart, 
   Area, 
@@ -37,15 +39,10 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
+  ResponsiveContainer
 } from 'recharts';
 
-// --- Mock Data ---
-
+// --- MOCK DATA ---
 const revenueData = [
   { name: 'Jan', amount: 2400, prev: 2100 },
   { name: 'Feb', amount: 1398, prev: 1800 },
@@ -56,74 +53,97 @@ const revenueData = [
   { name: 'Jul', amount: 4300, prev: 3800 },
 ];
 
-const serviceTypeData = [
-  { name: 'Loan Signing', value: 45, color: '#3b82f6' },
-  { name: 'General Notary', value: 30, color: '#10b981' },
-  { name: 'I-9 Verify', value: 15, color: '#8b5cf6' },
-  { name: 'Remote (RON)', value: 10, color: '#f59e0b' },
-];
-
 const initialAppointments = [
-  { id: 1, client: 'Sarah Johnson', type: 'Loan Signing', date: 'Today', time: '2:00 PM', status: 'upcoming', amount: 150, location: 'Downtown Office' },
+  { id: 1, client: 'Sarah Johnson', type: 'Loan Signing', date: 'Today', time: '2:00 PM', status: 'upcoming', amount: 150, location: 'Downtown' },
   { id: 2, client: 'TechCorp Inc', type: 'I-9 Verification', date: 'Today', time: '4:30 PM', status: 'upcoming', amount: 45, location: 'Remote' },
-  { id: 3, client: 'Michael Smith', type: 'Power of Attorney', date: 'Yesterday', time: '10:00 AM', status: 'completed', amount: 75, location: 'Client Home' },
-  { id: 4, client: 'Estate Realty', type: 'Refinance', date: 'Yesterday', time: '1:00 PM', status: 'completed', amount: 125, location: 'Title Office' },
+  { id: 3, client: 'Michael Smith', type: 'Power of Attorney', date: 'Yesterday', time: '10:00 AM', status: 'completed', amount: 75, location: 'North Hills' },
 ];
 
-// --- Sub-Components ---
+const recentActivity = [
+  { id: 1, text: 'Invoice #1024 paid by Estate Realty', time: '2h ago', type: 'money' },
+  { id: 2, text: 'New client "TechCorp" added', time: '5h ago', type: 'user' },
+  { id: 3, text: 'Mileage log exported for Q3', time: '1d ago', type: 'file' },
+];
 
-const StatsCard = ({ title, value, change, icon: Icon, trend, targetProgress }) => (
-  <Card className="overflow-hidden border-none shadow-sm hover:shadow-lg transition-shadow duration-300">
+// --- COMPONENTS ---
+
+const StatsCard = ({ title, value, change, icon: Icon, trend, loading }) => (
+  <Card className="border-none shadow-sm hover:shadow-lg dark:shadow-none dark:hover:bg-slate-700/50 transition-all duration-300">
     <CardContent className="p-6">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-          <Icon className="w-5 h-5 text-slate-600" />
+        <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
+          <Icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </div>
-        <Badge variant={trend === 'up' ? 'success' : trend === 'down' ? 'danger' : 'default'} className="flex items-center gap-1">
-          {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : trend === 'down' ? <ArrowDownRight className="w-3 h-3" /> : null}
-          {change}
-        </Badge>
+        {loading ? <Skeleton className="w-12 h-6" /> : (
+          <Badge variant={trend === 'up' ? 'success' : trend === 'down' ? 'danger' : 'default'} className="flex items-center gap-1">
+            {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : trend === 'down' ? <ArrowDownRight className="w-3 h-3" /> : null}
+            {change}
+          </Badge>
+        )}
       </div>
       <div>
-        <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
+        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{title}</p>
+        {loading ? <Skeleton className="w-24 h-8" /> : (
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{value}</h3>
+        )}
       </div>
-      {targetProgress && (
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span>Monthly Goal</span>
-            <span>{targetProgress}%</span>
-          </div>
-          <Progress value={targetProgress} className="h-1.5" indicatorClassName={trend === 'down' ? 'bg-red-500' : 'bg-blue-600'} />
-        </div>
-      )}
     </CardContent>
   </Card>
 );
 
+const WelcomeBanner = ({ name, count }) => {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  
+  return (
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl shadow-blue-500/20 mb-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-32 blur-3xl"></div>
+      <div className="relative z-10">
+        <h1 className="text-3xl font-bold mb-2">{greeting}, {name}.</h1>
+        <p className="text-blue-100 text-lg max-w-2xl">
+          You have <span className="font-semibold bg-white/20 px-2 py-0.5 rounded">{count} appointments</span> scheduled for today. 
+          Your revenue is trending <span className="font-semibold text-emerald-300">up 12.5%</span> this month.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 text-white text-xs p-3 rounded-lg shadow-xl border border-slate-700">
+      <div className="bg-slate-900 dark:bg-slate-800 text-white text-xs p-3 rounded-lg shadow-xl border border-slate-700">
         <p className="font-semibold mb-1">{label}</p>
         <p className="text-blue-200">Revenue: <span className="text-white font-bold ml-1">${payload[0].value}</span></p>
-        <p className="text-slate-400">Prev Year: <span className="text-slate-300 ml-1">${payload[1].value}</span></p>
       </div>
     );
   }
   return null;
 };
 
-// --- Main Dashboard Component ---
+// --- MAIN PAGE ---
 
 const Dashboard = () => {
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [appointments, setAppointments] = useState(initialAppointments);
-  const [timeRange, setTimeRange] = useState('This Year');
+  const { theme } = useTheme();
 
-  // Derived Logic
+  // Simulate data fetching
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Logic
   const totalRevenue = 12450 + appointments.reduce((sum, apt) => sum + (typeof apt.amount === 'number' ? apt.amount : 0), 0);
   const upcomingCount = appointments.filter(a => a.status === 'upcoming').length;
+  const avgFee = Math.round(totalRevenue / (48 + appointments.length)); // Mock calculation
+  
+  // Goal Calculation
+  const monthlyGoal = 15000;
+  const currentMonthRevenue = 9800; // Mock current month
+  const goalPercent = Math.min(100, Math.round((currentMonthRevenue / monthlyGoal) * 100));
 
   const handleSaveAppointment = (data) => {
     const newApt = {
@@ -139,323 +159,195 @@ const Dashboard = () => {
     setAppointments([newApt, ...appointments]);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
+  const chartStroke = theme === 'dark' ? '#3b82f6' : '#2563eb';
+  const gridStroke = theme === 'dark' ? '#334155' : '#e2e8f0';
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-20">
+    <div className="min-h-screen pb-20">
       <AppointmentModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSave={handleSaveAppointment}
       />
 
-      {/* Top Navigation / Header */}
+      {/* Header Controls */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-slate-500 mt-1 flex items-center gap-2">
-            <span>Overview for Oct 24, 2025</span>
-            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-            <span className="text-blue-600 font-medium">{upcomingCount} appointments pending</span>
-          </p>
+           {/* Breadcrumbs or Date could go here */}
+           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+           </p>
         </div>
-        
         <div className="flex items-center gap-3">
           <div className="hidden md:flex relative">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search clients..." 
-              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all w-64 shadow-sm"
-            />
+            <input type="text" placeholder="Search..." className="pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:text-white w-64 shadow-sm" />
           </div>
           <Button variant="secondary" size="icon" className="relative">
-            <Bell className="w-5 h-5 text-slate-600" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
           </Button>
-          <Button onClick={() => setIsModalOpen(true)} className="shadow-blue-500/20 shadow-lg">
+          <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-blue-500/20">
             <Plus className="w-4 h-4 mr-2" />
             New Appointment
           </Button>
         </div>
       </header>
 
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-8"
-      >
-        {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <motion.div variants={itemVariants}>
-            <StatsCard 
-              title="Total Revenue" 
-              value={`$${totalRevenue.toLocaleString()}`} 
-              change="12.5%" 
-              trend="up"
-              icon={DollarSign} 
-              targetProgress={78}
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <StatsCard 
-              title="Signings" 
-              value="48" 
-              change="4.2%" 
-              trend="up"
-              icon={FileSignature} 
-              targetProgress={65}
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <StatsCard 
-              title="Mileage (YTD)" 
-              value="842 mi" 
-              change="0.8%" 
-              trend="down"
-              icon={MapPin} 
-              targetProgress={42}
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <StatsCard 
-              title="Active Clients" 
-              value="124" 
-              change="8.1%" 
-              trend="up"
-              icon={Users} 
-            />
-          </motion.div>
-        </div>
+      {loading ? (
+        <Skeleton className="w-full h-48 mb-8 rounded-2xl" />
+      ) : (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <WelcomeBanner name="Dain" count={upcomingCount} />
+        </motion.div>
+      )}
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Revenue Chart */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <Card className="h-full">
-              <CardHeader>
-                <div>
-                  <CardTitle>Financial Performance</CardTitle>
-                  <p className="text-sm text-slate-500">Income vs Previous Year</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select 
-                    options={[{label: 'This Year', value: 'year'}, {label: 'Last 6 Months', value: '6m'}]}
-                    value={timeRange}
-                    onChange={(e) => setTimeRange(e.target.value)}
-                    className="w-36"
-                  />
-                  <Button variant="secondary" size="icon">
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[320px] w-full">
+      {/* KPI Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} change="12.5%" trend="up" icon={DollarSign} loading={loading} />
+        <StatsCard title="Signings" value="52" change="4.2%" trend="up" icon={FileSignature} loading={loading} />
+        <StatsCard title="Avg. Fee" value={`$${avgFee}`} change="1.8%" trend="up" icon={Briefcase} loading={loading} />
+        <StatsCard title="Mileage Deduct." value="$564" change="0.8%" trend="down" icon={MapPin} loading={loading} />
+      </div>
+
+      {/* Main Content Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Charts & Tables */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Chart */}
+          <Card className="h-[400px]">
+            <CardHeader>
+              <div>
+                <CardTitle>Revenue Velocity</CardTitle>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Financial performance over time</p>
+              </div>
+              <Select options={[{label: 'This Year', value: 'year'}]} className="w-32" />
+            </CardHeader>
+            <CardContent>
+              {loading ? <Skeleton className="w-full h-[300px]" /> : (
+                <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor={chartStroke} stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor={chartStroke} stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis 
-                        dataKey="name" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fill: '#64748b', fontSize: 12 }} 
-                        dy={10} 
-                      />
-                      <YAxis 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fill: '#64748b', fontSize: 12 }} 
-                        tickFormatter={(value) => `$${value}`} 
-                      />
-                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="amount" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="prev" 
-                        stroke="#cbd5e1" 
-                        strokeWidth={2}
-                        strokeDasharray="4 4"
-                        fill="transparent"
-                      />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area type="monotone" dataKey="amount" stroke={chartStroke} strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Service Distribution Chart */}
-          <motion.div variants={itemVariants}>
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Service Mix</CardTitle>
-                <Button variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center">
-                <div className="h-[220px] w-full relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={serviceTypeData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {serviceTypeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Center Text Overlay */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-2xl font-bold text-slate-800">100%</span>
-                    <span className="text-xs text-slate-500 uppercase font-medium">Distribution</span>
-                  </div>
-                </div>
-                <div className="w-full mt-6 space-y-3">
-                  {serviceTypeData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
-                        <span className="text-slate-600">{item.name}</span>
-                      </div>
-                      <span className="font-semibold text-slate-900">{item.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Bottom Section: Recent Activity & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Detailed Appointment List */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <CardTitle>Recent Appointments</CardTitle>
-                  <Badge variant="blue">{appointments.length} Total</Badge>
-                </div>
-                <Button variant="ghost" size="sm" className="text-blue-600 font-medium hover:bg-blue-50">
-                  View All <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-slate-100">
-                  {appointments.map((apt) => (
-                    <div key={apt.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 transition-colors group cursor-pointer">
-                      <div className="flex items-start gap-4 mb-4 sm:mb-0">
-                        <div className={`p-3 rounded-xl transition-all duration-300 ${
+          {/* Appointments Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Today's Schedule</CardTitle>
+              <Button variant="ghost" size="sm">View Calendar</Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                {loading ? (
+                  [1,2,3].map(i => <div key={i} className="p-6"><Skeleton className="w-full h-12" /></div>)
+                ) : (
+                  appointments.slice(0, 5).map((apt) => (
+                    <div key={apt.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                      <div className="flex items-start gap-4">
+                        <div className={`p-3 rounded-xl ${
                           apt.status === 'upcoming' 
-                            ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-md' 
-                            : 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white group-hover:shadow-md'
+                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                            : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
                         }`}>
-                          {apt.status === 'upcoming' ? <Clock className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                          <Clock className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{apt.client}</h4>
-                          <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
-                            <span>{apt.type}</span>
+                          <h4 className="font-semibold text-slate-900 dark:text-white">{apt.client}</h4>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+                            <span className="font-medium">{apt.time}</span>
                             <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {apt.location}</span>
+                            <span>{apt.type}</span>
                           </p>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                        <div className="text-right">
-                          <p className="font-bold text-slate-900">${apt.amount}</p>
-                          <p className="text-xs text-slate-500">{apt.date}</p>
-                        </div>
-                        <Badge variant={apt.status === 'upcoming' ? 'blue' : 'success'} className="px-3 py-1">
-                          {apt.status === 'upcoming' ? 'Scheduled' : 'Completed'}
-                        </Badge>
-                      </div>
+                      <Badge variant={apt.status === 'upcoming' ? 'blue' : 'success'} className="mt-4 sm:mt-0">
+                        {apt.status === 'upcoming' ? 'Scheduled' : 'Completed'}
+                      </Badge>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Smart Quick Actions */}
-          <motion.div variants={itemVariants} className="space-y-6">
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-none shadow-xl">
-              <CardHeader className="border-slate-700">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <div className="p-1 bg-blue-500 rounded"><Plus className="w-4 h-4 text-white" /></div>
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800/50 hover:bg-blue-600 border border-slate-700 hover:border-blue-500 transition-all group">
-                  <span className="font-medium">New Appointment</span>
-                  <div className="bg-slate-700 p-1.5 rounded-lg group-hover:bg-white/20 transition-colors">
-                    <Clock className="w-4 h-4 text-slate-300 group-hover:text-white" />
-                  </div>
-                </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800/50 hover:bg-purple-600 border border-slate-700 hover:border-purple-500 transition-all group">
-                  <span className="font-medium">Create Invoice</span>
-                  <div className="bg-slate-700 p-1.5 rounded-lg group-hover:bg-white/20 transition-colors">
-                    <FileSignature className="w-4 h-4 text-slate-300 group-hover:text-white" />
-                  </div>
-                </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800/50 hover:bg-emerald-600 border border-slate-700 hover:border-emerald-500 transition-all group">
-                  <span className="font-medium">Log Mileage</span>
-                  <div className="bg-slate-700 p-1.5 rounded-lg group-hover:bg-white/20 transition-colors">
-                    <MapPin className="w-4 h-4 text-slate-300 group-hover:text-white" />
-                  </div>
-                </button>
-              </CardContent>
-            </Card>
-
-            {/* Mini Marketing / Tip Card */}
-             <div className="rounded-xl p-6 border border-blue-100 bg-white relative overflow-hidden group">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                <h4 className="font-semibold text-slate-900 mb-2 relative z-10">Tax Tip 💡</h4>
-                <p className="text-sm text-slate-600 mb-4 relative z-10">You've driven 842 miles this year. That's a <strong>$564 deduction</strong>. Keep logging!</p>
-                <Button variant="outline" size="sm" className="w-full relative z-10 bg-white hover:bg-blue-50 hover:border-blue-200">View Tax Report</Button>
-            </div>
-          </motion.div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
         </div>
-      </motion.div>
+
+        {/* Right Column: Widgets */}
+        <div className="space-y-8">
+          
+          {/* Business Health / Goal Widget */}
+          <Card>
+            <CardHeader><CardTitle>Business Pulse</CardTitle></CardHeader>
+            <CardContent className="flex flex-col items-center">
+              {loading ? <Skeleton className="w-32 h-32 rounded-full" /> : (
+                <>
+                  <CircularProgress value={goalPercent} size={180} strokeWidth={12}>
+                    <div className="text-center">
+                      <span className="text-3xl font-bold text-slate-900 dark:text-white">{goalPercent}%</span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-medium">of Goal</p>
+                    </div>
+                  </CircularProgress>
+                  <div className="mt-6 text-center">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Monthly Target: <span className="font-semibold text-slate-900 dark:text-white">$15,000</span></p>
+                    <p className="text-xs text-emerald-500 mt-1 flex items-center justify-center gap-1">
+                      <TrendingUp className="w-3 h-3" /> On track to exceed
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent System Activity Feed */}
+          <Card>
+            <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <div className="px-6 pb-6 space-y-6">
+                {recentActivity.map((act, i) => (
+                  <div key={act.id} className="relative pl-6 border-l border-slate-200 dark:border-slate-700 last:border-0">
+                    <div className={`absolute -left-1.5 top-1 w-3 h-3 rounded-full border-2 border-white dark:border-slate-800 ${
+                      act.type === 'money' ? 'bg-emerald-500' : act.type === 'user' ? 'bg-blue-500' : 'bg-slate-400'
+                    }`}></div>
+                    <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{act.text}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{act.time}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Smart Action: Tax/Mileage */}
+           <div className="bg-slate-900 dark:bg-black rounded-xl p-6 text-white relative overflow-hidden">
+             <div className="relative z-10">
+               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+                 <Target className="w-6 h-6 text-white" />
+               </div>
+               <h4 className="font-bold text-lg mb-2">Q4 Goals</h4>
+               <p className="text-slate-300 text-sm mb-4">You need 12 more signings to hit your quarterly bonus target.</p>
+               <Button size="sm" className="w-full bg-white text-slate-900 hover:bg-slate-100 dark:bg-slate-800 dark:text-white">View Targets</Button>
+             </div>
+           </div>
+
+        </div>
+      </div>
     </div>
   );
 };
