@@ -549,7 +549,9 @@ const Dashboard = () => {
            </div>
         </div>
       </div>
-
+    </div>
+  );
+};
 
 export default Dashboard;
 EOF

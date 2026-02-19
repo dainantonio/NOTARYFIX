@@ -6,7 +6,6 @@ import {
   DollarSign, 
   MapPin, 
   Plus, 
-  ChevronRight, 
   Clock,
   TrendingUp,
   CheckCircle2,
@@ -14,10 +13,10 @@ import {
   Search,
   ArrowUpRight,
   ArrowDownRight,
-  Download,
-  Target,
+  Sparkles,
   Zap,
-  Briefcase
+  Award,
+  Wallet
 } from 'lucide-react';
 import { 
   Card, 
@@ -28,7 +27,8 @@ import {
   Badge, 
   Select,
   CircularProgress,
-  Skeleton
+  Skeleton,
+  Progress
 } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useTheme } from '../context/ThemeContext';
@@ -42,7 +42,6 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-// --- MOCK DATA ---
 const revenueData = [
   { name: 'Jan', amount: 2400, prev: 2100 },
   { name: 'Feb', amount: 1398, prev: 1800 },
@@ -64,8 +63,6 @@ const recentActivity = [
   { id: 2, text: 'New client "TechCorp" added', time: '5h ago', type: 'user' },
   { id: 3, text: 'Mileage log exported for Q3', time: '1d ago', type: 'file' },
 ];
-
-// --- COMPONENTS ---
 
 const StatsCard = ({ title, value, change, icon: Icon, trend, loading }) => (
   <Card className="border-none shadow-sm hover:shadow-lg dark:shadow-none dark:hover:bg-slate-700/50 transition-all duration-300">
@@ -91,21 +88,50 @@ const StatsCard = ({ title, value, change, icon: Icon, trend, loading }) => (
   </Card>
 );
 
-const WelcomeBanner = ({ name, count }) => {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+const AIInsightWidget = ({ loading }) => {
+  if (loading) return <Skeleton className="w-full h-32 rounded-xl" />;
   
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl shadow-blue-500/20 mb-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-32 blur-3xl"></div>
-      <div className="relative z-10">
-        <h1 className="text-3xl font-bold mb-2">{greeting}, {name}.</h1>
-        <p className="text-blue-100 text-lg max-w-2xl">
-          You have <span className="font-semibold bg-white/20 px-2 py-0.5 rounded">{count} appointments</span> scheduled for today. 
-          Your revenue is trending <span className="font-semibold text-emerald-300">up 12.5%</span> this month.
-        </p>
+    <Card className="bg-gradient-to-r from-violet-600 to-indigo-600 border-none text-white relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-3 opacity-20">
+        <Sparkles className="w-24 h-24" />
       </div>
-    </div>
+      <CardContent className="relative z-10 text-white">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-4 h-4 text-yellow-300" />
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-100">AI Insight</span>
+        </div>
+        <h4 className="text-lg font-bold mb-1">Revenue spike detected on Fridays</h4>
+        <p className="text-indigo-100 text-sm mb-3">
+          Your data shows a 40% increase in Loan Signings at the end of the week. Consider opening more Friday afternoon slots.
+        </p>
+        <div className="flex gap-2">
+           <Button size="xs" className="bg-white/20 hover:bg-white/30 text-white border-0">View Report</Button>
+           <Button size="xs" className="bg-transparent hover:bg-white/10 text-white border-0">Dismiss</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const SetupProgress = ({ loading }) => {
+  if (loading) return <Skeleton className="w-full h-24 rounded-xl" />;
+
+  return (
+    <Card className="border-l-4 border-l-blue-500">
+      <CardContent className="py-4">
+        <div className="flex justify-between items-center mb-2">
+          <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Zap className="w-4 h-4 text-blue-500" /> Setup Progress
+          </h4>
+          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">75%</span>
+        </div>
+        <Progress value={75} className="h-2 mb-2" />
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Almost there! Add your first <span className="text-slate-900 dark:text-white font-medium">Invoice</span> to reach 100%.
+        </p>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -121,28 +147,27 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-// --- MAIN PAGE ---
-
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [appointments, setAppointments] = useState(initialAppointments);
   const { theme } = useTheme();
 
-  // Simulate data fetching
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Logic
   const totalRevenue = 12450 + appointments.reduce((sum, apt) => sum + (typeof apt.amount === 'number' ? apt.amount : 0), 0);
   const upcomingCount = appointments.filter(a => a.status === 'upcoming').length;
-  const avgFee = Math.round(totalRevenue / (48 + appointments.length)); // Mock calculation
   
-  // Goal Calculation
+  // New Metric Calculation
+  const estimatedExpense = 1200; // Mock overhead
+  const netProfit = totalRevenue - estimatedExpense;
+  const profitMargin = Math.round((netProfit / totalRevenue) * 100);
+  
   const monthlyGoal = 15000;
-  const currentMonthRevenue = 9800; // Mock current month
+  const currentMonthRevenue = 9800;
   const goalPercent = Math.min(100, Math.round((currentMonthRevenue / monthlyGoal) * 100));
 
   const handleSaveAppointment = (data) => {
@@ -170,19 +195,14 @@ const Dashboard = () => {
         onSave={handleSaveAppointment}
       />
 
-      {/* Header Controls */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-           {/* Breadcrumbs or Date could go here */}
            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
            </p>
+           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-            <input type="text" placeholder="Search..." className="pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:text-white w-64 shadow-sm" />
-          </div>
           <Button variant="secondary" size="icon" className="relative">
             <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
@@ -194,29 +214,27 @@ const Dashboard = () => {
         </div>
       </header>
 
-      {loading ? (
-        <Skeleton className="w-full h-48 mb-8 rounded-2xl" />
-      ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <WelcomeBanner name="Dain" count={upcomingCount} />
-        </motion.div>
-      )}
+      {/* TOP ROW WIDGETS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="md:col-span-2">
+           <AIInsightWidget loading={loading} />
+        </div>
+        <div>
+           <SetupProgress loading={loading} />
+        </div>
+      </div>
 
-      {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} change="12.5%" trend="up" icon={DollarSign} loading={loading} />
+        {/* REPLACED SIGNINGS with NET PROFIT */}
+        <StatsCard title="Net Profit (Est)" value={`$${netProfit.toLocaleString()}`} change={`${profitMargin}% Margin`} trend="up" icon={Wallet} loading={loading} />
         <StatsCard title="Signings" value="52" change="4.2%" trend="up" icon={FileSignature} loading={loading} />
-        <StatsCard title="Avg. Fee" value={`$${avgFee}`} change="1.8%" trend="up" icon={Briefcase} loading={loading} />
         <StatsCard title="Mileage Deduct." value="$564" change="0.8%" trend="down" icon={MapPin} loading={loading} />
       </div>
 
-      {/* Main Content Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Charts & Tables */}
         <div className="lg:col-span-2 space-y-8">
-          
-          {/* Chart */}
           <Card className="h-[400px]">
             <CardHeader>
               <div>
@@ -248,7 +266,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Appointments Table */}
           <Card>
             <CardHeader>
               <CardTitle>Today's Schedule</CardTitle>
@@ -287,13 +304,10 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-
         </div>
 
-        {/* Right Column: Widgets */}
         <div className="space-y-8">
           
-          {/* Business Health / Goal Widget */}
           <Card>
             <CardHeader><CardTitle>Business Pulse</CardTitle></CardHeader>
             <CardContent className="flex flex-col items-center">
@@ -316,7 +330,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Recent System Activity Feed */}
           <Card>
             <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
             <CardContent className="p-0">
@@ -334,18 +347,15 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Smart Action: Tax/Mileage */}
            <div className="bg-slate-900 dark:bg-black rounded-xl p-6 text-white relative overflow-hidden">
              <div className="relative z-10">
                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
-                 <Target className="w-6 h-6 text-white" />
+                 <Award className="w-6 h-6 text-white" />
                </div>
-               <h4 className="font-bold text-lg mb-2">Q4 Goals</h4>
-               <p className="text-slate-300 text-sm mb-4">You need 12 more signings to hit your quarterly bonus target.</p>
-               <Button size="sm" className="w-full bg-white text-slate-900 hover:bg-slate-100 dark:bg-slate-800 dark:text-white">View Targets</Button>
+               <h4 className="font-bold text-lg mb-2">Pro Tip</h4>
+               <p className="text-slate-300 text-sm mb-4">Press <kbd className="bg-white/20 px-1 py-0.5 rounded text-white font-mono">Cmd + K</kbd> to search or take quick actions.</p>
              </div>
            </div>
-
         </div>
       </div>
     </div>
