@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -77,6 +77,8 @@ const businessModels = [
 ];
 
 const Landing = () => {
+  const [openFaq, setOpenFaq] = useState(0);
+
   return (
     <div className="min-h-screen bg-[#08152f] text-white">
       <div className="border-b border-white/10 bg-[#050e20]">
