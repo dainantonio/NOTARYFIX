@@ -16,7 +16,7 @@ const AppLayout = ({ children }) => {
   const publicRoutes = ['/', '/auth', '/legal'];
   
   if (publicRoutes.includes(location.pathname)) {
-    return children;
+    return <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">{children}</div>;
   }
 
   return <Layout>{children}</Layout>;
