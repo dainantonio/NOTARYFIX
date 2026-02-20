@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Schedule from './pages/Schedule';
@@ -16,7 +16,7 @@ const AppLayout = ({ children }) => {
   const publicRoutes = ['/', '/auth', '/legal'];
   
   if (publicRoutes.includes(location.pathname)) {
-    return <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">{children}</div>;
+    return children;
   }
 
   return <Layout>{children}</Layout>;
