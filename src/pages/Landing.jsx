@@ -15,8 +15,6 @@ import {
   Building2,
   Users,
   ArrowRight,
-  Check,
-  ChevronDown,
 } from 'lucide-react';
 
 const topLinks = ['Features', 'How it works', 'Pricing', 'FAQ'];
@@ -78,50 +76,6 @@ const businessModels = [
   },
 ];
 
-const pricingTiers = [
-  {
-    name: 'Starter',
-    price: '$29',
-    subtitle: 'Best for solo notaries getting organized',
-    features: ['Up to 30 appointments/month', 'Basic invoicing + payment tracking', 'Mileage and expense logs'],
-    cta: 'Start Starter',
-  },
-  {
-    name: 'Pro',
-    price: '$79',
-    subtitle: 'For high-volume LSAs and growing operators',
-    features: ['Unlimited appointments', 'AI compliance coach + workflow tools', 'Advanced revenue dashboard + exports'],
-    cta: 'Start Pro',
-    highlighted: true,
-  },
-  {
-    name: 'Agency',
-    price: '$199',
-    subtitle: 'For teams, dispatching, and shared operations',
-    features: ['Multi-user team workspace', 'Centralized records and controls', 'Priority support + onboarding'],
-    cta: 'Contact Sales',
-  },
-];
-
-const faqItems = [
-  {
-    question: 'Can I switch plans later?',
-    answer: 'Yes. You can upgrade or downgrade anytime and your data stays intact.',
-  },
-  {
-    question: 'Does NotaryOS support all 50 states?',
-    answer: 'Yes. Compliance prompts and guardrails are designed for 50-state notary workflows.',
-  },
-  {
-    question: 'Do you offer a free trial?',
-    answer: 'Yes. Every plan starts with a free trial so you can test your full workflow before committing.',
-  },
-  {
-    question: 'Can agencies manage multiple notaries?',
-    answer: 'Yes. The Agency plan includes multi-user access, shared records, and dispatch-friendly operations.',
-  },
-];
-
 const Landing = () => {
   const [openFaq, setOpenFaq] = useState(0);
 
@@ -141,11 +95,7 @@ const Landing = () => {
 
           <div className="hidden items-center gap-6 text-sm text-slate-200 md:flex">
             {topLinks.map((item) => (
-              <a
-                key={item}
-                href={item === 'Pricing' ? '#pricing' : item === 'FAQ' ? '#faq' : '#'}
-                className="transition hover:text-white"
-              >
+              <a key={item} href="#" className="transition hover:text-white">
                 {item}
               </a>
             ))}
@@ -404,80 +354,6 @@ const Landing = () => {
           >
             Start Free Trial <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
-      </section>
-
-      <section id="pricing" className="border-y border-white/10 bg-[#07122a] py-16">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-center text-5xl font-extrabold">Simple pricing that scales with you</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-slate-300">
-            Pick the plan that matches your stage now, then upgrade as your notary business grows.
-          </p>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={`rounded-2xl border p-6 text-left ${
-                  tier.highlighted
-                    ? 'border-cyan-300 bg-[#10284f] shadow-lg shadow-cyan-500/20'
-                    : 'border-slate-700 bg-[#0d1d3c]'
-                }`}
-              >
-                <p className="text-2xl font-bold">{tier.name}</p>
-                <p className="mt-2 text-5xl font-black">
-                  {tier.price}
-                  <span className="text-base font-medium text-slate-300">/mo</span>
-                </p>
-                <p className="mt-3 text-sm text-slate-300">{tier.subtitle}</p>
-
-                <ul className="mt-6 space-y-3 text-sm">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-slate-200">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className={`mt-8 w-full rounded-lg px-4 py-3 text-sm font-bold ${
-                    tier.highlighted
-                      ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-[#03152d]'
-                      : 'border border-slate-500 text-slate-100 hover:border-slate-300'
-                  }`}
-                >
-                  {tier.cta}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="faq" className="mx-auto max-w-4xl px-6 py-16">
-        <h2 className="text-center text-5xl font-extrabold">FAQ</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-slate-300">
-          Quick answers to common questions before you start your trial.
-        </p>
-
-        <div className="mt-10 space-y-3">
-          {faqItems.map((item, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div key={item.question} className="rounded-xl border border-slate-600 bg-[#0d1d3c]">
-                <button
-                  className="flex w-full items-center justify-between px-5 py-4 text-left"
-                  onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-                  aria-expanded={isOpen}
-                >
-                  <span className="font-semibold">{item.question}</span>
-                  <ChevronDown className={`h-5 w-5 text-slate-300 transition ${isOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isOpen && <div className="px-5 pb-5 text-sm text-slate-300">{item.answer}</div>}
-              </div>
-            );
-          })}
         </div>
       </section>
     </div>
