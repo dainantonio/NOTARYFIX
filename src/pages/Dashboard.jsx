@@ -36,6 +36,33 @@ const revenueData = [
   { name: 'Jul', amount: 4300 },
 ];
 
+const DASHBOARD_PROFILES = {
+  owner: {
+    label: 'Owner View',
+    heroSubtitle: 'Executive visibility on growth, profit, and strategic bottlenecks.',
+    primaryKpi: { title: 'Net Profit', accent: 'purple' },
+    quickActions: [
+      { label: 'Create Appointment', icon: FileSignature, action: 'newAppointment', variant: 'primary' },
+      { label: 'Open Invoices', icon: BarChart3, action: 'invoices', variant: 'secondary' },
+      { label: 'Open Clients', icon: Users, action: 'clients', variant: 'secondary' },
+      { label: 'Business Settings', icon: MapPin, action: 'settings', variant: 'secondary' },
+    ],
+    proTip: 'Owner focus: review margin trends daily and clear pending invoices before end-of-week.',
+  },
+  operator: {
+    label: 'Operator View',
+    heroSubtitle: 'Execution-focused workflow for scheduling, fulfillment, and same-day actions.',
+    primaryKpi: { title: 'Upcoming Signings', accent: 'orange' },
+    quickActions: [
+      { label: 'Create Appointment', icon: FileSignature, action: 'newAppointment', variant: 'primary' },
+      { label: 'Open Calendar', icon: CalendarClock, action: 'schedule', variant: 'secondary' },
+      { label: 'Open Clients', icon: Users, action: 'clients', variant: 'secondary' },
+      { label: 'Open Invoices', icon: BarChart3, action: 'invoices', variant: 'secondary' },
+    ],
+    proTip: 'Operator focus: block similar service types together to reduce travel/context-switching.',
+  },
+};
+
 const StatsCard = ({ title, value, change, icon: Icon, trend, loading, accent = 'blue' }) => {
   const accentStyles = {
     blue: 'from-blue-500 to-blue-600',
@@ -106,6 +133,11 @@ const Dashboard = () => {
     if (typeof window === 'undefined') return 'area';
     return localStorage.getItem('dashboard_chart_type') || 'area';
   });
+  const [dashboardRole, setDashboardRole] = useState(() => {
+    if (typeof window === 'undefined') return 'owner';
+    const saved = localStorage.getItem('dashboard_role_profile');
+    return saved && DASHBOARD_PROFILES[saved] ? saved : 'owner';
+  });
   const [setupChecklist, setSetupChecklist] = useState([
     { id: 'profile', label: 'Complete business profile', done: true },
     { id: 'client', label: 'Add first client', done: true },
@@ -147,6 +179,7 @@ const Dashboard = () => {
     () => data.appointments.filter((apt) => apt.status === 'upcoming').slice(0, 5),
     [data.appointments],
   );
+  const activeProfile = DASHBOARD_PROFILES[dashboardRole] || DASHBOARD_PROFILES.owner;
 
   const handleSaveAppointment = (formData) => {
     addAppointment({
@@ -181,6 +214,19 @@ const Dashboard = () => {
     if (typeof window !== 'undefined') localStorage.setItem('dashboard_chart_type', value);
   };
 
+  const handleRoleProfileChange = (value) => {
+    setDashboardRole(value);
+    if (typeof window !== 'undefined') localStorage.setItem('dashboard_role_profile', value);
+  };
+
+  const runQuickAction = (action) => {
+    if (action === 'newAppointment') return setIsModalOpen(true);
+    if (action === 'schedule') return navigate('/schedule');
+    if (action === 'clients') return navigate('/clients');
+    if (action === 'invoices') return navigate('/invoices');
+    if (action === 'settings') return navigate('/settings');
+  };
+
   const chartStroke = theme === 'dark' ? '#60a5fa' : '#2563eb';
   const gridStroke = theme === 'dark' ? '#334155' : '#e2e8f0';
 
@@ -194,9 +240,15 @@ const Dashboard = () => {
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Enterprise Command Center</p>
               <h1 className="mt-1 text-3xl font-bold tracking-tight">Good {new Date().getHours() >= 12 ? 'afternoon' : 'morning'}, {data.settings.name.split(' ')[0]}</h1>
-              <p className="mt-1 text-sm text-slate-200">Premium operations dashboard designed for high-volume notary teams.</p>
+              <p className="mt-1 text-sm text-slate-200">{activeProfile.heroSubtitle}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={dashboardRole}
+                onChange={(e) => handleRoleProfileChange(e.target.value)}
+                options={Object.entries(DASHBOARD_PROFILES).map(([value, profile]) => ({ value, label: profile.label }))}
+                className="w-40 border-white/20 bg-white/10 text-white"
+              />
               <div className="hidden items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white/90 md:flex">
                 <Search className="h-4 w-4" /> Search dashboard
               </div>
@@ -215,6 +267,16 @@ const Dashboard = () => {
           <StatsCard title="Upcoming Signings" value={`${upcomingCount}`} change="3 today" trend="up" icon={CalendarClock} loading={loading} accent="orange" />
           <StatsCard title="Net Profit" value={`$${netProfit.toLocaleString()}`} change={`${profitMargin}% margin`} trend="up" icon={Wallet} loading={loading} accent="purple" />
         </div>
+
+        <Card className="border-slate-200/70 dark:border-slate-700">
+          <CardContent className="flex items-center justify-between p-4 text-sm">
+            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+              <Badge variant="blue">Profile</Badge>
+              <span>{activeProfile.label}</span>
+            </div>
+            <p className="text-slate-500 dark:text-slate-400">Saved automatically for this browser.</p>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <section className="space-y-6 xl:col-span-8">
@@ -332,10 +394,14 @@ const Dashboard = () => {
             <Card className="border-slate-200/70 dark:border-slate-700">
               <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full justify-start" onClick={() => setIsModalOpen(true)}><FileSignature className="mr-2 h-4 w-4" /> Create Appointment</Button>
-                <Button className="w-full justify-start" variant="secondary" onClick={() => navigate('/clients')}><Users className="mr-2 h-4 w-4" /> Open Clients</Button>
-                <Button className="w-full justify-start" variant="secondary" onClick={() => navigate('/invoices')}><BarChart3 className="mr-2 h-4 w-4" /> View Invoices</Button>
-                <Button className="w-full justify-start" variant="secondary" onClick={() => navigate('/settings')}><MapPin className="mr-2 h-4 w-4" /> Business Settings</Button>
+                {activeProfile.quickActions.map((actionItem) => {
+                  const ActionIcon = actionItem.icon;
+                  return (
+                    <Button key={actionItem.label} className="w-full justify-start" variant={actionItem.variant === 'primary' ? 'default' : 'secondary'} onClick={() => runQuickAction(actionItem.action)}>
+                      <ActionIcon className="mr-2 h-4 w-4" /> {actionItem.label}
+                    </Button>
+                  );
+                })}
               </CardContent>
             </Card>
 
@@ -343,7 +409,7 @@ const Dashboard = () => {
               <CardContent className="p-6">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20"><Award className="h-6 w-6" /></div>
                 <h4 className="mb-2 text-lg font-bold">Premium Pro Tip</h4>
-                <p className="mb-4 text-sm text-indigo-100">Use <kbd className="rounded bg-white/20 px-1 py-0.5 font-mono text-white">Cmd/Ctrl + K</kbd> to jump directly to key workflows.</p>
+                <p className="mb-4 text-sm text-indigo-100">{activeProfile.proTip}</p>
                 <Button size="sm" className="bg-white/20 text-white hover:bg-white/30" onClick={() => navigate('/clients')}>Open Command Path</Button>
               </CardContent>
             </Card>
