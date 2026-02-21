@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { 
-  Plus, Download, CheckCircle2, Clock, AlertCircle, LayoutGrid, 
-  List as ListIcon, X, DollarSign, ChevronRight 
+import {
+  Plus, Download, CheckCircle2, Clock, AlertCircle, LayoutGrid,
+  List as ListIcon, X, DollarSign, ChevronRight, Wand2, ScanLine
 } from 'lucide-react';
 
 // --- UTILS ---
@@ -136,13 +136,35 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
   const { data } = useData();
   const clientOptions = (data?.clients || []).map(c => ({ label: c.name, value: c.name }));
 
-  const [formData, setFormData] = useState({ 
-    client: clientOptions.length > 0 ? clientOptions[0].value : '', 
-    amount: '', 
-    due: '' 
+  const [formData, setFormData] = useState({
+    client: clientOptions.length > 0 ? clientOptions[0].value : '',
+    amount: '',
+    due: ''
   });
+  const [smartInput, setSmartInput] = useState('');
 
   if (!isOpen) return null;
+
+  const applySmartFill = (text) => {
+    const source = text.trim();
+    if (!source) return;
+    const amount = source.match(/\$?\s*(\d+(?:\.\d{1,2})?)/)?.[1] || '';
+    const due = source.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
+    const matchedClient = clientOptions.find((opt) => source.toLowerCase().includes(opt.label.toLowerCase()));
+
+    setFormData((prev) => ({
+      ...prev,
+      amount: prev.amount || amount,
+      due: prev.due || due,
+      client: matchedClient?.value || prev.client,
+    }));
+  };
+
+  const handleReceiptScan = async (file) => {
+    if (!file) return;
+    const pseudoExtract = file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, '');
+    applySmartFill(pseudoExtract);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -166,6 +188,17 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><X className="w-5 h-5" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
+            <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste invoice details (client, amount, due date)" />
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button type="button" size="sm" variant="secondary" onClick={() => applySmartFill(smartInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">
+                <ScanLine className="h-3.5 w-3.5" /> Scan receipt
+                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleReceiptScan(e.target.files?.[0])} />
+              </label>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Select Client</Label>
             {clientOptions.length > 0 ? (
