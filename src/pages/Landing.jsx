@@ -50,13 +50,11 @@ const phoneRoute = [
   { client: 'Mike Chen', address: '987 Oak Ave, Seattle', time: '4:30 PM' },
 ];
 
-
 const roleProfiles = {
   mobile: { label: 'Mobile Notary', weekly: 12, avgRevenue: 1450, adminCut: '9.5 hrs saved / week' },
   loan: { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, adminCut: '14.2 hrs saved / week' },
   agency: { label: 'Signing Agency', weekly: 35, avgRevenue: 6200, adminCut: '32.8 hrs saved / week' },
 };
-
 
 const pricingTiers = [
   {
@@ -93,7 +91,6 @@ const faqItems = [
   { question: 'Can agencies manage multiple notaries?', answer: 'Yes. The Agency plan includes multi-user access, shared records, and dispatch-friendly operations.' },
 ];
 
-
 const trustFaqCards = [
   {
     title: 'Can AI advice expose my signer data?',
@@ -120,7 +117,7 @@ const footerInfo = {
   },
   support: {
     title: 'Support & Contact',
-    body: 'Need help? Reach us at support@notaryos.com for onboarding, account setup, or troubleshooting and migration assistance.',
+    body: 'Need help? Reach us at support@notaryos.com for onboarding, account setup, troubleshooting, and migration assistance.',
   },
 };
 
@@ -139,6 +136,8 @@ const answerAI = (question) => {
 };
 
 const Landing = () => {
+  const navigate = useNavigate();
+
   const [aiInput, setAiInput] = useState("What's the fee for a jurat in California?");
   const [aiOutput, setAiOutput] = useState(answerAI("What's the fee for a jurat in California?"));
   const [beforeAfterMode, setBeforeAfterMode] = useState('old');
@@ -153,7 +152,6 @@ const Landing = () => {
   const [activeTrustCard, setActiveTrustCard] = useState(0);
   const [footerModalKey, setFooterModalKey] = useState(null);
 
-  const navigate = useNavigate();
   const trustCardRefs = useRef([]);
 
   const yearlySavedHours = useMemo(() => {
@@ -163,7 +161,6 @@ const Landing = () => {
   }, [weeklyAppointments, adminMinsPerAppt]);
 
   const yearlyValue = yearlySavedHours * hourlyRate;
-
   const currentPainPoints = beforeAfterMode === 'old' ? oldWayPainPoints : withNotaryOSPoints;
   const activeProfile = roleProfiles[profile];
 
@@ -179,22 +176,21 @@ const Landing = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = Number(entry.target.getAttribute('data-card-index'));
-            if (!Number.isNaN(idx)) setActiveTrustCard(idx);
-          }
+          if (!entry.isIntersecting) return;
+          const idx = Number(entry.target.getAttribute('data-card-index'));
+          if (!Number.isNaN(idx)) setActiveTrustCard(idx);
         });
       },
       { threshold: 0.65 }
     );
 
-    trustCardRefs.current.forEach((el) => el && observer.observe(el));
+    trustCardRefs.current.forEach((node) => node && observer.observe(node));
     return () => observer.disconnect();
   }, []);
 
   const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const section = document.getElementById(id);
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handlePricingCardAction = (tierName) => {
@@ -206,8 +202,8 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#08152f] text-white">
-      <div className="border-b border-white/10 bg-[#050e20]">
+    <div className="min-h-screen bg-[#07142d] text-white">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07142d]/95 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-blue-500 font-bold text-[#041026]">N</div>
@@ -217,7 +213,7 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="hidden items-center gap-6 text-sm text-slate-200 md:flex">
+          <div className="hidden items-center gap-7 text-sm text-slate-200 md:flex">
             {topLinks.map((item) => (
               item === 'Pricing' ? (
                 <Link key={item} to="/pricing" className="transition hover:text-white">{item}</Link>
@@ -231,51 +227,64 @@ const Landing = () => {
 
           <div className="flex items-center gap-3">
             <button onClick={() => scrollToSection('features')} className="rounded-md border border-slate-400/70 px-3 py-1.5 text-sm font-medium text-slate-100 hover:border-white">Take a tour</button>
-            <Link to="/dashboard" className="rounded-md bg-gradient-to-r from-teal-400 to-cyan-500 px-3.5 py-1.5 text-sm font-semibold text-[#021128] shadow-lg shadow-cyan-500/20">
-              Get started
-            </Link>
+            <Link to="/dashboard" className="rounded-md bg-gradient-to-r from-teal-400 to-cyan-500 px-3.5 py-1.5 text-sm font-semibold text-[#021128] shadow-lg shadow-cyan-500/20">Get started</Link>
           </div>
         </nav>
-      </div>
+      </header>
 
+      <section className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-[1.1fr_.9fr]">
+        <div>
+          <p className="inline-flex rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-200">Notary workflow platform for modern teams</p>
+          <h1 className="mt-5 text-5xl font-black leading-tight md:text-7xl">
+            Drowning in paperwork?<br />
+            <span className="bg-gradient-to-r from-teal-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">Chasing payments?</span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-base text-slate-200 md:text-lg">Stop guessing on compliance. NotaryOS organizes scheduling, journals, invoices, and AI guidance in one clean operating system.</p>
 
-      <section className="mx-auto max-w-6xl px-6 pb-14 pt-8">
-        <div className="mb-16 flex justify-end">
-          <Link to="/auth" className="rounded-md border border-slate-500 px-4 py-1.5 text-sm text-slate-100">Log In</Link>
-        </div>
-
-        <div className="text-center">
-          <h1 className="text-5xl font-black leading-tight md:text-7xl">Drowning in paperwork?<br /><span className="bg-gradient-to-r from-teal-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">Chasing payments?</span></h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-slate-200 md:text-lg">Stop worrying about state compliance. NotaryOS handles it all—so you can focus on signings, not spreadsheets.</p>
-          <div className="mx-auto mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-xl border border-slate-500/70 bg-[#0e2144] p-2 text-xs">
+          <div className="mt-6 inline-flex flex-wrap items-center gap-2 rounded-xl border border-slate-500/70 bg-[#0e2144] p-2 text-xs">
             {Object.entries(roleProfiles).map(([key, item]) => (
               <button key={key} onClick={() => setProfile(key)} className={`rounded-md px-3 py-1.5 font-semibold ${profile === key ? 'bg-cyan-400 text-[#05142d]' : 'bg-[#1a2f56] text-slate-200'}`}>
                 {item.label}
               </button>
             ))}
           </div>
-          <div className="mx-auto mt-4 grid max-w-2xl gap-3 text-left sm:grid-cols-3">
+
+          <div className="mt-6 grid max-w-2xl gap-3 text-left sm:grid-cols-3">
             <div className="rounded-lg border border-slate-600 bg-[#0d1f40] p-3"><p className="text-[10px] text-slate-400">Weekly Signings</p><p className="text-lg font-bold">{activeProfile.weekly}</p></div>
             <div className="rounded-lg border border-slate-600 bg-[#0d1f40] p-3"><p className="text-[10px] text-slate-400">Revenue Potential</p><p className="text-lg font-bold">${activeProfile.avgRevenue.toLocaleString()}/wk</p></div>
             <div className="rounded-lg border border-slate-600 bg-[#0d1f40] p-3"><p className="text-[10px] text-slate-400">Automation Impact</p><p className="text-lg font-bold">{activeProfile.adminCut}</p></div>
           </div>
-          <button onClick={() => navigate('/auth')} className="mt-8 rounded-lg bg-gradient-to-r from-teal-400 to-cyan-500 px-8 py-4 text-base font-bold text-[#041026] shadow-xl shadow-cyan-400/25">Start Free Trial</button>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button onClick={() => navigate('/auth')} className="rounded-lg bg-gradient-to-r from-teal-400 to-cyan-500 px-8 py-4 text-base font-bold text-[#041026] shadow-xl shadow-cyan-400/25">Start Free Trial</button>
+            <Link to="/auth" className="rounded-lg border border-slate-400 px-8 py-4 text-base font-semibold text-slate-100">Log In</Link>
+          </div>
+
+          <div className="mt-10 grid gap-4 rounded-xl border border-slate-300/60 px-4 py-3 text-sm md:grid-cols-3 md:px-8">
+            <div className="flex items-center justify-center gap-2 text-slate-100"><ShieldCheck className="h-4 w-4 text-teal-300" /> 100% Local Privacy</div>
+            <div className="flex items-center justify-center gap-2 text-slate-100"><Sparkles className="h-4 w-4 text-blue-300" /> Powered by Advanced AI</div>
+            <div className="flex items-center justify-center gap-2 text-slate-100"><BadgeCheck className="h-4 w-4 text-emerald-300" /> 50-State Compliant</div>
+          </div>
         </div>
 
-        <div className="mt-14 grid gap-4 rounded-xl border border-slate-300/70 px-4 py-3 text-sm md:grid-cols-3 md:px-8">
-          <div className="flex items-center justify-center gap-2 text-slate-100"><ShieldCheck className="h-4 w-4 text-teal-300" /> 100% Local Privacy</div>
-          <div className="flex items-center justify-center gap-2 text-slate-100"><Sparkles className="h-4 w-4 text-blue-300" /> Powered by Advanced AI</div>
-          <div className="flex items-center justify-center gap-2 text-slate-100"><BadgeCheck className="h-4 w-4 text-emerald-300" /> 50-State Compliant</div>
+        <div className="rounded-2xl border border-slate-500/60 bg-[#0d1f41] p-6">
+          <p className="text-xs font-semibold tracking-wide text-cyan-300">LIVE OPS SNAPSHOT</p>
+          <h3 className="mt-3 text-2xl font-bold">Your week, simplified.</h3>
+          <div className="mt-5 space-y-3 text-sm">
+            <div className="rounded-lg border border-slate-600 bg-[#132a54] p-3"><p className="text-slate-300">Pending signings</p><p className="text-2xl font-black">{activeProfile.weekly}</p></div>
+            <div className="rounded-lg border border-slate-600 bg-[#132a54] p-3"><p className="text-slate-300">Projected weekly revenue</p><p className="text-2xl font-black">${activeProfile.avgRevenue.toLocaleString()}</p></div>
+            <div className="rounded-lg border border-emerald-400/40 bg-emerald-500/10 p-3"><p className="text-slate-200">Admin time recovered</p><p className="text-2xl font-black text-emerald-300">{activeProfile.adminCut}</p></div>
+          </div>
+          <button onClick={() => scrollToSection('pricing')} className="mt-6 w-full rounded-lg border border-cyan-300/50 px-4 py-2.5 text-sm font-semibold text-cyan-200">See plan fit</button>
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-[#0c1c3a] py-16">
+      <section className="border-y border-white/10 bg-[#0b1c3a] py-20">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-2">
           <div>
-            <span className="rounded-full border border-cyan-300/40 px-3 py-1 text-xs font-semibold text-cyan-300">NEW: AI COMPLIANCE COACH</span>
+            <span className="rounded-full border border-cyan-300/40 px-3 py-1 text-xs font-semibold text-cyan-300">AI COMPLIANCE COACH</span>
             <h2 className="mt-5 text-4xl font-extrabold leading-tight">Your personal compliance expert, <span className="text-cyan-400">available 24/7.</span></h2>
-            <p className="mt-4 max-w-xl text-slate-300">Ask questions and get practical answers instantly. This panel is now interactive.</p>
-
+            <p className="mt-4 max-w-xl text-slate-300">Ask practical questions and get actionable compliance guidance instantly.</p>
             <div className="mt-7 flex items-center gap-2 rounded-lg border border-slate-500 bg-[#11254a] p-2">
               <input className="w-full rounded-md bg-[#0b1d3b] px-3 py-2 text-sm text-slate-200 outline-none" value={aiInput} onChange={(e) => setAiInput(e.target.value)} placeholder="Ask anything about notary compliance..." />
               <button onClick={submitAi} className="rounded-md bg-gradient-to-r from-teal-400 to-cyan-500 px-4 py-2 text-xs font-bold text-[#03152d]">Ask AI</button>
@@ -296,7 +305,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <section id="features" className="mx-auto grid max-w-6xl gap-8 px-6 py-16 lg:grid-cols-2">
+      <section id="features" className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-2">
         <div>
           <h3 className="text-4xl font-extrabold">Before &amp; After</h3>
           <div className="mt-4 inline-flex rounded-lg border border-slate-500 p-1 text-sm">
@@ -344,7 +353,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-[#091630] py-16">
+      <section className="border-y border-white/10 bg-[#091630] py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2">
           <div className="relative flex min-h-[320px] items-center justify-center">
             <div className="absolute left-10 top-3 h-72 w-44 -rotate-12 rounded-[30px] border-2 border-slate-700 bg-slate-100 p-4 text-slate-900 shadow-2xl">
@@ -379,7 +388,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <section id="how-it-works" className="mx-auto max-w-6xl px-6 py-16 text-center">
+      <section id="how-it-works" className="mx-auto max-w-6xl px-6 py-20 text-center">
         <h2 className="text-5xl font-extrabold">How NotaryOS works</h2>
         <p className="mx-auto mt-3 max-w-2xl text-slate-300">A streamlined workflow from booking to payout—designed for mobile-first notaries.</p>
         <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -393,7 +402,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <section className="bg-[#050d22] py-16">
+      <section className="bg-[#050d22] py-20">
         <div className="mx-auto max-w-6xl px-6 text-center">
           <h2 className="text-5xl font-extrabold leading-tight">Built for every modern notary business model</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -409,7 +418,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <section id="pricing" className="border-y border-white/10 bg-[#1f2b42] py-16">
+      <section id="pricing" className="border-y border-white/10 bg-[#1f2b42] py-20">
         <div className="mx-auto max-w-6xl px-6">
           <h2 className="text-center text-5xl font-extrabold">Simple, Transparent Pricing</h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-slate-300">Everything you need to grow your business.</p>
