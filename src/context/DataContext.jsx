@@ -30,7 +30,21 @@ export const DataProvider = ({ children }) => {
   const [data, setData] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('notaryfix_data');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return {
+            ...defaultData,
+            ...parsed,
+            appointments: Array.isArray(parsed.appointments) ? parsed.appointments : defaultData.appointments,
+            clients: Array.isArray(parsed.clients) ? parsed.clients : defaultData.clients,
+            invoices: Array.isArray(parsed.invoices) ? parsed.invoices : defaultData.invoices,
+            settings: { ...defaultData.settings, ...(parsed.settings || {}) },
+          };
+        } catch {
+          return defaultData;
+        }
+      }
     }
     return defaultData;
   });
@@ -48,6 +62,13 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const updateAppointment = (appointmentId, updates) => {
+    setData(prev => ({
+      ...prev,
+      appointments: prev.appointments.map((apt) => apt.id === appointmentId ? { ...apt, ...updates } : apt)
+    }));
+  };
+
   const updateSettings = (newSettings) => {
     setData(prev => ({
       ...prev,
@@ -55,8 +76,22 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const addClient = (client) => {
+    setData((prev) => ({
+      ...prev,
+      clients: [client, ...(prev.clients || [])],
+    }));
+  };
+
+  const addInvoice = (invoice) => {
+    setData((prev) => ({
+      ...prev,
+      invoices: [invoice, ...(prev.invoices || [])],
+    }));
+  };
+
   return (
-    <DataContext.Provider value={{ data, addAppointment, updateSettings }}>
+    <DataContext.Provider value={{ data, addAppointment, updateAppointment, updateSettings, addClient, addInvoice }}>
       {children}
     </DataContext.Provider>
   );
