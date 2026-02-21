@@ -35,16 +35,6 @@ const revenueData = [
 
 const DEFAULT_WIDGET_ORDER = ['ai-insight', 'setup-progress', 'revenue-velocity', 'upcoming-schedule', 'monthly-goal', 'pipeline-health', 'pro-tip'];
 
-const WIDGET_LABELS = {
-  'ai-insight': 'AI Insight',
-  'setup-progress': 'Setup Progress',
-  'revenue-velocity': 'Revenue Velocity',
-  'upcoming-schedule': 'Upcoming Schedule',
-  'monthly-goal': 'Monthly Goal',
-  'pipeline-health': 'Pipeline Health',
-  'pro-tip': 'Pro Tip',
-};
-
 const WIDGET_LAYOUT = {
   'ai-insight': 'xl:col-span-8',
   'setup-progress': 'xl:col-span-4',
@@ -157,23 +147,6 @@ const Dashboard = () => {
   });
   const [draggingWidgetId, setDraggingWidgetId] = useState(null);
   const [dragOverWidgetId, setDragOverWidgetId] = useState(null);
-  const [widgetVisibility, setWidgetVisibility] = useState(() => {
-    if (typeof window === 'undefined') {
-      return DEFAULT_WIDGET_ORDER.reduce((acc, id) => ({ ...acc, [id]: true }), {});
-    }
-
-    const saved = localStorage.getItem('dashboard_widget_visibility');
-    if (!saved) {
-      return DEFAULT_WIDGET_ORDER.reduce((acc, id) => ({ ...acc, [id]: true }), {});
-    }
-
-    try {
-      const parsed = JSON.parse(saved);
-      return DEFAULT_WIDGET_ORDER.reduce((acc, id) => ({ ...acc, [id]: parsed[id] !== false }), {});
-    } catch {
-      return DEFAULT_WIDGET_ORDER.reduce((acc, id) => ({ ...acc, [id]: true }), {});
-    }
-  });
 
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -189,12 +162,6 @@ const Dashboard = () => {
       localStorage.setItem('dashboard_widget_order', JSON.stringify(widgetOrder));
     }
   }, [widgetOrder]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('dashboard_widget_visibility', JSON.stringify(widgetVisibility));
-    }
-  }, [widgetVisibility]);
 
   const totalRevenue = 12450 + data.appointments.reduce((sum, apt) => sum + (Number(apt.amount) || 0), 0);
   const upcomingCount = data.appointments.filter((a) => a.status === 'upcoming').length;
@@ -274,12 +241,6 @@ const Dashboard = () => {
       return next;
     });
   };
-
-  const toggleWidgetVisibility = (widgetId) => {
-    setWidgetVisibility((prev) => ({ ...prev, [widgetId]: !prev[widgetId] }));
-  };
-
-  const visibleWidgetCount = widgetOrder.filter((id) => widgetVisibility[id] !== false).length;
 
   const widgetContent = {
     'ai-insight': <AIInsightWidget loading={loading} onOpenReport={() => navigate('/invoices')} />,
@@ -454,30 +415,8 @@ const Dashboard = () => {
           Drag and drop dashboard cards to personalize layout. This is a strong option for power users, because teams can prioritize what they need most.
         </div>
 
-        <Card className="border-slate-200/70 dark:border-slate-700">
-          <CardHeader>
-            <div>
-              <CardTitle>Customize Dashboard Cards</CardTitle>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Choose which cards are visible, then drag to reorder.</p>
-            </div>
-            <Badge variant="blue">{visibleWidgetCount}/{DEFAULT_WIDGET_ORDER.length} visible</Badge>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {DEFAULT_WIDGET_ORDER.map((widgetId) => (
-              <label key={widgetId} className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-700">
-                <input
-                  type="checkbox"
-                  checked={widgetVisibility[widgetId] !== false}
-                  onChange={() => toggleWidgetVisibility(widgetId)}
-                />
-                <span>{WIDGET_LABELS[widgetId]}</span>
-              </label>
-            ))}
-          </CardContent>
-        </Card>
-
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-          {widgetOrder.filter((widgetId) => widgetVisibility[widgetId] !== false).map((widgetId) => (
+          {widgetOrder.map((widgetId) => (
             <section
               key={widgetId}
               draggable
