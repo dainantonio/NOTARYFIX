@@ -48,6 +48,13 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const updateAppointment = (appointmentId, updates) => {
+    setData(prev => ({
+      ...prev,
+      appointments: prev.appointments.map((apt) => apt.id === appointmentId ? { ...apt, ...updates } : apt)
+    }));
+  };
+
   const updateSettings = (newSettings) => {
     setData(prev => ({
       ...prev,
@@ -56,7 +63,7 @@ export const DataProvider = ({ children }) => {
   };
 
   return (
-    <DataContext.Provider value={{ data, addAppointment, updateSettings }}>
+    <DataContext.Provider value={{ data, addAppointment, updateAppointment, updateSettings }}>
       {children}
     </DataContext.Provider>
   );
