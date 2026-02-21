@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
   Sparkles,
@@ -93,6 +93,37 @@ const faqItems = [
   { question: 'Can agencies manage multiple notaries?', answer: 'Yes. The Agency plan includes multi-user access, shared records, and dispatch-friendly operations.' },
 ];
 
+
+const trustFaqCards = [
+  {
+    title: 'Can AI advice expose my signer data?',
+    answer: 'No. NotaryOS keeps signer workflows private and separates compliance guidance from your raw document records.',
+  },
+  {
+    title: 'How do I stay compliant across states?',
+    answer: 'State-aware prompts and fee guardrails adapt your workflow by jurisdiction so you avoid accidental violations.',
+  },
+  {
+    title: 'Should I use local or cloud storage?',
+    answer: 'Use local-first capture with encrypted cloud sync for backup, collaboration, and audit readiness.',
+  },
+];
+
+const footerInfo = {
+  legal: {
+    title: 'Legal Information',
+    body: 'NotaryOS provides workflow software, not legal counsel. Always confirm your state notarial statutes, fee caps, and journal retention requirements.',
+  },
+  privacy: {
+    title: 'Privacy & Security',
+    body: 'We prioritize least-privilege access, encrypted transport, and role-based controls so signer data is protected throughout your operation.',
+  },
+  support: {
+    title: 'Support & Contact',
+    body: 'Need help? Reach us at support@notaryos.com for onboarding, account setup, or troubleshooting and migration assistance.',
+  },
+};
+
 const answerAI = (question) => {
   const q = question.toLowerCase();
   if (q.includes('jurat') && q.includes('california')) {
@@ -119,6 +150,11 @@ const Landing = () => {
   const [profile, setProfile] = useState('mobile');
   const [hourlyRate, setHourlyRate] = useState(50);
   const [comparisonSignings, setComparisonSignings] = useState(30);
+  const [activeTrustCard, setActiveTrustCard] = useState(0);
+  const [footerModalKey, setFooterModalKey] = useState(null);
+
+  const navigate = useNavigate();
+  const trustCardRefs = useRef([]);
 
   const yearlySavedHours = useMemo(() => {
     const oldHours = (weeklyAppointments * adminMinsPerAppt * 52) / 60;
@@ -137,6 +173,36 @@ const Landing = () => {
 
   const submitAi = () => {
     setAiOutput(answerAI(aiInput));
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = Number(entry.target.getAttribute('data-card-index'));
+            if (!Number.isNaN(idx)) setActiveTrustCard(idx);
+          }
+        });
+      },
+      { threshold: 0.65 }
+    );
+
+    trustCardRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handlePricingCardAction = (tierName) => {
+    if (tierName === 'Agency') {
+      navigate('/pricing');
+      return;
+    }
+    navigate('/auth');
   };
 
   return (
@@ -164,7 +230,7 @@ const Landing = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="rounded-md border border-slate-400/70 px-3 py-1.5 text-sm font-medium text-slate-100 hover:border-white">Take a tour</button>
+            <button onClick={() => scrollToSection('features')} className="rounded-md border border-slate-400/70 px-3 py-1.5 text-sm font-medium text-slate-100 hover:border-white">Take a tour</button>
             <Link to="/dashboard" className="rounded-md bg-gradient-to-r from-teal-400 to-cyan-500 px-3.5 py-1.5 text-sm font-semibold text-[#021128] shadow-lg shadow-cyan-500/20">
               Get started
             </Link>
@@ -193,7 +259,7 @@ const Landing = () => {
             <div className="rounded-lg border border-slate-600 bg-[#0d1f40] p-3"><p className="text-[10px] text-slate-400">Revenue Potential</p><p className="text-lg font-bold">${activeProfile.avgRevenue.toLocaleString()}/wk</p></div>
             <div className="rounded-lg border border-slate-600 bg-[#0d1f40] p-3"><p className="text-[10px] text-slate-400">Automation Impact</p><p className="text-lg font-bold">{activeProfile.adminCut}</p></div>
           </div>
-          <button className="mt-8 rounded-lg bg-gradient-to-r from-teal-400 to-cyan-500 px-8 py-4 text-base font-bold text-[#041026] shadow-xl shadow-cyan-400/25">Start Free Trial</button>
+          <button onClick={() => navigate('/auth')} className="mt-8 rounded-lg bg-gradient-to-r from-teal-400 to-cyan-500 px-8 py-4 text-base font-bold text-[#041026] shadow-xl shadow-cyan-400/25">Start Free Trial</button>
         </div>
 
         <div className="mt-14 grid gap-4 rounded-xl border border-slate-300/70 px-4 py-3 text-sm md:grid-cols-3 md:px-8">
@@ -350,7 +416,7 @@ const Landing = () => {
 
           <div className="mx-auto mt-8 flex max-w-3xl items-center justify-between rounded-xl border border-slate-400 bg-[#0b1a37] px-4 py-3 text-sm">
             <div><p className="text-slate-300">Current plan</p><p className="font-semibold">You are currently on the Starter Plan.</p></div>
-            <button className="rounded-md border border-slate-300 px-4 py-1.5">Manage</button>
+            <button onClick={() => navigate('/pricing')} className="rounded-md border border-slate-300 px-4 py-1.5">Manage</button>
           </div>
 
           <div className="mx-auto mt-6 inline-flex w-full justify-center rounded-xl border border-slate-500 p-1 text-sm">
@@ -367,7 +433,7 @@ const Landing = () => {
                   <p className="mt-2 text-slate-300">{tier.subtitle}</p>
                   <p className="mt-4 text-5xl font-black">${price}<span className="text-base text-slate-300">/mo</span></p>
                   <ul className="mt-6 space-y-3 text-sm">{tier.features.map((feature) => (<li key={feature} className="flex items-start gap-2 text-slate-200"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />{feature}</li>))}</ul>
-                  <button className={`mt-8 w-full rounded-lg px-4 py-3 text-sm font-bold ${tier.highlighted ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-[#03152d]' : 'border border-slate-300 text-slate-100'}`}>{tier.cta}</button>
+                  <button onClick={() => handlePricingCardAction(tier.name)} className={`mt-8 w-full rounded-lg px-4 py-3 text-sm font-bold ${tier.highlighted ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-[#03152d]' : 'border border-slate-300 text-slate-100'}`}>{tier.cta}</button>
                 </div>
               );
             })}
@@ -403,6 +469,30 @@ const Landing = () => {
         </div>
       </section>
 
+      <section className="border-y border-white/10 bg-[#061530] py-16">
+        <div className="mx-auto max-w-6xl px-6 text-center">
+          <span className="inline-flex items-center rounded-full border border-emerald-300/40 bg-emerald-400/10 px-4 py-1 text-xs font-semibold tracking-wide text-emerald-200">🛡 TRUST & COMPLIANCE FAQ</span>
+          <h2 className="mx-auto mt-5 max-w-4xl text-4xl font-black leading-tight md:text-5xl">Questions every serious notary asks first.</h2>
+          <p className="mx-auto mt-4 max-w-3xl text-slate-300">Built for risk-aware professionals: get clear answers on compliance workflows, data security, AI key usage, and local vs cloud storage without cluttering the interface.</p>
+
+          <div className="mt-10 grid gap-4 text-left md:grid-cols-3">
+            {trustFaqCards.map((card, idx) => (
+              <div
+                key={card.title}
+                ref={(el) => {
+                  trustCardRefs.current[idx] = el;
+                }}
+                data-card-index={idx}
+                className={`rounded-xl border bg-[#0f2246] p-5 transition-all duration-300 ${activeTrustCard === idx ? 'card-shake border-cyan-300 shadow-lg shadow-cyan-500/20' : 'border-slate-700'}`}
+              >
+                <p className="text-lg font-bold">{card.title}</p>
+                <p className="mt-2 text-sm text-slate-300">{card.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="faq" className="mx-auto max-w-4xl px-6 py-16">
         <h2 className="text-center text-5xl font-extrabold">FAQ</h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-slate-300">Quick answers to common questions before you start your trial.</p>
@@ -422,6 +512,29 @@ const Landing = () => {
           })}
         </div>
       </section>
+
+      <footer className="border-t border-white/10 bg-[#041126] px-6 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-slate-300">© {new Date().getFullYear()} NotaryOS. Built for modern notary workflows.</p>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setFooterModalKey('legal')} className="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-200">Legal</button>
+            <button onClick={() => setFooterModalKey('privacy')} className="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-200">Privacy</button>
+            <button onClick={() => setFooterModalKey('support')} className="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-200">Support</button>
+          </div>
+        </div>
+      </footer>
+
+      {footerModalKey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-600 bg-[#0b1f42] p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-2xl font-bold">{footerInfo[footerModalKey].title}</h3>
+              <button onClick={() => setFooterModalKey(null)} className="rounded border border-slate-500 px-3 py-1 text-xs">Close</button>
+            </div>
+            <p className="text-sm leading-6 text-slate-300">{footerInfo[footerModalKey].body}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
