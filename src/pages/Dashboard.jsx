@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FileSignature,
   DollarSign,
@@ -76,13 +76,13 @@ const StatsCard = ({ title, value, change, icon: Icon, trend, loading, accent = 
     <Card className={`border-0 bg-gradient-to-br ${accentStyles[accent]} text-white shadow-lg`}>
       <CardContent className="p-5">
         <div className="mb-4 flex items-start justify-between">
-          <div className="rounded-lg bg-white/20 p-2">
+          <div className="rounded-lg bg-black/15 p-2">
             <Icon className="h-5 w-5 text-white" />
           </div>
           {loading ? (
             <Skeleton className="h-6 w-14 bg-white/20" />
           ) : (
-            <Badge variant="default" className="border-0 bg-white/20 text-white">
+            <Badge variant="default" className="border-0 bg-black/20 text-white">
               {trend === 'up' ? <ArrowUpRight className="mr-1 h-3 w-3" /> : <ArrowDownRight className="mr-1 h-3 w-3" />}
               {change}
             </Badge>
@@ -147,6 +147,8 @@ const Dashboard = () => {
   ]);
   const [isProTipExpanded, setIsProTipExpanded] = useState(false);
   const [lastUpdatedAt] = useState(() => new Date());
+  const [dashboardSearch, setDashboardSearch] = useState('');
+  const searchInputRef = useRef(null);
 
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -155,6 +157,18 @@ const Dashboard = () => {
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 700);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleShortcut = (event) => {
+      const isSearchShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+      if (!isSearchShortcut) return;
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    };
+
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
   }, []);
 
   const totalRevenue = 12450 + data.appointments.reduce((sum, apt) => sum + (Number(apt.amount) || 0), 0);
@@ -183,6 +197,15 @@ const Dashboard = () => {
     [data.appointments],
   );
   const activeProfile = DASHBOARD_PROFILES[dashboardRole] || DASHBOARD_PROFILES.owner;
+  const normalizedSearch = dashboardSearch.trim().toLowerCase();
+  const filteredUpcomingAppointments = useMemo(() => {
+    if (!normalizedSearch) return upcomingAppointments;
+    return upcomingAppointments.filter((apt) => [apt.client, apt.type, apt.time].join(' ').toLowerCase().includes(normalizedSearch));
+  }, [normalizedSearch, upcomingAppointments]);
+  const filteredQuickActions = useMemo(() => {
+    if (!normalizedSearch) return activeProfile.quickActions;
+    return activeProfile.quickActions.filter((actionItem) => actionItem.label.toLowerCase().includes(normalizedSearch));
+  }, [activeProfile.quickActions, normalizedSearch]);
 
   const handleSaveAppointment = (formData) => {
     addAppointment({
@@ -257,11 +280,21 @@ const Dashboard = () => {
                 onChange={(e) => handleRoleProfileChange(e.target.value)}
                 options={Object.entries(DASHBOARD_PROFILES).map(([value, profile]) => ({ value, label: profile.label }))}
                 className="w-40 border-white/20 bg-white/10 text-white"
+                aria-label="Select dashboard role profile"
               />
-              <div className="hidden items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white/90 md:flex">
-                <Search className="h-4 w-4" /> Search dashboard
-              </div>
-              <Button variant="secondary" size="icon" className="relative border-white/20 bg-white/10 text-white hover:bg-white/20">
+              <label className="hidden items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white/90 md:flex">
+                <Search className="h-4 w-4" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={dashboardSearch}
+                  onChange={(e) => setDashboardSearch(e.target.value)}
+                  placeholder="Search dashboard..."
+                  aria-label="Search dashboard actions and appointments"
+                  className="w-44 bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
+                />
+              </label>
+              <Button variant="secondary" size="icon" className="relative border-white/20 bg-white/10 text-white hover:bg-white/20" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
                 <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500"></span>
               </Button>
@@ -309,16 +342,18 @@ const Dashboard = () => {
                   <p className="text-sm text-slate-500 dark:text-slate-400">Financial performance over time</p>
                   <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{chartPeriodLabel} · Last updated {formattedLastUpdated}</p>
                 </div>
-                <Select value={chartType} onChange={(e) => handleChartTypeChange(e.target.value)} options={[{ label: 'Area', value: 'area' }, { label: 'Bar', value: 'bar' }]} className="w-28" />
+                <Select value={chartType} onChange={(e) => handleChartTypeChange(e.target.value)} options={[{ label: 'Area', value: 'area' }, { label: 'Bar', value: 'bar' }]} className="w-28" aria-label="Select revenue chart type" />
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <Skeleton className="h-[300px] w-full" />
                 ) : (
                   <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      {chartType === 'area' ? (
-                        <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <figure role="img" aria-label={`Revenue chart for ${chartPeriodLabel}. Last updated ${formattedLastUpdated}.`} className="h-full w-full">
+                      <span className="sr-only">Revenue chart visualization. Use the chart type selector to switch between area and bar views.</span>
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'area' ? (
+                          <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor={chartStroke} stopOpacity={0.3} />
@@ -330,17 +365,18 @@ const Dashboard = () => {
                           <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
                           <RechartsTooltip />
                           <Area type="monotone" dataKey="amount" stroke={chartStroke} strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-                        </AreaChart>
-                      ) : (
-                        <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          </AreaChart>
+                        ) : (
+                          <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
                           <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
                           <RechartsTooltip />
                           <Bar dataKey="amount" fill={chartStroke} radius={[6, 6, 0, 0]} />
-                        </BarChart>
-                      )}
-                    </ResponsiveContainer>
+                          </BarChart>
+                        )}
+                      </ResponsiveContainer>
+                    </figure>
                   </div>
                 )}
               </CardContent>
@@ -360,10 +396,10 @@ const Dashboard = () => {
                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
                   {loading ? (
                     [1, 2, 3].map((i) => <div key={i} className="p-6"><Skeleton className="h-12 w-full" /></div>)
-                  ) : upcomingAppointments.length === 0 ? (
+                  ) : filteredUpcomingAppointments.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">No appointments scheduled.</div>
                   ) : (
-                    upcomingAppointments.map((apt) => (
+                    filteredUpcomingAppointments.map((apt) => (
                       <button
                         key={apt.id}
                         onClick={() => navigate('/schedule', { state: { editAppointmentId: apt.id } })}
@@ -417,7 +453,7 @@ const Dashboard = () => {
             <Card className="border-slate-200/70 dark:border-slate-700">
               <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                {activeProfile.quickActions.map((actionItem) => {
+                {filteredQuickActions.map((actionItem) => {
                   const ActionIcon = actionItem.icon;
                   return (
                     <Button key={actionItem.label} className="w-full justify-start" variant={actionItem.variant === 'primary' ? 'default' : 'secondary'} onClick={() => runQuickAction(actionItem.action)}>
@@ -425,6 +461,7 @@ const Dashboard = () => {
                     </Button>
                   );
                 })}
+                {!filteredQuickActions.length ? <p className="px-1 py-2 text-xs text-slate-500">No matching quick action.</p> : null}
               </CardContent>
             </Card>
 
