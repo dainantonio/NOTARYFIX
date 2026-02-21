@@ -10,7 +10,7 @@
         var search = window.location.search || '';
         var hash = window.location.hash || '';
 
-        var knownRoutes = ['/auth', '/legal', '/dashboard', '/schedule', '/clients', '/invoices', '/settings'];
+        var knownRoutes = ['/auth', '/legal', '/pricing', '/dashboard', '/schedule', '/clients', '/invoices', '/settings'];
 
         var normalizedPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
         var matchedRoute = knownRoutes.find(function (route) {
