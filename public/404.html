@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting…</title>
+    <script>
+      (function () {
+        var path = window.location.pathname || '/';
+        var search = window.location.search || '';
+        var hash = window.location.hash || '';
+
+        var knownRoutes = ['/auth', '/legal', '/dashboard', '/schedule', '/clients', '/invoices', '/settings'];
+
+        var normalizedPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
+        var matchedRoute = knownRoutes.find(function (route) {
+          return normalizedPath.endsWith(route);
+        });
+
+        var basePath = '/';
+        var routePart = '/';
+
+        if (matchedRoute) {
+          basePath = normalizedPath.slice(0, normalizedPath.length - matchedRoute.length) || '/';
+          routePart = matchedRoute;
+        } else {
+          basePath = normalizedPath === '/' ? '/' : normalizedPath + '/';
+          routePart = '/';
+        }
+
+        if (!basePath.endsWith('/')) basePath += '/';
+
+        window.location.replace(basePath + '#' + routePart + search + hash);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
