@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Mic, MicOff, ScanLine, CheckCircle2 } from 'lucide-react';
 import { Button } from './UI';
 
@@ -14,13 +14,19 @@ const DEFAULT_FORM = {
   receiptImage: '',
 };
 
-const serviceTypes = [
-  'Loan Signing',
-  'General Notary Work (GNW)',
-  'I-9 Verification',
-  'Apostille',
-  'Remote Online Notary (RON)',
-];
+const serviceTypes = ['Loan Signing', 'General Notary Work (GNW)', 'I-9 Verification', 'Apostille', 'Remote Online Notary (RON)'];
+
+const normalizeTimeInput = (value) => {
+  if (!value) return '';
+  if (/^\d{2}:\d{2}$/.test(value)) return value;
+  const match = value.match(/(\d{1,2}):(\d{2})\s?(AM|PM|am|pm)/);
+  if (!match) return '';
+  const hours = Number(match[1]);
+  const mins = Number(match[2]);
+  const mer = match[3].toUpperCase();
+  const hh = mer === 'PM' ? (hours % 12) + 12 : hours % 12;
+  return `${String(hh).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+};
 
 const parseQuickEntry = (text) => {
   const lower = text.toLowerCase();
@@ -33,18 +39,7 @@ const parseQuickEntry = (text) => {
   if (dateMatch) next.date = dateMatch[1];
 
   const timeMatch = text.match(/(\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)?)/);
-  if (timeMatch) {
-    let t = timeMatch[1].toUpperCase().replace(/\s+/g, '');
-    if (t.includes('AM') || t.includes('PM')) {
-      const meridian = t.slice(-2);
-      const hhmm = t.slice(0, -2);
-      const [h, m] = hhmm.split(':').map(Number);
-      const hour24 = meridian === 'PM' ? (h % 12) + 12 : h % 12;
-      next.time = `${String(hour24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-    } else {
-      next.time = t;
-    }
-  }
+  if (timeMatch) next.time = normalizeTimeInput(timeMatch[1]) || timeMatch[1];
 
   const zipMatch = text.match(/\b(\d{5})\b/);
   if (zipMatch) next.location = zipMatch[1];
@@ -61,12 +56,31 @@ const parseQuickEntry = (text) => {
   return next;
 };
 
-const AppointmentModal = ({ isOpen, onClose, onSave }) => {
+const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitLabel = 'Save Appointment' }) => {
   const [formData, setFormData] = useState(DEFAULT_FORM);
   const [quickInput, setQuickInput] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [voiceSupported, setVoiceSupported] = useState(() => typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition));
+  const [voiceSupported] = useState(() => typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition));
   const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!initialData) {
+      setFormData(DEFAULT_FORM);
+      return;
+    }
+    setFormData({
+      client: initialData.client || '',
+      type: initialData.type || 'Loan Signing',
+      date: initialData.date && /^\d{4}-\d{2}-\d{2}$/.test(initialData.date) ? initialData.date : '',
+      time: normalizeTimeInput(initialData.time),
+      fee: initialData.amount?.toString?.() || initialData.fee || '',
+      location: initialData.location || '',
+      notes: initialData.notes || '',
+      receiptName: initialData.receiptName || '',
+      receiptImage: initialData.receiptImage || '',
+    });
+  }, [isOpen, initialData]);
 
   const receiptSaved = useMemo(() => Boolean(formData.receiptName), [formData.receiptName]);
 
@@ -94,20 +108,11 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
     recognition.continuous = false;
 
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join(' ')
-        .trim();
+      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(' ').trim();
       setQuickInput(transcript);
     };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
 
     recognitionRef.current = recognition;
     recognition.start();
@@ -118,11 +123,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      setFormData((prev) => ({
-        ...prev,
-        receiptName: file.name,
-        receiptImage: typeof reader.result === 'string' ? reader.result : '',
-      }));
+      setFormData((prev) => ({ ...prev, receiptName: file.name, receiptImage: typeof reader.result === 'string' ? reader.result : '' }));
     };
     reader.readAsDataURL(file);
   };
@@ -139,7 +140,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-xl animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
-          <h3 className="font-semibold text-slate-900">New Appointment</h3>
+          <h3 className="font-semibold text-slate-900">{initialData ? 'Edit Appointment' : 'New Appointment'}</h3>
           <button onClick={onClose} className="text-slate-400 transition-colors hover:text-slate-600"><X className="h-5 w-5" /></button>
         </div>
 
@@ -168,7 +169,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
               <label className="text-xs font-medium uppercase text-slate-500">Client Name</label>
               <div className="relative">
                 <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input required type="text" placeholder="e.g. John Doe or Title Company" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} />
+                <input required type="text" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} />
               </div>
             </div>
 
@@ -217,7 +218,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
 
           <div className="space-y-1">
             <label className="text-xs font-medium uppercase text-slate-500">Notes</label>
-            <textarea rows={2} placeholder="Optional notes from call, text, or voice entry" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+            <textarea rows={2} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
           </div>
 
           <div className="rounded-lg border border-slate-200 p-4">
@@ -226,16 +227,12 @@ const AppointmentModal = ({ isOpen, onClose, onSave }) => {
               <ScanLine className="h-4 w-4" /> Upload / Scan Receipt
               <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleReceipt(e.target.files?.[0])} />
             </label>
-            {receiptSaved && (
-              <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600">
-                <CheckCircle2 className="h-4 w-4" /> Saved: {formData.receiptName}
-              </div>
-            )}
+            {receiptSaved && <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Saved: {formData.receiptName}</div>}
           </div>
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Save Appointment</Button>
+            <Button type="submit">{submitLabel}</Button>
           </div>
         </form>
       </div>
