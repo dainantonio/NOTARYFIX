@@ -1,146 +1,242 @@
-import React, { useState } from 'react';
-import { X, Calendar, Clock, DollarSign, User, FileText, MapPin } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Mic, MicOff, ScanLine, CheckCircle2 } from 'lucide-react';
 import { Button } from './UI';
 
+const DEFAULT_FORM = {
+  client: '',
+  type: 'Loan Signing',
+  date: '',
+  time: '',
+  fee: '',
+  location: '',
+  notes: '',
+  receiptName: '',
+  receiptImage: '',
+};
+
+const serviceTypes = [
+  'Loan Signing',
+  'General Notary Work (GNW)',
+  'I-9 Verification',
+  'Apostille',
+  'Remote Online Notary (RON)',
+];
+
+const parseQuickEntry = (text) => {
+  const lower = text.toLowerCase();
+  const next = {};
+
+  const feeMatch = text.match(/\$?\s?(\d+(?:\.\d{1,2})?)/);
+  if (feeMatch) next.fee = feeMatch[1];
+
+  const dateMatch = text.match(/(\d{4}-\d{2}-\d{2})/);
+  if (dateMatch) next.date = dateMatch[1];
+
+  const timeMatch = text.match(/(\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)?)/);
+  if (timeMatch) {
+    let t = timeMatch[1].toUpperCase().replace(/\s+/g, '');
+    if (t.includes('AM') || t.includes('PM')) {
+      const meridian = t.slice(-2);
+      const hhmm = t.slice(0, -2);
+      const [h, m] = hhmm.split(':').map(Number);
+      const hour24 = meridian === 'PM' ? (h % 12) + 12 : h % 12;
+      next.time = `${String(hour24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    } else {
+      next.time = t;
+    }
+  }
+
+  const zipMatch = text.match(/\b(\d{5})\b/);
+  if (zipMatch) next.location = zipMatch[1];
+
+  const nameMatch = text.match(/for\s+([A-Za-z][A-Za-z\s.'-]{2,})/i);
+  if (nameMatch) next.client = nameMatch[1].trim();
+
+  if (lower.includes('i-9')) next.type = 'I-9 Verification';
+  else if (lower.includes('apostille')) next.type = 'Apostille';
+  else if (lower.includes('ron') || lower.includes('remote online')) next.type = 'Remote Online Notary (RON)';
+  else if (lower.includes('general') || lower.includes('gnw')) next.type = 'General Notary Work (GNW)';
+  else if (lower.includes('loan')) next.type = 'Loan Signing';
+
+  return next;
+};
+
 const AppointmentModal = ({ isOpen, onClose, onSave }) => {
+  const [formData, setFormData] = useState(DEFAULT_FORM);
+  const [quickInput, setQuickInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(() => typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition));
+  const recognitionRef = useRef(null);
+
+  const receiptSaved = useMemo(() => Boolean(formData.receiptName), [formData.receiptName]);
+
   if (!isOpen) return null;
 
-  const [formData, setFormData] = useState({
-    client: '',
-    type: 'Loan Signing',
-    date: '',
-    time: '',
-    fee: '',
-    location: ''
-  });
+  const applyQuickEntry = () => {
+    if (!quickInput.trim()) return;
+    const parsed = parseQuickEntry(quickInput);
+    setFormData((prev) => ({ ...prev, ...parsed, notes: prev.notes || quickInput.trim() }));
+  };
+
+  const toggleVoice = () => {
+    if (!voiceSupported) return;
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(' ')
+        .trim();
+      setQuickInput(transcript);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
+  const handleReceipt = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((prev) => ({
+        ...prev,
+        receiptName: file.name,
+        receiptImage: typeof reader.result === 'string' ? reader.result : '',
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
     onClose();
-    // Reset form for next time
-    setFormData({ client: '', type: 'Loan Signing', date: '', time: '', fee: '', location: '' });
+    setFormData(DEFAULT_FORM);
+    setQuickInput('');
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-        
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-xl animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
           <h3 className="font-semibold text-slate-900">New Appointment</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={onClose} className="text-slate-400 transition-colors hover:text-slate-600"><X className="h-5 w-5" /></button>
         </div>
 
-        {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
-          {/* Client Name */}
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <label className="mb-2 block text-xs font-medium uppercase text-slate-500">Quick Add (type or speak)</label>
+            <textarea
+              rows={2}
+              placeholder="Example: Loan signing for Sarah Johnson on 2026-03-21 at 2:30 PM, $150, zip 98101"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={quickInput}
+              onChange={(e) => setQuickInput(e.target.value)}
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button type="button" size="xs" onClick={applyQuickEntry}>Transcribe to Fields</Button>
+              <Button type="button" size="xs" variant="secondary" onClick={toggleVoice} disabled={!voiceSupported}>
+                {isListening ? <MicOff className="mr-1 h-3.5 w-3.5" /> : <Mic className="mr-1 h-3.5 w-3.5" />}
+                {isListening ? 'Stop Listening' : 'Speak'}
+              </Button>
+              {!voiceSupported && <span className="text-xs text-slate-500">Voice entry not supported in this browser.</span>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500">Client Name</label>
+              <div className="relative">
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input required type="text" placeholder="e.g. John Doe or Title Company" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500">Service Type</label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <select className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
+                  {serviceTypes.map((option) => <option key={option}>{option}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500">Date</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input required type="date" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500">Time</label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input required type="time" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500">Fee ($)</label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input required type="number" placeholder="0.00" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.fee} onChange={(e) => setFormData({ ...formData, fee: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500">Zip Code</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="text" placeholder="12345" className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-500 uppercase">Client Name</label>
-            <div className="relative">
-              <User className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-              <input 
-                required
-                type="text" 
-                placeholder="e.g. John Doe or Title Company"
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.client}
-                onChange={(e) => setFormData({...formData, client: e.target.value})}
-              />
-            </div>
+            <label className="text-xs font-medium uppercase text-slate-500">Notes</label>
+            <textarea rows={2} placeholder="Optional notes from call, text, or voice entry" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
           </div>
 
-          {/* Service Type */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-500 uppercase">Service Type</label>
-            <div className="relative">
-              <FileText className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-              <select 
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                value={formData.type}
-                onChange={(e) => setFormData({...formData, type: e.target.value})}
-              >
-                <option>Loan Signing</option>
-                <option>General Notary Work (GNW)</option>
-                <option>I-9 Verification</option>
-                <option>Apostille</option>
-                <option>Remote Online Notary (RON)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Date */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-500 uppercase">Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                <input 
-                  required
-                  type="date" 
-                  className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                />
+          <div className="rounded-lg border border-slate-200 p-4">
+            <label className="mb-2 block text-xs font-medium uppercase text-slate-500">Scan Receipt</label>
+            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 hover:bg-slate-100">
+              <ScanLine className="h-4 w-4" /> Upload / Scan Receipt
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleReceipt(e.target.files?.[0])} />
+            </label>
+            {receiptSaved && (
+              <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600">
+                <CheckCircle2 className="h-4 w-4" /> Saved: {formData.receiptName}
               </div>
-            </div>
-
-            {/* Time */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-500 uppercase">Time</label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                <input 
-                  required
-                  type="time" 
-                  className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.time}
-                  onChange={(e) => setFormData({...formData, time: e.target.value})}
-                />
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Fee & Location */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-500 uppercase">Fee ($)</label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                <input 
-                  required
-                  type="number" 
-                  placeholder="0.00"
-                  className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.fee}
-                  onChange={(e) => setFormData({...formData, fee: e.target.value})}
-                />
-              </div>
-            </div>
-             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-500 uppercase">Zip Code</label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="12345"
-                  className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                />
-              </div>
-            </div>
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+            <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button type="submit">Save Appointment</Button>
           </div>
-
-          {/* Actions */}
-          <div className="pt-4 flex gap-3">
-            <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
-            <Button type="submit" className="flex-1">Save Appointment</Button>
-          </div>
-
         </form>
       </div>
     </div>

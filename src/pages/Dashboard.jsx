@@ -132,6 +132,9 @@ const Dashboard = () => {
       status: 'upcoming',
       amount: parseFloat(formData.fee) || 0,
       location: formData.location || 'TBD',
+      notes: formData.notes || '',
+      receiptName: formData.receiptName || '',
+      receiptImage: formData.receiptImage || '',
     });
   };
 
