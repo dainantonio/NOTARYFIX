@@ -1,8 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -12,6 +15,8 @@ const Schedule = () => {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [prefillDate, setPrefillDate] = useState('');
   const { data, addAppointment, updateAppointment } = useData();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const daysInMonth = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -24,6 +29,19 @@ const Schedule = () => {
     const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     return firstDay.getDay();
   }, [currentDate]);
+
+  useEffect(() => {
+    const editId = location.state?.editAppointmentId;
+    if (!editId) return;
+
+    const apt = data.appointments.find((a) => a.id === editId);
+    if (apt) {
+      setEditingAppointment(apt);
+      setIsModalOpen(true);
+    }
+
+    navigate('/schedule', { replace: true, state: {} });
+  }, [location.state, data.appointments, navigate]);
 
   const handleSaveAppointment = (formData) => {
     if (editingAppointment) {
