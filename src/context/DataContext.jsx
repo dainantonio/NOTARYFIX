@@ -48,6 +48,13 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const updateAppointment = (appointmentId, updates) => {
+    setData(prev => ({
+      ...prev,
+      appointments: prev.appointments.map((apt) => apt.id === appointmentId ? { ...apt, ...updates } : apt)
+    }));
+  };
+
   const updateSettings = (newSettings) => {
     setData(prev => ({
       ...prev,
@@ -55,8 +62,22 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const addClient = (client) => {
+    setData((prev) => ({
+      ...prev,
+      clients: [client, ...(prev.clients || [])],
+    }));
+  };
+
+  const addInvoice = (invoice) => {
+    setData((prev) => ({
+      ...prev,
+      invoices: [invoice, ...(prev.invoices || [])],
+    }));
+  };
+
   return (
-    <DataContext.Provider value={{ data, addAppointment, updateSettings }}>
+    <DataContext.Provider value={{ data, addAppointment, updateAppointment, updateSettings, addClient, addInvoice }}>
       {children}
     </DataContext.Provider>
   );
