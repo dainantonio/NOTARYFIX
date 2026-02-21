@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building, Bell, Save, LogOut, Moon, Sun } from 'lucide-react';
+import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
+  const [smartBusinessInput, setSmartBusinessInput] = useState('');
   const { theme, toggleTheme } = useTheme();
   const { data, updateSettings } = useData();
   
@@ -26,6 +27,29 @@ const Settings = () => {
     updateSettings(formData);
     // Real app would show a Toast here
     alert('Settings Saved Successfully!');
+  };
+
+  const applySmartBusinessFill = (text) => {
+    const source = text.trim();
+    if (!source) return;
+    const businessName = source.match(/(?:business|company)\s*[:\-]\s*([^,\n]+)/i)?.[1]?.trim() || '';
+    const mileage = source.match(/(?:mileage|mile\s*rate)\s*[:\-]?\s*(\d+(?:\.\d+)?)/i)?.[1] || '';
+    const tax = source.match(/(?:tax|tax\s*rate)\s*[:\-]?\s*(\d+(?:\.\d+)?)/i)?.[1] || '';
+    const goal = source.match(/(?:goal|monthly\s*goal)\s*[:\-]?\s*(\d+)/i)?.[1] || '';
+
+    setFormData((prev) => ({
+      ...prev,
+      businessName: prev.businessName || businessName,
+      costPerMile: prev.costPerMile || (mileage ? parseFloat(mileage) : prev.costPerMile),
+      taxRate: prev.taxRate || (tax ? parseFloat(tax) : prev.taxRate),
+      monthlyGoal: prev.monthlyGoal || (goal ? parseInt(goal, 10) : prev.monthlyGoal),
+    }));
+  };
+
+  const handleScanBusinessCard = (file) => {
+    if (!file) return;
+    const pseudoExtract = file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, '');
+    applySmartBusinessFill(pseudoExtract);
   };
 
   return (
@@ -90,6 +114,17 @@ const Settings = () => {
               <Card>
                 <CardHeader><CardTitle>Financial & Metrics</CardTitle></CardHeader>
                 <CardContent className="space-y-6">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
+                    <textarea value={smartBusinessInput} onChange={(e) => setSmartBusinessInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste business details (mileage, tax rate, monthly goal)" />
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button type="button" size="sm" variant="secondary" onClick={() => applySmartBusinessFill(smartBusinessInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
+                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">
+                        <ScanLine className="h-3.5 w-3.5" /> Scan card
+                        <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleScanBusinessCard(e.target.files?.[0])} />
+                      </label>
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label>Business Legal Name</Label>
                     <Input value={formData.businessName} onChange={(e) => setFormData({...formData, businessName: e.target.value})} />

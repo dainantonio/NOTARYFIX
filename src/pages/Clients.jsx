@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { 
-  Search, MoreHorizontal, Mail, Phone, Plus, Filter, Download, 
-  X, User, Building, LayoutGrid, List as ListIcon, CheckCircle2, Clock, AlertCircle
+import {
+  Search, MoreHorizontal, Mail, Phone, Plus, Filter, Download,
+  X, User, Building, LayoutGrid, List as ListIcon, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine
 } from 'lucide-react';
 
 // --- UTILS ---
@@ -139,6 +139,32 @@ const useData = () => useContext(DataContext);
 // --- MODALS ---
 const ClientModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({ name: '', contact: '', email: '', phone: '', type: 'Individual' });
+  const [smartInput, setSmartInput] = useState('');
+
+  const applySmartFill = (text) => {
+    const source = text.trim();
+    if (!source) return;
+    const email = source.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)?.[0] || '';
+    const phone = source.match(/(\+?\d[\d\s().-]{7,}\d)/)?.[0] || '';
+    const company = source.match(/(?:company|client|business)\s*[:\-]\s*([^,\n]+)/i)?.[1]?.trim() || '';
+    const contact = source.match(/(?:contact|name)\s*[:\-]\s*([^,\n]+)/i)?.[1]?.trim() || '';
+    const inferredType = /corp|inc|llc|company|title/i.test(source) ? 'Corporate' : formData.type;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: prev.name || company || contact,
+      contact: prev.contact || contact,
+      email: prev.email || email,
+      phone: prev.phone || phone,
+      type: prev.type === 'Individual' ? inferredType : prev.type,
+    }));
+  };
+
+  const handleReceiptScan = async (file) => {
+    if (!file) return;
+    const pseudoExtract = file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, '');
+    applySmartFill(pseudoExtract);
+  };
 
   if (!isOpen) return null;
 
@@ -157,6 +183,17 @@ const ClientModal = ({ isOpen, onClose, onSave }) => {
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><X className="w-5 h-5" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
+            <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste typed notes, business card text, or details to auto-fill fields" />
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button type="button" size="sm" variant="secondary" onClick={() => applySmartFill(smartInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">
+                <ScanLine className="h-3.5 w-3.5" /> Scan image
+                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleReceiptScan(e.target.files?.[0])} />
+              </label>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Client / Company Name</Label>
             <div className="relative"><Building className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" /><Input required placeholder="Acme Corp" className="pl-9" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} /></div>

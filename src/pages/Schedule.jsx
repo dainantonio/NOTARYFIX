@@ -12,6 +12,7 @@ const Schedule = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [prefillDate, setPrefillDate] = useState('');
+  const [smartCalendarInput, setSmartCalendarInput] = useState('');
   const { data, addAppointment, updateAppointment } = useData();
   const location = useLocation();
   const navigate = useNavigate();
@@ -101,6 +102,32 @@ const Schedule = () => {
     setIsModalOpen(true);
   };
 
+  const parseSmartCalendarInput = () => {
+    const source = smartCalendarInput.trim();
+    if (!source) return;
+
+    const date = source.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || new Date().toISOString().split('T')[0];
+    const time = source.match(/\b\d{1,2}:\d{2}\s?(?:AM|PM)?\b/i)?.[0] || '10:00 AM';
+    const amount = source.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
+    const type = /i-?9/i.test(source) ? 'I-9 Verification' : /loan/i.test(source) ? 'Loan Signing' : /apostille/i.test(source) ? 'Apostille' : 'General Notary';
+    const client = source.match(/(?:for|client)\s+([A-Za-z0-9 .'-]+)/i)?.[1]?.trim() || source.split(' on ')[0].slice(0, 40) || 'New Client';
+
+    addAppointment({
+      id: Date.now(),
+      client,
+      type,
+      date,
+      time,
+      status: 'upcoming',
+      amount: parseFloat(amount) || 0,
+      location: 'TBD',
+      notes: `Smart calendar entry: ${source}`,
+      receiptName: '',
+      receiptImage: '',
+    });
+    setSmartCalendarInput('');
+  };
+
   return (
     <div className="animate-fade-in space-y-6 pb-10">
       <AppointmentModal
@@ -126,9 +153,25 @@ const Schedule = () => {
             <span className="px-4 font-medium text-slate-900 dark:text-white">{currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700"><ChevronRight className="h-5 w-5 text-slate-600 dark:text-slate-300" /></button>
           </div>
+          <Button variant="secondary" onClick={() => setCurrentDate(new Date())}>Today</Button>
           <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Event</Button>
         </div>
       </div>
+
+      <Card>
+        <CardContent className="space-y-3 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              value={smartCalendarInput}
+              onChange={(e) => setSmartCalendarInput(e.target.value)}
+              placeholder="Type: Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150"
+              className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+            <Button onClick={parseSmartCalendarInput}>Smart Add</Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="p-0">
