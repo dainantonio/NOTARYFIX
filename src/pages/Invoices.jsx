@@ -25,6 +25,27 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
     applySmartFill(file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, ''));
   };
 
+  const applySmartFill = (text) => {
+    const source = text.trim();
+    if (!source) return;
+    const amount = source.match(/\$?\s*(\d+(?:\.\d{1,2})?)/)?.[1] || '';
+    const due = source.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
+    const matchedClient = clientOptions.find((opt) => source.toLowerCase().includes(opt.label.toLowerCase()));
+
+    setFormData((prev) => ({
+      ...prev,
+      amount: prev.amount || amount,
+      due: prev.due || due,
+      client: matchedClient?.value || prev.client,
+    }));
+  };
+
+  const handleReceiptScan = async (file) => {
+    if (!file) return;
+    const pseudoExtract = file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, '');
+    applySmartFill(pseudoExtract);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
