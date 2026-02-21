@@ -15,6 +15,7 @@ import {
   TrendingUp,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
   CalendarClock,
   BarChart3,
   Users,
@@ -144,6 +145,8 @@ const Dashboard = () => {
     { id: 'invoice', label: 'Create first invoice', done: false },
     { id: 'payment', label: 'Connect payout settings', done: false },
   ]);
+  const [isProTipExpanded, setIsProTipExpanded] = useState(false);
+  const [lastUpdatedAt] = useState(() => new Date());
 
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -229,6 +232,12 @@ const Dashboard = () => {
 
   const chartStroke = theme === 'dark' ? '#60a5fa' : '#2563eb';
   const gridStroke = theme === 'dark' ? '#334155' : '#e2e8f0';
+  const kpiPeriodLabel = 'Last 30 days';
+  const chartPeriodLabel = 'Monthly trend (YTD)';
+  const formattedLastUpdated = useMemo(
+    () => lastUpdatedAt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+    [lastUpdatedAt],
+  );
 
   return (
     <div className="min-h-screen pb-10">
@@ -269,6 +278,19 @@ const Dashboard = () => {
         </div>
 
         <Card className="border-slate-200/70 dark:border-slate-700">
+          <CardContent className="flex flex-col gap-2 p-4 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant="default">KPI Period</Badge>
+              <span>{kpiPeriodLabel}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="default">Last Updated</Badge>
+              <span>{formattedLastUpdated}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200/70 dark:border-slate-700">
           <CardContent className="flex items-center justify-between p-4 text-sm">
             <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
               <Badge variant="blue">Profile</Badge>
@@ -285,6 +307,7 @@ const Dashboard = () => {
                 <div>
                   <CardTitle>Revenue Velocity</CardTitle>
                   <p className="text-sm text-slate-500 dark:text-slate-400">Financial performance over time</p>
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{chartPeriodLabel} · Last updated {formattedLastUpdated}</p>
                 </div>
                 <Select value={chartType} onChange={(e) => handleChartTypeChange(e.target.value)} options={[{ label: 'Area', value: 'area' }, { label: 'Bar', value: 'bar' }]} className="w-28" />
               </CardHeader>
@@ -405,13 +428,22 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden border-0 bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
-              <CardContent className="p-6">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20"><Award className="h-6 w-6" /></div>
-                <h4 className="mb-2 text-lg font-bold">Premium Pro Tip</h4>
-                <p className="mb-4 text-sm text-indigo-100">{activeProfile.proTip}</p>
-                <Button size="sm" className="bg-white/20 text-white hover:bg-white/30" onClick={() => navigate('/clients')}>Open Command Path</Button>
-              </CardContent>
+            <Card className="border-slate-200/70 dark:border-slate-700">
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">Premium Pro Tip</CardTitle>
+                  <Button size="xs" variant="secondary" onClick={() => setIsProTipExpanded((prev) => !prev)}>
+                    {isProTipExpanded ? 'Hide' : 'Show'} Tip <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isProTipExpanded ? 'rotate-180' : ''}`} />
+                  </Button>
+                </div>
+              </CardHeader>
+              {isProTipExpanded ? (
+                <CardContent className="rounded-b-xl bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20"><Award className="h-6 w-6" /></div>
+                  <p className="mb-4 text-sm text-indigo-100">{activeProfile.proTip}</p>
+                  <Button size="sm" className="bg-white/20 text-white hover:bg-white/30" onClick={() => navigate('/clients')}>Open Command Path</Button>
+                </CardContent>
+              ) : null}
             </Card>
           </aside>
         </div>
