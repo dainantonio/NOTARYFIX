@@ -8,7 +8,6 @@ import {
   Bell,
   ArrowUpRight,
   ArrowDownRight,
-  Sparkles,
   Zap,
   Award,
   Wallet,
@@ -21,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Select, Circul
 import AppointmentModal from '../components/AppointmentModal';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 const revenueData = [
   { name: 'Jan', amount: 2400, prev: 2100 },
@@ -58,11 +57,9 @@ const StatsCard = ({ title, value, change, icon: Icon, trend, loading }) => (
 const AIInsightWidget = ({ loading, onOpenReport }) => {
   if (loading) return <Skeleton className="h-36 w-full rounded-xl" />;
   return (
-    <Card className="relative overflow-hidden border-none bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
-      <div className="absolute right-0 top-0 p-3 opacity-20"><Sparkles className="h-24 w-24" /></div>
-      <CardContent className="relative z-10 p-6 text-white">
+    <Card className="border-none bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+      <CardContent className="p-6 text-white">
         <div className="mb-2 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-yellow-300" />
           <span className="text-xs font-bold uppercase tracking-wider text-indigo-100">AI Insight</span>
         </div>
         <h4 className="mb-1 text-lg font-bold">Revenue spike detected on Fridays</h4>
@@ -73,17 +70,36 @@ const AIInsightWidget = ({ loading, onOpenReport }) => {
   );
 };
 
-const SetupProgress = ({ loading }) => {
-  if (loading) return <Skeleton className="h-28 w-full rounded-xl" />;
+const SetupProgress = ({ loading, checklist, onToggle, onCompleteNext }) => {
+  if (loading) return <Skeleton className="h-36 w-full rounded-xl" />;
+  const completed = checklist.filter((i) => i.done).length;
+  const percent = Math.round((completed / checklist.length) * 100);
+  const hasIncomplete = checklist.some((i) => !i.done);
+
   return (
     <Card className="border-l-4 border-l-blue-500">
       <CardContent className="p-5">
         <div className="mb-2 flex items-center justify-between">
           <h4 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white"><Zap className="h-4 w-4 text-blue-500" /> Setup Progress</h4>
-          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">75%</span>
+          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{percent}%</span>
         </div>
-        <Progress value={75} className="mb-2 h-2" />
-        <p className="text-xs text-slate-500 dark:text-slate-400">Almost there! Add your first <span className="font-medium text-slate-900 dark:text-white">Invoice</span>.</p>
+        <Progress value={percent} className="mb-3 h-2" />
+        <div className="space-y-2">
+          {checklist.map((item) => (
+            <button key={item.id} onClick={() => onToggle(item.id)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-700">
+              <span className={`h-3 w-3 rounded-full border ${item.done ? 'border-emerald-500 bg-emerald-500' : 'border-slate-400'}`} />
+              <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300'}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+        <Button
+          size="xs"
+          className="mt-4 w-full"
+          disabled={!hasIncomplete}
+          onClick={onCompleteNext}
+        >
+          {hasIncomplete ? 'Complete next setup step' : 'Setup complete'}
+        </Button>
       </CardContent>
     </Card>
   );
@@ -92,6 +108,17 @@ const SetupProgress = ({ loading }) => {
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chartType, setChartType] = useState(() => {
+    if (typeof window === 'undefined') return 'area';
+    return localStorage.getItem('dashboard_chart_type') || 'area';
+  });
+  const [setupChecklist, setSetupChecklist] = useState([
+    { id: 'profile', label: 'Complete business profile', done: true },
+    { id: 'client', label: 'Add first client', done: true },
+    { id: 'invoice', label: 'Create first invoice', done: false },
+    { id: 'payment', label: 'Connect payout settings', done: false },
+  ]);
+
   const { theme } = useTheme();
   const navigate = useNavigate();
   const { data, addAppointment } = useData();
@@ -122,6 +149,11 @@ const Dashboard = () => {
     return total ? Math.round((completedCount / total) * 100) : 0;
   }, [upcomingCount, completedCount]);
 
+  const upcomingAppointments = useMemo(
+    () => data.appointments.filter((apt) => apt.status === 'upcoming').slice(0, 5),
+    [data.appointments],
+  );
+
   const handleSaveAppointment = (formData) => {
     addAppointment({
       id: Date.now(),
@@ -141,6 +173,26 @@ const Dashboard = () => {
   const chartStroke = theme === 'dark' ? '#3b82f6' : '#2563eb';
   const gridStroke = theme === 'dark' ? '#334155' : '#e2e8f0';
 
+  const toggleSetup = (id) => {
+    setSetupChecklist((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
+  };
+
+  const completeNextSetup = () => {
+    setSetupChecklist((prev) => {
+      const nextIncompleteIndex = prev.findIndex((item) => !item.done);
+      if (nextIncompleteIndex < 0) return prev;
+
+      return prev.map((item, index) => (index === nextIncompleteIndex ? { ...item, done: true } : item));
+    });
+  };
+
+  const handleChartTypeChange = (value) => {
+    setChartType(value);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard_chart_type', value);
+    }
+  };
+
   return (
     <div className="min-h-screen pb-10">
       <div className="mx-auto max-w-[1400px] space-y-8 px-5 py-8 md:px-8">
@@ -159,9 +211,7 @@ const Dashboard = () => {
               <Bell className="h-5 w-5 text-slate-600 dark:text-slate-300" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500 dark:border-slate-800"></span>
             </Button>
-            <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-blue-500/20">
-              <Plus className="mr-2 h-4 w-4" /> New Appointment
-            </Button>
+            <Button onClick={() => setIsModalOpen(true)} className="shadow-lg shadow-blue-500/20"><Plus className="mr-2 h-4 w-4" /> New Appointment</Button>
           </div>
         </header>
 
@@ -173,7 +223,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="md:col-span-2"><AIInsightWidget loading={loading} onOpenReport={() => navigate('/invoices')} /></div>
-          <div><SetupProgress loading={loading} /></div>
+          <div><SetupProgress loading={loading} checklist={setupChecklist} onToggle={toggleSetup} onCompleteNext={completeNextSetup} /></div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -191,7 +241,7 @@ const Dashboard = () => {
                   <CardTitle>Revenue Velocity</CardTitle>
                   <p className="text-sm text-slate-500 dark:text-slate-400">Financial performance over time</p>
                 </div>
-                <Select options={[{ label: 'This Year', value: 'year' }]} className="w-32" />
+                <Select value={chartType} onChange={(e) => handleChartTypeChange(e.target.value)} options={[{ label: 'Area', value: 'area' }, { label: 'Bar', value: 'bar' }]} className="w-28" />
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -199,19 +249,29 @@ const Dashboard = () => {
                 ) : (
                   <div className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={chartStroke} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={chartStroke} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
-                        <RechartsTooltip />
-                        <Area type="monotone" dataKey="amount" stroke={chartStroke} strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-                      </AreaChart>
+                      {chartType === 'area' ? (
+                        <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={chartStroke} stopOpacity={0.3} />
+                              <stop offset="95%" stopColor={chartStroke} stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
+                          <RechartsTooltip />
+                          <Area type="monotone" dataKey="amount" stroke={chartStroke} strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                        </AreaChart>
+                      ) : (
+                        <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
+                          <RechartsTooltip />
+                          <Bar dataKey="amount" fill={chartStroke} radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      )}
                     </ResponsiveContainer>
                   </div>
                 )}
@@ -229,11 +289,15 @@ const Dashboard = () => {
                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
                   {loading ? (
                     [1, 2, 3].map((i) => <div key={i} className="p-6"><Skeleton className="h-12 w-full" /></div>)
-                  ) : data.appointments.length === 0 ? (
+                  ) : upcomingAppointments.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">No appointments scheduled.</div>
                   ) : (
-                    data.appointments.slice(0, 5).map((apt) => (
-                      <div key={apt.id} className="group flex flex-col justify-between p-6 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 sm:flex-row sm:items-center">
+                    upcomingAppointments.map((apt) => (
+                      <button
+                        key={apt.id}
+                        onClick={() => navigate('/schedule', { state: { editAppointmentId: apt.id } })}
+                        className="group flex w-full flex-col justify-between p-6 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 sm:flex-row sm:items-center"
+                      >
                         <div className="flex items-start gap-4">
                           <div className={`rounded-xl p-3 ${apt.status === 'upcoming' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
                             <Clock className="h-5 w-5" />
@@ -250,9 +314,9 @@ const Dashboard = () => {
                         <div className="mt-4 flex items-center gap-4 sm:mt-0">
                           <span className="font-bold text-slate-900 dark:text-white">${apt.amount}</span>
                           <Badge variant={apt.status === 'upcoming' ? 'blue' : 'success'}>{apt.status === 'upcoming' ? 'Scheduled' : 'Completed'}</Badge>
-                          <Button size="xs" variant="secondary" onClick={() => navigate('/schedule')}>Open</Button>
+                          <span className="text-xs text-blue-600 dark:text-blue-400">Edit</span>
                         </div>
-                      </div>
+                      </button>
                     ))
                   )}
                 </div>
@@ -278,30 +342,17 @@ const Dashboard = () => {
             </Card>
 
             <Card className="border-slate-200/70 dark:border-slate-700">
-              <CardHeader>
-                <CardTitle>Pipeline Health</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Pipeline Health</CardTitle></CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
-                  <span className="text-slate-500 dark:text-slate-300">Upcoming</span>
-                  <span className="font-bold">{upcomingCount}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
-                  <span className="text-slate-500 dark:text-slate-300">Completed</span>
-                  <span className="font-bold">{completedCount}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
-                  <span className="text-slate-500 dark:text-slate-300">Avg per signing</span>
-                  <span className="font-bold">${avgTicket}</span>
-                </div>
+                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><span className="text-slate-500 dark:text-slate-300">Upcoming</span><span className="font-bold">{upcomingCount}</span></div>
+                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><span className="text-slate-500 dark:text-slate-300">Completed</span><span className="font-bold">{completedCount}</span></div>
+                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><span className="text-slate-500 dark:text-slate-300">Avg per signing</span><span className="font-bold">${avgTicket}</span></div>
               </CardContent>
             </Card>
 
             <div className="relative overflow-hidden rounded-xl bg-slate-900 p-6 text-white dark:bg-black">
               <div className="relative z-10">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-                  <Award className="h-6 w-6 text-white" />
-                </div>
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600"><Award className="h-6 w-6 text-white" /></div>
                 <h4 className="mb-2 text-lg font-bold">Pro Tip</h4>
                 <p className="mb-4 text-sm text-slate-300">Press <kbd className="rounded bg-white/20 px-1 py-0.5 font-mono text-white">Cmd + K</kbd> to search or take quick actions.</p>
                 <Button size="sm" className="bg-white/20 text-white hover:bg-white/30" onClick={() => navigate('/clients')}>Open Clients</Button>
