@@ -62,8 +62,22 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const addClient = (client) => {
+    setData((prev) => ({
+      ...prev,
+      clients: [client, ...(prev.clients || [])],
+    }));
+  };
+
+  const addInvoice = (invoice) => {
+    setData((prev) => ({
+      ...prev,
+      invoices: [invoice, ...(prev.invoices || [])],
+    }));
+  };
+
   return (
-    <DataContext.Provider value={{ data, addAppointment, updateAppointment, updateSettings }}>
+    <DataContext.Provider value={{ data, addAppointment, updateAppointment, updateSettings, addClient, addInvoice }}>
       {children}
     </DataContext.Provider>
   );
