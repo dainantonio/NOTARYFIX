@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Schedule from './pages/Schedule';
@@ -33,7 +33,6 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/legal" element={<Legal />} />
-          <Route path="/compliance" element={<Legal />} />
           <Route path="/pricing" element={<Pricing />} />
 
           {/* Protected Dashboard Routes */}
