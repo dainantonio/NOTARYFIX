@@ -1,13 +1,27 @@
-import React, { useMemo, useState } from 'react';
-import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 
-const InvoiceModal = ({ isOpen, onClose, onSave }) => {
+const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
   const { data } = useData();
   const clientOptions = (data?.clients || []).map((c) => ({ label: c.name, value: c.name }));
-  const [formData, setFormData] = useState({ client: clientOptions[0]?.value || '', amount: '', due: '' });
+  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending' });
   const [smartInput, setSmartInput] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (initialInvoice) {
+      setFormData({
+        client: initialInvoice.client || '',
+        amount: String(initialInvoice.amount || ''),
+        due: /^\d{4}-\d{2}-\d{2}$/.test(initialInvoice.due || '') ? initialInvoice.due : '',
+        status: initialInvoice.status || 'Pending',
+      });
+      return;
+    }
+    setFormData({ client: clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending' });
+  }, [isOpen, initialInvoice, clientOptions]);
 
   if (!isOpen) return null;
 
@@ -16,8 +30,9 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
     if (!source) return;
     const amount = source.match(/\$?\s*(\d+(?:\.\d{1,2})?)/)?.[1] || '';
     const due = source.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
+    const status = /paid/i.test(source) ? 'Paid' : /overdue/i.test(source) ? 'Overdue' : 'Pending';
     const matchedClient = clientOptions.find((opt) => source.toLowerCase().includes(opt.label.toLowerCase()));
-    setFormData((prev) => ({ ...prev, amount: prev.amount || amount, due: prev.due || due, client: matchedClient?.value || prev.client }));
+    setFormData((prev) => ({ ...prev, amount: prev.amount || amount, due: prev.due || due, client: matchedClient?.value || prev.client, status }));
   };
 
   const handleReceiptScan = (file) => {
@@ -28,14 +43,13 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
-      id: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: initialInvoice?.id || `INV-${Math.floor(1000 + Math.random() * 9000)}`,
       client: formData.client || (clientOptions[0]?.value || 'Unknown'),
       amount: parseFloat(formData.amount) || 0,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      date: initialInvoice?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       due: formData.due,
-      status: 'Pending',
+      status: formData.status,
     });
-    setFormData({ client: clientOptions[0]?.value || '', amount: '', due: '' });
     setSmartInput('');
     onClose();
   };
@@ -44,13 +58,13 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800">
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-800/60">
-          <h3 className="font-semibold text-slate-900 dark:text-white">Create Invoice</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white">{initialInvoice ? 'Edit Invoice' : 'Create Invoice'}</h3>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
             <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
-            <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste invoice details (client, amount, due date)" />
+            <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste invoice details (client, amount, due date, status)" />
             <div className="mt-2 flex flex-wrap gap-2">
               <Button type="button" size="sm" variant="secondary" onClick={() => applySmartFill(smartInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
               <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">
@@ -65,7 +79,7 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
             {clientOptions.length > 0 ? <Select options={clientOptions} value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} /> : <p className="rounded-md bg-red-50 p-2 text-sm text-red-600">Please add a client first.</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <Label>Amount ($)</Label>
               <div className="relative">
@@ -77,10 +91,15 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
               <Label>Due Date</Label>
               <Input required type="date" value={formData.due} onChange={(e) => setFormData({ ...formData, due: e.target.value })} />
             </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} options={[{ label: 'Pending', value: 'Pending' }, { label: 'Paid', value: 'Paid' }, { label: 'Overdue', value: 'Overdue' }]} />
+            </div>
           </div>
+
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
-            <Button type="submit" className="flex-1" disabled={clientOptions.length === 0}>Generate</Button>
+            <Button type="submit" className="flex-1" disabled={clientOptions.length === 0}>{initialInvoice ? 'Save Changes' : 'Generate'}</Button>
           </div>
         </form>
       </div>
@@ -90,7 +109,8 @@ const InvoiceModal = ({ isOpen, onClose, onSave }) => {
 
 const Invoices = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { data, addInvoice } = useData();
+  const [editingInvoice, setEditingInvoice] = useState(null);
+  const { data, addInvoice, updateInvoice, deleteInvoice } = useData();
   const invoices = data?.invoices || [];
 
   const totals = useMemo(() => ({
@@ -106,9 +126,18 @@ const Invoices = () => {
     return <Badge>{status}</Badge>;
   };
 
+  const handleSaveInvoice = (payload) => {
+    if (editingInvoice) {
+      updateInvoice(editingInvoice.id, payload);
+      setEditingInvoice(null);
+      return;
+    }
+    addInvoice(payload);
+  };
+
   return (
     <div className="space-y-6 pb-10">
-      <InvoiceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={addInvoice} />
+      <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} />
 
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
@@ -139,11 +168,12 @@ const Invoices = () => {
                 <th className="px-6 py-4">Issued</th>
                 <th className="px-6 py-4">Due</th>
                 <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {invoices.length === 0 ? (
-                <tr><td colSpan="6" className="py-8 text-center text-slate-500">No invoices yet.</td></tr>
+                <tr><td colSpan="7" className="py-8 text-center text-slate-500">No invoices yet.</td></tr>
               ) : invoices.map((invoice) => (
                 <tr key={invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{invoice.id}</td>
@@ -152,6 +182,12 @@ const Invoices = () => {
                   <td className="px-6 py-4">{invoice.date}</td>
                   <td className="px-6 py-4">{invoice.due}</td>
                   <td className="px-6 py-4">{getStatusBadge(invoice.status)}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="danger" onClick={() => deleteInvoice(invoice.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
