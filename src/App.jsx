@@ -6,6 +6,7 @@ import Schedule from './pages/Schedule';
 import Clients from './pages/Clients';
 import Invoices from './pages/Invoices';
 import Settings from './pages/Settings';
+import Mileage from './pages/mileage';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Legal from './pages/Legal';
@@ -14,7 +15,7 @@ import Pricing from './pages/Pricing';
 // A wrapper to intelligently hide the Dashboard Layout when on Landing/Auth pages
 const AppLayout = ({ children }) => {
   const location = useLocation();
-  const publicRoutes = ['/', '/auth', '/legal', '/pricing'];
+  const publicRoutes = ['/', '/auth', '/pricing'];
   
   if (publicRoutes.includes(location.pathname)) {
     return children;
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/compliance" element={<Legal />} />
           <Route path="/pricing" element={<Pricing />} />
 
           {/* Protected Dashboard Routes */}
@@ -40,6 +42,7 @@ function App() {
           <Route path="/clients" element={<Clients />} />
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/mileage" element={<Mileage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
