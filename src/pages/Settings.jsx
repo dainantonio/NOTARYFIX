@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw } from 'lucide-react';
+import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
@@ -19,11 +19,12 @@ const Settings = () => {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'business', label: 'Business', icon: Building },
+    { id: 'compliance', label: 'Compliance', icon: ShieldCheck },
     { id: 'preferences', label: 'Preferences', icon: Bell },
   ];
 
   const settingsHealth = useMemo(() => {
-    const checks = [formData.name, formData.businessName, formData.costPerMile, formData.taxRate, formData.monthlyGoal];
+    const checks = [formData.name, formData.businessName, formData.costPerMile, formData.taxRate, formData.monthlyGoal, formData.eAndOExpiresOn, formData.complianceReviewDay];
     const filled = checks.filter(Boolean).length;
     return Math.round((filled / checks.length) * 100);
   }, [formData]);
@@ -127,10 +128,37 @@ const Settings = () => {
                   <div><Label>Est. Tax Rate (%)</Label><Input type="number" value={formData.taxRate ?? ''} onChange={(e) => setFormData({ ...formData, taxRate: parseInt(e.target.value, 10) || 0 })} /></div>
                   <div><Label>Monthly Goal ($)</Label><Input type="number" value={formData.monthlyGoal ?? ''} onChange={(e) => setFormData({ ...formData, monthlyGoal: parseInt(e.target.value, 10) || 0 })} /></div>
                 </div>
+                <div><Label>Commission Rate (%)</Label><Input type="number" value={formData.commissionRate ?? ''} onChange={(e) => setFormData({ ...formData, commissionRate: parseInt(e.target.value, 10) || 0 })} /></div>
 
                 <div className="flex justify-end gap-2">
                   <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
                   <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Update Business</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === 'compliance' && (
+            <Card>
+              <CardHeader><CardTitle>Compliance Defaults</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <Label>E&O Insurance Expiration</Label>
+                    <Input type="date" value={formData.eAndOExpiresOn || ''} onChange={(e) => setFormData({ ...formData, eAndOExpiresOn: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label>Weekly Compliance Review Day</Label>
+                    <Input placeholder="Monday" value={formData.complianceReviewDay || ''} onChange={(e) => setFormData({ ...formData, complianceReviewDay: e.target.value })} />
+                  </div>
+                </div>
+                <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">Operations Guardrail</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">These values are used to keep mileage deductions, revenue targets, and compliance reminders aligned across the dashboard.</p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
+                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Compliance</Button>
                 </div>
               </CardContent>
             </Card>
