@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useData } from '../context/DataContext';
+import { getGateState } from '../utils/gates';
 
 const Admin = () => {
-  const { data, updateSettings } = useData();
+  const { data } = useData();
   const currentRole = data.settings?.userRole || 'owner';
   const [state, setState] = useState('California');
   const [ackFee, setAckFee] = useState('15.00');
 
-  const isAdmin = useMemo(() => ['admin', 'owner'].includes(currentRole), [currentRole]);
+  const isAdmin = useMemo(() => getGateState('admin', { role: currentRole, planTier: data.settings?.planTier }).allowed, [currentRole, data.settings?.planTier]);
 
   if (!isAdmin) {
     return (
@@ -33,7 +34,7 @@ const Admin = () => {
       <Card>
         <CardHeader>
           <CardTitle>Admin Control Center</CardTitle>
-          <Button size="sm" variant="secondary" onClick={() => updateSettings({ userRole: currentRole === 'admin' ? 'owner' : 'admin' })}>Toggle Role ({currentRole})</Button>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">Role: {currentRole}</span>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

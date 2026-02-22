@@ -5,6 +5,8 @@ import {
   ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench
 } from 'lucide-react';
+import { useData } from '../context/DataContext';
+import { getGateState } from '../utils/gates';
 
 // --- INLINED COMPONENTS FOR STABILITY ---
 const Button = ({ children, variant = 'primary', size = 'default', className = '', ...props }) => {
@@ -79,6 +81,12 @@ const LayoutInner = ({ children }) => {
   
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { data } = useData();
+  const gateContext = { planTier: data.settings?.planTier, role: data.settings?.userRole };
+  const signerPortalGate = getGateState('signerPortal', gateContext);
+  const teamDispatchGate = getGateState('teamDispatch', gateContext);
+  const aiTrainerGate = getGateState('aiTrainer', gateContext);
+  const adminGate = getGateState('admin', gateContext);
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
@@ -100,13 +108,13 @@ const LayoutInner = ({ children }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Schedule', path: '/schedule' },
     { icon: Users, label: 'Clients', path: '/clients' },
-    { icon: UserCheck, label: 'Signer Portal', path: '/signer-portal', badge: 'PRO', locked: true },
+    { icon: UserCheck, label: 'Signer Portal', path: '/signer-portal', badge: 'PRO', locked: !signerPortalGate.allowed },
     { icon: ScrollText, label: 'Journal', path: '/journal' },
     { icon: Wallet, label: 'Finances', path: '/invoices' },
     { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
-    { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: true },
-    { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: true },
-    { icon: Wrench, label: 'Admin', path: '/admin' },
+    { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
+    { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
+    { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];

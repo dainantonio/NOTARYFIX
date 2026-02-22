@@ -16,6 +16,7 @@ import Journal from './pages/Journal';
 import TeamDispatch from './pages/TeamDispatch';
 import AITrainer from './pages/AITrainer';
 import Admin from './pages/Admin';
+import GatedRoute from './components/GatedRoute';
 
 // A wrapper to intelligently hide the Dashboard Layout when on Landing/Auth pages
 const AppLayout = ({ children }) => {
@@ -46,10 +47,10 @@ function App() {
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/invoices" element={<Invoices />} />
-          <Route path="/signer-portal" element={<SignerPortal />} />
+          <Route path="/signer-portal" element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
           <Route path="/journal" element={<Journal />} />
-          <Route path="/team-dispatch" element={<TeamDispatch />} />
-          <Route path="/ai-trainer" element={<AITrainer />} />
+          <Route path="/team-dispatch" element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
+          <Route path="/ai-trainer" element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/mileage" element={<Mileage />} />
