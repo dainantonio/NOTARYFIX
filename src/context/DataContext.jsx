@@ -26,14 +26,7 @@ const defaultData = {
     costPerMile: 0.67,
     taxRate: 15,
     monthlyGoal: 15000,
-    commissionRate: 12,
-    complianceReviewDay: 'Monday',
-    eAndOExpiresOn: '2026-12-31',
   },
-  complianceItems: [
-    { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },
-    { id: 2, title: 'Journal Entries Up To Date', category: 'Records', dueDate: new Date().toISOString().split('T')[0], status: 'Needs Review', notes: 'Review latest 5 signings for completeness.' },
-  ],
 };
 
 export const DataProvider = ({ children }) => {
@@ -50,7 +43,6 @@ export const DataProvider = ({ children }) => {
             clients: Array.isArray(parsed.clients) ? parsed.clients : defaultData.clients,
             invoices: Array.isArray(parsed.invoices) ? parsed.invoices : defaultData.invoices,
             mileageLogs: Array.isArray(parsed.mileageLogs) ? parsed.mileageLogs : defaultData.mileageLogs,
-            complianceItems: Array.isArray(parsed.complianceItems) ? parsed.complianceItems : defaultData.complianceItems,
             settings: { ...defaultData.settings, ...(parsed.settings || {}) },
           };
         } catch {
@@ -142,27 +134,6 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
-  const addComplianceItem = (item) => {
-    setData((prev) => ({
-      ...prev,
-      complianceItems: [item, ...(prev.complianceItems || [])],
-    }));
-  };
-
-  const updateComplianceItem = (itemId, updates) => {
-    setData((prev) => ({
-      ...prev,
-      complianceItems: (prev.complianceItems || []).map((item) => (item.id === itemId ? { ...item, ...updates } : item)),
-    }));
-  };
-
-  const deleteComplianceItem = (itemId) => {
-    setData((prev) => ({
-      ...prev,
-      complianceItems: (prev.complianceItems || []).filter((item) => item.id !== itemId),
-    }));
-  };
-
   return (
     <DataContext.Provider
       value={{
@@ -178,9 +149,6 @@ export const DataProvider = ({ children }) => {
         addMileageLog,
         updateMileageLog,
         deleteMileageLog,
-        addComplianceItem,
-        updateComplianceItem,
-        deleteComplianceItem,
       }}
     >
       {children}
