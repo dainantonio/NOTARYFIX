@@ -6,6 +6,7 @@ import Schedule from './pages/Schedule';
 import Clients from './pages/Clients';
 import Invoices from './pages/Invoices';
 import Settings from './pages/Settings';
+import Mileage from './pages/mileage';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Legal from './pages/Legal';
@@ -40,6 +41,7 @@ function App() {
           <Route path="/clients" element={<Clients />} />
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/mileage" element={<Mileage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
