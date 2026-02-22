@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Download, Wand2, ScanLine, Pencil, Trash2, Play, Square, Navigation } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Plus, Download, Wand2, ScanLine, Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useData } from '../context/DataContext';
 
@@ -11,49 +11,9 @@ const Mileage = () => {
   const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], destination: '', purpose: '', miles: '' });
   const [smartInput, setSmartInput] = useState('');
   const [editingId, setEditingId] = useState(null);
-  const [isTracking, setIsTracking] = useState(false);
-  const [gpsMiles, setGpsMiles] = useState(0);
-  const [gpsError, setGpsError] = useState('');
-  const watchIdRef = useRef(null);
-  const lastPositionRef = useRef(null);
 
   const totalMiles = useMemo(() => logs.reduce((sum, log) => sum + (parseFloat(log.miles) || 0), 0), [logs]);
   const totalDeduction = totalMiles * costPerMile;
-
-  useEffect(() => () => {
-    if (watchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-    }
-  }, []);
-
-  const calculateDistanceMiles = (prevPoint, nextPoint) => {
-    const toRad = (deg) => (deg * Math.PI) / 180;
-    const earthRadiusMiles = 3958.8;
-
-    const dLat = toRad(nextPoint.latitude - prevPoint.latitude);
-    const dLon = toRad(nextPoint.longitude - prevPoint.longitude);
-    const lat1 = toRad(prevPoint.latitude);
-    const lat2 = toRad(nextPoint.latitude);
-
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return earthRadiusMiles * c;
-  };
-
-  const applySmartFill = (text) => {
-    const source = text.trim();
-    if (!source) return;
-    const date = source.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || formData.date;
-    const miles = source.match(/(\d+(?:\.\d+)?)\s?(?:mi|miles)/i)?.[1] || '';
-    const destination = source.match(/(?:to|destination)\s*[:\-]?\s*([A-Za-z0-9 .,'-]+)/i)?.[1]?.trim() || formData.destination;
-    const purpose = source.match(/(?:purpose|for)\s*[:\-]?\s*([A-Za-z0-9 .,'-]+)/i)?.[1]?.trim() || formData.purpose;
-    setFormData((prev) => ({ ...prev, date, miles: prev.miles || miles, destination: prev.destination || destination, purpose: prev.purpose || purpose }));
-  };
-
-  const handleScan = (file) => {
-    if (!file) return;
-    applySmartFill(file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, ''));
-  };
 
   const applySmartFill = (text) => {
     const source = text.trim();
@@ -72,7 +32,6 @@ const Mileage = () => {
 
   const handleSaveLog = (e) => {
     e.preventDefault();
-    if (isTracking) stopGpsTracking();
     const payload = { date: formData.date, destination: formData.destination, purpose: formData.purpose, miles: parseFloat(formData.miles) || 0 };
     if (editingId) {
       updateMileageLog(editingId, payload);
@@ -84,59 +43,7 @@ const Mileage = () => {
     setSmartInput('');
   };
 
-  const startGpsTracking = () => {
-    if (editingId) {
-      setGpsError('Finish editing the current trip before starting GPS tracking.');
-      return;
-    }
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setGpsError('Geolocation is not supported on this device/browser.');
-      return;
-    }
-
-    setGpsError('');
-    setGpsMiles(0);
-    lastPositionRef.current = null;
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        const currentPoint = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-
-        if (lastPositionRef.current) {
-          const increment = calculateDistanceMiles(lastPositionRef.current, currentPoint);
-          if (increment > 0) {
-            setGpsMiles((prev) => {
-              const next = prev + increment;
-              setFormData((currentForm) => ({ ...currentForm, miles: next.toFixed(2) }));
-              return next;
-            });
-          }
-        }
-
-        lastPositionRef.current = currentPoint;
-      },
-      (error) => {
-        setGpsError(`GPS error: ${error.message}`);
-        setIsTracking(false);
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
-    );
-    setIsTracking(true);
-  };
-
-  const stopGpsTracking = () => {
-    if (watchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    setIsTracking(false);
-    lastPositionRef.current = null;
-  };
-
   const startEdit = (log) => {
-    if (isTracking) stopGpsTracking();
     setEditingId(log.id);
     setFormData({ date: log.date, destination: log.destination, purpose: log.purpose, miles: String(log.miles) });
   };
@@ -178,19 +85,6 @@ const Mileage = () => {
               </div>
 
               <form onSubmit={handleSaveLog} className="space-y-4">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-                  <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Navigation className="h-3.5 w-3.5" /> Auto-calculate Miles (GPS)</div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {!isTracking ? (
-                      <Button type="button" size="sm" onClick={startGpsTracking}><Play className="mr-1 h-3.5 w-3.5" /> Start GPS</Button>
-                    ) : (
-                      <Button type="button" size="sm" variant="danger" onClick={stopGpsTracking}><Square className="mr-1 h-3.5 w-3.5" /> Stop GPS</Button>
-                    )}
-                    <span className="text-xs text-slate-600 dark:text-slate-300">Tracked: <strong>{gpsMiles.toFixed(2)} mi</strong></span>
-                  </div>
-                  {gpsError ? <p className="mt-2 text-xs text-red-500">{gpsError}</p> : null}
-                </div>
-
                 <div><Label>Date</Label><Input required type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></div>
                 <div><Label>Destination / Address</Label><Input required placeholder="123 Main St" value={formData.destination} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} /></div>
                 <div><Label>Business Purpose</Label><Input required placeholder="Loan Signing for Smith" value={formData.purpose} onChange={(e) => setFormData({ ...formData, purpose: e.target.value })} /></div>
