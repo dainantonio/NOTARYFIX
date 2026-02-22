@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Search, Mail, Phone, Building, User, X, Wand2, ScanLine, MoreHorizontal } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
+import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal } from 'lucide-react';
+import { Card, CardContent, CardHeader, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 
 const ClientModal = ({ isOpen, onClose, onSave }) => {
@@ -104,6 +104,15 @@ const Clients = () => {
     return (data.clients || []).filter((client) => [client.name, client.contact, client.email, client.phone, client.type].join(' ').toLowerCase().includes(q));
   }, [data.clients, query]);
 
+  const clientMetrics = useMemo(() => {
+    const allClients = data.clients || [];
+    return {
+      total: allClients.length,
+      corporate: allClients.filter((client) => /corporate|title/i.test(client.type || '')).length,
+      active: allClients.filter((client) => client.status === 'Active').length,
+    };
+  }, [data.clients]);
+
   return (
     <div className="space-y-6 pb-10">
       <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={addClient} />
@@ -118,6 +127,12 @@ const Clients = () => {
           <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> Add Client</Button>
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Total Clients</p><p className="text-2xl font-bold text-slate-900 dark:text-white">{clientMetrics.total}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Enterprise Accounts</p><p className="text-2xl font-bold text-blue-600">{clientMetrics.corporate}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Active</p><p className="text-2xl font-bold text-emerald-600">{clientMetrics.active}</p></CardContent></Card>
+      </div>
 
       <Card>
         <CardHeader>
