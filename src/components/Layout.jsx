@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, BrowserRouter, useInRouterContext } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
-  Shield, ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X
+  ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
+  UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench
 } from 'lucide-react';
 
 // --- INLINED COMPONENTS FOR STABILITY ---
@@ -99,9 +100,14 @@ const LayoutInner = ({ children }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Schedule', path: '/schedule' },
     { icon: Users, label: 'Clients', path: '/clients' },
-    { icon: FileText, label: 'Invoices', path: '/invoices' },
+    { icon: UserCheck, label: 'Signer Portal', path: '/signer-portal', badge: 'PRO', locked: true },
+    { icon: ScrollText, label: 'Journal', path: '/journal' },
+    { icon: Wallet, label: 'Finances', path: '/invoices' },
+    { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
+    { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: true },
+    { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: true },
+    { icon: Wrench, label: 'Admin', path: '/admin' },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
-    { icon: Shield, label: 'Compliance', path: '/legal' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -129,7 +135,13 @@ const LayoutInner = ({ children }) => {
           {navItems.map((item) => (
             <Link key={item.path} to={item.path} title={isSidebarCollapsed ? item.label : ''} className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all group ${location.pathname === item.path ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <item.icon className={`w-5 h-5 transition-colors ${location.pathname === item.path ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-              {!isSidebarCollapsed && <span className="animate-fade-in">{item.label}</span>}
+              {!isSidebarCollapsed && (
+                <>
+                  <span className="animate-fade-in">{item.label}</span>
+                  {item.badge ? <span className="ml-auto rounded-full border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:border-amber-500 dark:text-amber-400">{item.badge}</span> : null}
+                  {item.locked ? <Lock className="h-3.5 w-3.5 text-amber-500" /> : null}
+                </>
+              )}
             </Link>
           ))}
         </nav>
@@ -144,6 +156,11 @@ const LayoutInner = ({ children }) => {
 
           {!isSidebarCollapsed ? (
             <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl animate-fade-in">
+              <div className="mb-3 rounded-xl border border-blue-200 bg-gradient-to-br from-indigo-600 to-purple-600 p-3 text-white shadow-md">
+                <div className="flex items-center gap-2 text-sm font-semibold">Upgrade to Pro</div>
+                <p className="mt-1 text-xs text-blue-100">Unlock premium features and workflows.</p>
+                <Button size="sm" className="mt-2 w-full bg-white text-indigo-700 hover:bg-indigo-50">Upgrade Now</Button>
+              </div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">DA</div>
                 <div className="overflow-hidden">
