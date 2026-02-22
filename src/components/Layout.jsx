@@ -101,7 +101,7 @@ const LayoutInner = ({ children }) => {
     { icon: Users, label: 'Clients', path: '/clients' },
     { icon: FileText, label: 'Invoices', path: '/invoices' },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
-    { icon: Shield, label: 'Compliance', path: '/compliance' },
+    { icon: Shield, label: 'Compliance', path: '/legal' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
