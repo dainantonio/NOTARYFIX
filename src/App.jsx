@@ -11,6 +11,11 @@ import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Legal from './pages/Legal';
 import Pricing from './pages/Pricing';
+import SignerPortal from './pages/SignerPortal';
+import Journal from './pages/Journal';
+import TeamDispatch from './pages/TeamDispatch';
+import AITrainer from './pages/AITrainer';
+import Admin from './pages/Admin';
 
 // A wrapper to intelligently hide the Dashboard Layout when on Landing/Auth pages
 const AppLayout = ({ children }) => {
@@ -41,6 +46,11 @@ function App() {
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/invoices" element={<Invoices />} />
+          <Route path="/signer-portal" element={<SignerPortal />} />
+          <Route path="/journal" element={<Journal />} />
+          <Route path="/team-dispatch" element={<TeamDispatch />} />
+          <Route path="/ai-trainer" element={<AITrainer />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/mileage" element={<Mileage />} />
           

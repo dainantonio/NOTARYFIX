@@ -23,6 +23,8 @@ const defaultData = {
   settings: {
     name: 'Dain Antonio',
     businessName: 'Antonio Mobile Notary',
+    planTier: 'free',
+    userRole: 'owner',
     costPerMile: 0.67,
     taxRate: 15,
     monthlyGoal: 15000,
