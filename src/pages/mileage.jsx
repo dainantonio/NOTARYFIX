@@ -55,21 +55,6 @@ const Mileage = () => {
     applySmartFill(file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, ''));
   };
 
-  const applySmartFill = (text) => {
-    const source = text.trim();
-    if (!source) return;
-    const date = source.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || formData.date;
-    const miles = source.match(/(\d+(?:\.\d+)?)\s?(?:mi|miles)/i)?.[1] || '';
-    const destination = source.match(/(?:to|destination)\s*[:\-]?\s*([A-Za-z0-9 .,'-]+)/i)?.[1]?.trim() || formData.destination;
-    const purpose = source.match(/(?:purpose|for)\s*[:\-]?\s*([A-Za-z0-9 .,'-]+)/i)?.[1]?.trim() || formData.purpose;
-    setFormData((prev) => ({ ...prev, date, miles: prev.miles || miles, destination: prev.destination || destination, purpose: prev.purpose || purpose }));
-  };
-
-  const handleScan = (file) => {
-    if (!file) return;
-    applySmartFill(file.name.replace(/[_-]/g, ' ').replace(/\.[^.]+$/, ''));
-  };
-
   const handleSaveLog = (e) => {
     e.preventDefault();
     if (isTracking) stopGpsTracking();
