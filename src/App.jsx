@@ -9,14 +9,15 @@ import Settings from './pages/Settings';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Legal from './pages/Legal';
+import Pricing from './pages/Pricing';
 
 // A wrapper to intelligently hide the Dashboard Layout when on Landing/Auth pages
 const AppLayout = ({ children }) => {
   const location = useLocation();
-  const publicRoutes = ['/', '/auth', '/legal'];
+  const publicRoutes = ['/', '/auth', '/legal', '/pricing'];
   
   if (publicRoutes.includes(location.pathname)) {
-    return <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">{children}</div>;
+    return children;
   }
 
   return <Layout>{children}</Layout>;
@@ -31,6 +32,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/pricing" element={<Pricing />} />
 
           {/* Protected Dashboard Routes */}
           <Route path="/dashboard" element={<Dashboard />} />
