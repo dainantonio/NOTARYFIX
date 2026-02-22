@@ -33,6 +33,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/compliance" element={<Legal />} />
           <Route path="/pricing" element={<Pricing />} />
 
           {/* Protected Dashboard Routes */}
