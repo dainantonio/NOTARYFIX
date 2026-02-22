@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, BrowserRouter, useInRouterContext } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
-  Shield, ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock
+  ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
+  UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench
 } from 'lucide-react';
 
 // --- INLINED COMPONENTS FOR STABILITY ---
@@ -99,13 +100,13 @@ const LayoutInner = ({ children }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Schedule', path: '/schedule' },
     { icon: Users, label: 'Clients', path: '/clients' },
-    { icon: Users, label: 'Signer Portal', path: '/signer-portal', badge: 'PRO', locked: true },
-    { icon: FileText, label: 'Journal', path: '/journal' },
-    { icon: FileText, label: 'Finances', path: '/invoices' },
-    { icon: Shield, label: 'Credentials', path: '/compliance' },
-    { icon: Users, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: true },
-    { icon: Shield, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: true },
-    { icon: Shield, label: 'Admin', path: '/admin' },
+    { icon: UserCheck, label: 'Signer Portal', path: '/signer-portal', badge: 'PRO', locked: true },
+    { icon: ScrollText, label: 'Journal', path: '/journal' },
+    { icon: Wallet, label: 'Finances', path: '/invoices' },
+    { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
+    { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: true },
+    { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: true },
+    { icon: Wrench, label: 'Admin', path: '/admin' },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
