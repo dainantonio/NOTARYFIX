@@ -1,9 +1,4 @@
-Sources: server env + endpoints + Prisma model + frontend API config :contentReference[oaicite:0]{index=0}
 
----
-
-# 2) `NOTARYFIX/README.md` (Notary ops suite)
-```md
 # NOTARYFIX — Notary Operations Suite
 
 A mobile-first operations dashboard for notary businesses:
