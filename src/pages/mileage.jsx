@@ -22,8 +22,8 @@ const PURPOSE_COLORS = {
 };
 
 const SEED_TRIPS = [
-  { id: 't1', date: '2025-02-17', start: '8:12 AM', end: '8:54 AM', origin: 'Home', destination: 'Downtown Title Office', miles: 14.5, purpose: 'Business', linkedJobId: 'appt-1', linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '', verified: true },
-  { id: 't2', date: '2025-02-17', start: '3:40 PM', end: '4:18 PM', origin: 'Downtown Title Office', destination: 'Home', miles: 14.2, purpose: 'Business', linkedJobId: 'appt-1', linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '', verified: true },
+  { id: 't1', date: '2025-02-17', start: '8:12 AM', end: '8:54 AM', origin: 'Home', destination: 'Downtown Title Office', miles: 14.5, purpose: 'Business', linkedJobId: '1', linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '', verified: true },
+  { id: 't2', date: '2025-02-17', start: '3:40 PM', end: '4:18 PM', origin: 'Downtown Title Office', destination: 'Home', miles: 14.2, purpose: 'Business', linkedJobId: '1', linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '', verified: true },
   { id: 't3', date: '2025-02-15', start: '1:05 PM', end: '1:31 PM', origin: 'Home', destination: 'TechCorp HQ', miles: 8.2, purpose: 'Business', linkedJobId: null, linkedJobLabel: '', notes: 'I-9 batch session', verified: true },
   { id: 't4', date: '2025-02-14', start: '9:30 AM', end: '10:47 AM', origin: 'Office', destination: 'Riverside Medical Center', miles: 22.7, purpose: 'Business', linkedJobId: null, linkedJobLabel: '', notes: 'Hospital loan signing', verified: false },
   { id: 't5', date: '2025-02-12', start: '6:00 PM', end: '6:28 PM', origin: 'Home', destination: 'Grocery Store', miles: 3.8, purpose: 'Personal', linkedJobId: null, linkedJobLabel: '', notes: '', verified: true },
@@ -32,7 +32,7 @@ const SEED_TRIPS = [
   { id: 't8', date: '2025-02-08', start: '10:20 AM', end: '11:15 AM', origin: 'Office', destination: 'Willow Creek Assisted Living', miles: 16.4, purpose: 'Business', linkedJobId: null, linkedJobLabel: '', notes: '', verified: true },
 ];
 
-const MOCK_APPOINTMENTS = [
+const FALLBACK_APPOINTMENTS = [
   { id: 'appt-1', label: 'Loan Signing — Sarah Johnson (Feb 17)' },
   { id: 'appt-2', label: 'I-9 Verification — TechCorp (Feb 19)' },
   { id: 'appt-3', label: 'Jurat — Marcus Webb (Feb 20)' },
@@ -43,6 +43,48 @@ const fmt = (n) => n.toFixed(1);
 const fmtCurrency = (n) => '$' + n.toFixed(2);
 const monthName = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 const shortDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+const csvEscape = (v) => {
+  if (v === null || v === undefined) return '';
+  const s = String(v);
+  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+};
+
+const normalizeTrips = (logs) => {
+  const arr = Array.isArray(logs) ? logs : [];
+  return arr.map((t, idx) => {
+    const id = t?.id ?? `t-seed-${idx}`;
+    const rawPurpose = t?.purpose ?? 'Business';
+    const purpose = PURPOSES.includes(rawPurpose)
+      ? rawPurpose
+      : /personal/i.test(String(rawPurpose))
+        ? 'Personal'
+        : 'Business';
+
+    const destination = t?.destination ?? t?.to ?? '';
+    const origin = t?.origin ?? t?.from ?? 'Home';
+    const milesRaw = t?.miles ?? 0;
+    const miles = typeof milesRaw === 'number' ? milesRaw : (parseFloat(milesRaw) || 0);
+
+    return {
+      id: String(id),
+      date: t?.date ?? new Date().toISOString().split('T')[0],
+      start: t?.start ?? t?.startTime ?? '',
+      end: t?.end ?? '',
+      origin,
+      destination,
+      miles,
+      purpose,
+      linkedJobId: t?.linkedJobId ?? null,
+      linkedJobLabel: t?.linkedJobLabel ?? '',
+      notes: t?.notes ?? (PURPOSES.includes(rawPurpose) ? '' : String(rawPurpose ?? '')),
+      verified: typeof t?.verified === 'boolean' ? t.verified : true,
+    };
+  });
+};
+
+
 
 // ─── LIVE TRIP TIMER ───────────────────────────────────────────────────────────
 function useTripTimer(active) {
@@ -111,7 +153,8 @@ function Select({ label, value, onChange, options, className = '' }) {
 }
 
 // ─── TRIP FORM (Add / Edit) ────────────────────────────────────────────────────
-function TripForm({ initial, onSave, onCancel }) {
+function TripForm({ initial, onSave, onCancel, appointments }) {
+  const appts = appointments?.length ? appointments : FALLBACK_APPOINTMENTS;
   const [form, setForm] = useState(initial || {
     date: new Date().toISOString().split('T')[0],
     start: '', end: '', origin: 'Home', destination: '',
@@ -136,15 +179,15 @@ function TripForm({ initial, onSave, onCancel }) {
       <div>
         <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Attach to Appointment</label>
         <select
-          value={form.linkedJobId}
+          value={form.linkedJobId || ''}
           onChange={e => {
-            const appt = MOCK_APPOINTMENTS.find(a => a.id === e.target.value);
+            const appt = appts.find(a => String(a.id) === String(e.target.value));
             setForm(f => ({ ...f, linkedJobId: e.target.value, linkedJobLabel: appt?.label ?? '' }));
           }}
           className="w-full rounded-xl border border-white/10 bg-[#0e1b2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none transition-all"
         >
           <option value="">— None —</option>
-          {MOCK_APPOINTMENTS.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
+          {appts.map(a => <option key={a.id} value={String(a.id)}>{a.label}</option>)}
         </select>
       </div>
       <Input label="Notes (optional)" value={form.notes} onChange={set('notes')} placeholder="Extra context…" />
@@ -161,37 +204,87 @@ function TripForm({ initial, onSave, onCancel }) {
 
 // ─── SPLIT TRIP MODAL ──────────────────────────────────────────────────────────
 function SplitModal({ trip, onSave, onClose }) {
-  const half = (parseFloat(trip.miles) / 2).toFixed(1);
-  const [miles1, setMiles1] = useState(half);
-  const [miles2, setMiles2] = useState(half);
+  const total = parseFloat(trip.miles) || 0;
+  const [ratio, setRatio] = useState(50); // % allocated to Trip A
   const [purpose1, setPurpose1] = useState(trip.purpose);
   const [purpose2, setPurpose2] = useState('Personal');
-  const total = parseFloat(trip.miles);
+
+  const miles1 = useMemo(() => Math.round((total * (ratio / 100)) * 10) / 10, [total, ratio]);
+  const miles2 = useMemo(() => Math.round((total - miles1) * 10) / 10, [total, miles1]);
+
+  const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+  const setMiles1Input = (v) => {
+    const n = clamp(parseFloat(v) || 0, 0, total);
+    const nextRatio = total ? (n / total) * 100 : 0;
+    setRatio(clamp(nextRatio, 0, 100));
+  };
+
+  const setMiles2Input = (v) => {
+    const n = clamp(parseFloat(v) || 0, 0, total);
+    const nextRatio = total ? ((total - n) / total) * 100 : 0;
+    setRatio(clamp(nextRatio, 0, 100));
+  };
 
   return (
-    <Modal open onClose={onClose} title="Split Trip">
-      <p className="mb-5 text-sm text-slate-400">Divide <strong className="text-white">{trip.miles} mi</strong> from <strong className="text-white">{trip.origin} → {trip.destination}</strong> into two trips.</p>
-      <div className="space-y-4">
-        {/* Trip 1 */}
-        <div className="rounded-xl border border-white/8 bg-white/[0.03] p-4">
+    <Modal open onClose={onClose} title="Split Trip" wide>
+      <div className="space-y-5">
+        <p className="text-sm text-slate-400">
+          Drag to split <strong className="text-white">{total.toFixed(1)} mi</strong> from{' '}
+          <strong className="text-white">{trip.origin} → {trip.destination}</strong> into two segments.
+        </p>
+
+        {/* Drag split */}
+        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Split ratio</span>
+            <span className="text-xs font-bold text-white">{ratio.toFixed(0)}% / {(100 - ratio).toFixed(0)}%</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={ratio}
+            onChange={(e) => setRatio(parseFloat(e.target.value))}
+            className="w-full accent-cyan-400"
+          />
+          <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500">
+            <div className="flex items-center justify-between rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2">
+              <span className="font-bold text-cyan-300">Trip A</span>
+              <span className="font-black text-white">{miles1.toFixed(1)} mi</span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-slate-500/20 bg-slate-500/5 px-3 py-2">
+              <span className="font-bold text-slate-300">Trip B</span>
+              <span className="font-black text-white">{miles2.toFixed(1)} mi</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Trip A */}
+        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
           <p className="mb-3 text-xs font-bold uppercase tracking-wider text-cyan-400">Trip A</p>
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Miles" type="number" value={miles1} onChange={v => { setMiles1(v); setMiles2((total - parseFloat(v)).toFixed(1)); }} />
+            <Input label="Miles" type="number" value={miles1} onChange={setMiles1Input} />
             <Select label="Purpose" value={purpose1} onChange={setPurpose1} options={PURPOSES} />
           </div>
         </div>
-        {/* Trip 2 */}
-        <div className="rounded-xl border border-white/8 bg-white/[0.03] p-4">
+
+        {/* Trip B */}
+        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
           <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">Trip B</p>
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Miles" type="number" value={miles2} onChange={v => { setMiles2(v); setMiles1((total - parseFloat(v)).toFixed(1)); }} />
+            <Input label="Miles" type="number" value={miles2} onChange={setMiles2Input} />
             <Select label="Purpose" value={purpose2} onChange={setPurpose2} options={PURPOSES} />
           </div>
         </div>
+
         <div className="flex justify-end gap-3">
           <button onClick={onClose} className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all">Cancel</button>
-          <button onClick={() => onSave({ miles1: parseFloat(miles1), purpose1, miles2: parseFloat(miles2), purpose2 })}
-            className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all">
+          <button
+            disabled={!total}
+            onClick={() => onSave({ miles1, purpose1, miles2, purpose2 })}
+            className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 disabled:opacity-40 hover:brightness-110 transition-all"
+          >
             Split Trip
           </button>
         </div>
@@ -204,27 +297,68 @@ function SplitModal({ trip, onSave, onClose }) {
 function ExportModal({ trips, onClose }) {
   const [fmt, setFmt] = useState('csv');
   const [scope, setScope] = useState('ytd');
-  const [purpose, setPurpose] = useState('Business');
+  const [purpose, setPurpose] = useState('All');
   const [copied, setCopied] = useState(false);
 
-  const businessTrips = trips.filter(t => t.purpose === 'Business');
-  const totalMiles = businessTrips.reduce((s, t) => s + parseFloat(t.miles), 0);
+  const verifiedTrips = trips.filter(t => t.verified);
+  const businessTrips = verifiedTrips.filter(t => t.purpose === 'Business');
+
+  const totalMiles = businessTrips.reduce((s, t) => s + parseFloat(t.miles || 0), 0);
   const deduction = totalMiles * IRS_RATE_2025;
 
+  const csvHeader = [
+    'Date',
+    'Start',
+    'End',
+    'Origin',
+    'Destination',
+    'Miles',
+    'Purpose Category',
+    'Business Purpose',
+    'Linked Appointment',
+    'Verified',
+    'Notes',
+  ].join(',');
+
+  const filteredTrips = trips
+    .filter(t => purpose === 'All' || t.purpose === purpose)
+    .map(t => ({
+      ...t,
+      businessPurpose: (t.purpose === 'Business' ? (t.linkedJobLabel || t.notes || 'Business travel') : ''),
+    }));
+
   const csvContent = [
-    'Date,Start,End,Origin,Destination,Miles,Purpose,Linked Appointment,Notes',
-    ...trips.filter(t => purpose === 'All' || t.purpose === purpose).map(t =>
-      `${t.date},${t.start},${t.end},"${t.origin}","${t.destination}",${t.miles},${t.purpose},"${t.linkedJobLabel}","${t.notes}"`
-    )
+    csvHeader,
+    ...filteredTrips.map(t => ([
+      csvEscape(t.date),
+      csvEscape(t.start),
+      csvEscape(t.end),
+      csvEscape(t.origin),
+      csvEscape(t.destination),
+      csvEscape(parseFloat(t.miles || 0).toFixed(1)),
+      csvEscape(t.purpose),
+      csvEscape(t.businessPurpose),
+      csvEscape(t.linkedJobLabel || ''),
+      csvEscape(t.verified ? 'true' : 'false'),
+      csvEscape(t.notes || ''),
+    ].join(','))),
   ].join('\n');
 
   const downloadCSV = () => {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `NotaryOS-Mileage-${scope}.csv`; a.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NotaryOS-Mileage-${scope}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const copyCSV = () => { navigator.clipboard.writeText(csvContent); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+  const copyCSV = () => {
+    navigator.clipboard.writeText(csvContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <Modal open onClose={onClose} title="Export Mileage Log" wide>
@@ -233,7 +367,7 @@ function ExportModal({ trips, onClose }) {
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="h-4 w-4 text-emerald-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">IRS Deduction Summary</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Deduction-ready (verified only)</span>
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -249,25 +383,36 @@ function ExportModal({ trips, onClose }) {
               <p className="text-2xl font-black text-emerald-400">${deduction.toFixed(2)}</p>
             </div>
           </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Trips marked <span className="text-amber-400 font-semibold">Needs review</span> are exported but excluded from the deduction totals until verified.
+          </p>
         </div>
 
         {/* Options */}
         <div className="grid grid-cols-3 gap-3">
           <Select label="Scope" value={scope} onChange={setScope} options={[
-            {value:'ytd',label:'Year to Date'}, {value:'q1',label:'Q1 2025'}, {value:'q4',label:'Q4 2024'}, {value:'all',label:'All Time'}
+            { value: 'ytd', label: 'Year to Date' },
+            { value: 'q1', label: 'Q1 2025' },
+            { value: 'q4', label: 'Q4 2024' },
+            { value: 'all', label: 'All Time' },
           ]} />
-          <Select label="Purpose Filter" value={purpose} onChange={setPurpose}
-            options={[{value:'All',label:'All Purposes'},...PURPOSES.map(p=>({value:p,label:p}))]} />
+          <Select
+            label="Purpose Filter"
+            value={purpose}
+            onChange={setPurpose}
+            options={[{ value: 'All', label: 'All Purposes' }, ...PURPOSES.map(p => ({ value: p, label: p }))]}
+          />
           <Select label="Format" value={fmt} onChange={setFmt} options={[
-            {value:'csv',label:'CSV (Excel/Sheets)'}, {value:'pdf',label:'PDF Report'}
+            { value: 'csv', label: 'CSV (Excel/Sheets)' },
+            { value: 'pdf', label: 'PDF Report' },
           ]} />
         </div>
 
         {/* Preview */}
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Preview</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Preview (IRS Pub 463 fields)</p>
           <div className="max-h-48 overflow-y-auto rounded-xl border border-white/8 bg-[#070f1c] p-4 font-mono text-xs text-slate-400 leading-relaxed">
-            {csvContent.split('\n').slice(0,8).map((row, i) => (
+            {csvContent.split('\n').slice(0, 8).map((row, i) => (
               <div key={i} className={i === 0 ? 'text-cyan-400 font-bold mb-1' : ''}>{row}</div>
             ))}
             {csvContent.split('\n').length > 8 && <div className="text-slate-600 mt-1">…{csvContent.split('\n').length - 8} more rows</div>}
@@ -275,12 +420,16 @@ function ExportModal({ trips, onClose }) {
         </div>
 
         <div className="flex justify-end gap-3">
-          <button onClick={copyCSV}
-            className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all">
+          <button
+            onClick={copyCSV}
+            className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all"
+          >
             {copied ? <><Check className="h-4 w-4 text-emerald-400" /> Copied!</> : <><FileText className="h-4 w-4" /> Copy CSV</>}
           </button>
-          <button onClick={downloadCSV}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all">
+          <button
+            onClick={downloadCSV}
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all"
+          >
             <Download className="h-4 w-4" /> Download
           </button>
         </div>
@@ -290,10 +439,11 @@ function ExportModal({ trips, onClose }) {
 }
 
 // ─── TRIP ROW ──────────────────────────────────────────────────────────────────
+ ──────────────────────────────────────────────────────────────────
 function TripRow({ trip, onEdit, onDelete, onSplit, onLinkJob, onVerify }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pc = PURPOSE_COLORS[trip.purpose] || PURPOSE_COLORS.Personal;
-  const deduction = trip.purpose === 'Business' ? parseFloat(trip.miles) * IRS_RATE_2025 : 0;
+  const deduction = (trip.purpose === 'Business' && trip.verified) ? parseFloat(trip.miles) * IRS_RATE_2025 : 0;
 
   return (
     <div className={`group relative rounded-2xl border ${trip.verified ? 'border-white/[0.07]' : 'border-amber-500/30'} bg-white/[0.025] transition-all hover:bg-white/[0.04] hover:border-white/12`}>
@@ -387,7 +537,8 @@ function StatCard({ label, value, sub, accent, icon: Icon }) {
 }
 
 // ─── LIVE TRIP BANNER (one-tap start/stop) ─────────────────────────────────────
-function LiveTripBanner({ active, trip, elapsed, onStop, onStart }) {
+function LiveTripBanner({ active, trip, elapsed, onStop, onStart, appointments }) {
+  const appts = appointments?.length ? appointments : FALLBACK_APPOINTMENTS;
   const [startModal, setStartModal] = useState(false);
   const [newTrip, setNewTrip] = useState({ origin: 'Home', destination: '', purpose: 'Business' });
 
@@ -403,7 +554,7 @@ function LiveTripBanner({ active, trip, elapsed, onStop, onStart }) {
         </div>
         <div className="flex items-center gap-5">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cyan-400/15 ring-1 ring-cyan-400/30">
-            <Navigation className="h-7 w-7 text-cyan-400" style={{ animation: 'spin 4s linear infinite' }} />
+            <Navigation className="h-7 w-7 text-cyan-400 animate-spin" style={{ animationDuration: '4s' }} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -437,7 +588,7 @@ function LiveTripBanner({ active, trip, elapsed, onStop, onStart }) {
           </div>
           <div>
             <p className="font-bold text-white group-hover:text-cyan-100 transition-colors">Start a Trip</p>
-            <p className="text-sm text-slate-500">One tap to begin tracking · No more MileIQ or Everlance</p>
+            <p className="text-sm text-slate-500">One tap to begin tracking · No more NG + MileIQ/Everlance split.</p>
           </div>
           <div className="ml-auto">
             <div className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 group-hover:brightness-110 transition-all flex items-center gap-2">
@@ -450,6 +601,7 @@ function LiveTripBanner({ active, trip, elapsed, onStop, onStart }) {
       {startModal && (
         <Modal open onClose={() => setStartModal(false)} title="Start New Trip">
           <div className="space-y-4">
+            <p className="text-sm text-slate-400">No more NG + MileIQ/Everlance split.</p>
             <Input label="From" value={newTrip.origin} onChange={v => setNewTrip(t => ({...t, origin: v}))} placeholder="Home, Office…" />
             <Input label="To" value={newTrip.destination} onChange={v => setNewTrip(t => ({...t, destination: v}))} placeholder="Client address, Title company…" />
             <Select label="Purpose" value={newTrip.purpose} onChange={v => setNewTrip(t => ({...t, purpose: v}))} options={PURPOSES} />
@@ -458,13 +610,13 @@ function LiveTripBanner({ active, trip, elapsed, onStop, onStart }) {
               <select
                 value={newTrip.linkedJobId || ''}
                 onChange={e => {
-                  const appt = MOCK_APPOINTMENTS.find(a => a.id === e.target.value);
+                  const appt = appts.find(a => String(a.id) === String(e.target.value));
                   setNewTrip(t => ({...t, linkedJobId: e.target.value, linkedJobLabel: appt?.label ?? ''}));
                 }}
                 className="w-full rounded-xl border border-white/10 bg-[#0e1b2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none transition-all"
               >
                 <option value="">— None —</option>
-                {MOCK_APPOINTMENTS.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
+                {appts.map(a => <option key={a.id} value={String(a.id)}>{a.label}</option>)}
               </select>
             </div>
             <button
@@ -528,7 +680,23 @@ function MonthlyChart({ trips }) {
 
 // ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function Mileage() {
-  const [trips, setTrips] = useState(SEED_TRIPS);
+  const { data, addMileageLog, updateMileageLog, deleteMileageLog, setMileageLogs } = useData();
+
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    const logs = Array.isArray(data?.mileageLogs) ? data.mileageLogs : [];
+    if (logs.length === 0 && typeof setMileageLogs === 'function') {
+      setMileageLogs(SEED_TRIPS);
+    }
+    seededRef.current = true;
+  }, [data?.mileageLogs, setMileageLogs]);
+
+  const trips = useMemo(
+    () => normalizeTrips(Array.isArray(data?.mileageLogs) && data.mileageLogs.length ? data.mileageLogs : SEED_TRIPS),
+    [data?.mileageLogs]
+  );
+
   const [liveTrip, setLiveTrip] = useState(null);
   const [view, setView] = useState('log');  // 'log' | 'summary'
   const [search, setSearch] = useState('');
@@ -540,19 +708,41 @@ export default function Mileage() {
   const [exportModal, setExportModal] = useState(false);
   const [linkModal, setLinkModal] = useState(null);
   const elapsed = useTripTimer(!!liveTrip);
+const appointmentOptions = useMemo(() => {
+  const apts = Array.isArray(data?.appointments) ? data.appointments : [];
+  const opts = apts.map((a) => {
+    const datePart = a?.date ? ` (${new Date(a.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})` : '';
+    const timePart = a?.time ? ` ${a.time}` : '';
+    return { id: String(a.id), label: `${a.type} — ${a.client}${datePart}${timePart}`.trim() };
+  });
+  return opts.length ? opts : FALLBACK_APPOINTMENTS.map((a) => ({ id: String(a.id), label: a.label }));
+}, [data?.appointments]);
+  const appts = appointmentOptions;
+
+
+
 
   // ── computed stats ──────────────────────────────────────────────────────────
-  const now = new Date();
-  const ytdTrips = trips.filter(t => t.date.startsWith(String(now.getFullYear())));
-  const mtdTrips = trips.filter(t => t.date.startsWith(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`));
+const now = new Date();
+const yearPrefix = String(now.getFullYear());
+const monthPrefix = `${yearPrefix}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  const businessYTD  = ytdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
-  const allYTD       = ytdTrips.reduce((s, t) => s + parseFloat(t.miles), 0);
-  const deductionYTD = businessYTD * IRS_RATE_2025;
-  const businessMTD  = mtdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
-  const unverified   = trips.filter(t => !t.verified).length;
+// Deduction-ready numbers exclude trips flagged "Needs review" (verified: false)
+const verifiedTrips = trips.filter(t => t.verified);
+const ytdTrips = verifiedTrips.filter(t => t.date.startsWith(yearPrefix));
+const mtdTrips = verifiedTrips.filter(t => t.date.startsWith(monthPrefix));
 
-  // ── filtered + sorted trips ─────────────────────────────────────────────────
+const businessYTD = ytdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
+const allYTD = ytdTrips.reduce((s, t) => s + parseFloat(t.miles), 0);
+const deductionYTD = businessYTD * IRS_RATE_2025;
+const businessMTD = mtdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
+
+const unverified = trips.filter(t => !t.verified).length;
+const pendingBusinessMilesYTD = trips
+  .filter(t => !t.verified && t.purpose === 'Business' && t.date.startsWith(yearPrefix))
+  .reduce((s, t) => s + parseFloat(t.miles), 0);
+
+// ── filtered + sorted trips ─────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = [...trips];
     if (search) list = list.filter(t => t.destination.toLowerCase().includes(search.toLowerCase()) || t.origin.toLowerCase().includes(search.toLowerCase()) || (t.linkedJobLabel || '').toLowerCase().includes(search.toLowerCase()));
@@ -582,64 +772,63 @@ export default function Mileage() {
   }, [trips]);
 
   // ── trip CRUD ───────────────────────────────────────────────────────────────
-  const saveTrip = useCallback((form, id) => {
-    if (id) {
-      setTrips(ts => ts.map(t => t.id === id ? { ...t, ...form, verified: true } : t));
-    } else {
-      setTrips(ts => [{ ...form, id: `t${Date.now()}`, verified: false }, ...ts]);
-    }
-    setEditModal(null);
-  }, []);
+const saveTrip = useCallback((form, id) => {
+  const normalized = { ...form, miles: parseFloat(form.miles || 0) || 0 };
+  if (id) {
+    updateMileageLog(id, { ...normalized, verified: true });
+  } else {
+    addMileageLog({ ...normalized, id: `t${Date.now()}`, verified: true });
+  }
+  setEditModal(null);
+}, [addMileageLog, updateMileageLog]);
 
-  const deleteTrip = useCallback((id) => {
-    if (confirm('Delete this trip?')) setTrips(ts => ts.filter(t => t.id !== id));
-  }, []);
+const deleteTrip = useCallback((id) => {
+  if (confirm('Delete this trip?')) deleteMileageLog(id);
+}, [deleteMileageLog]);
 
-  const splitTrip = useCallback((original, { miles1, purpose1, miles2, purpose2 }) => {
-    setTrips(ts => {
-      const without = ts.filter(t => t.id !== original.id);
-      return [
-        { ...original, id: `t${Date.now()}a`, miles: miles1, purpose: purpose1, notes: `${original.notes} (split A)`.trim() },
-        { ...original, id: `t${Date.now()}b`, miles: miles2, purpose: purpose2, notes: `${original.notes} (split B)`.trim() },
-        ...without,
-      ];
-    });
-    setSplitModal(null);
-  }, []);
+const splitTrip = useCallback((original, { miles1, purpose1, miles2, purpose2 }) => {
+  deleteMileageLog(original.id);
+  const base = { ...original, verified: true };
+  addMileageLog({ ...base, id: `t${Date.now()}b`, miles: miles2, purpose: purpose2, notes: `${original.notes || ''} (split B)`.trim() });
+  addMileageLog({ ...base, id: `t${Date.now()}a`, miles: miles1, purpose: purpose1, notes: `${original.notes || ''} (split A)`.trim() });
+  setSplitModal(null);
+}, [addMileageLog, deleteMileageLog]);
 
-  const toggleVerify = useCallback((id) => {
-    setTrips(ts => ts.map(t => t.id === id ? { ...t, verified: !t.verified } : t));
-  }, []);
+const toggleVerify = useCallback((trip) => {
+  updateMileageLog(trip.id, { verified: !trip.verified });
+}, [updateMileageLog]);
 
-  const attachJob = useCallback((tripId, apptId) => {
-    const appt = MOCK_APPOINTMENTS.find(a => a.id === apptId);
-    setTrips(ts => ts.map(t => t.id === tripId ? { ...t, linkedJobId: apptId, linkedJobLabel: appt?.label ?? '' } : t));
-    setLinkModal(null);
-  }, []);
+const attachJob = useCallback((tripId, apptId) => {
+  const appt = appointmentOptions.find(a => String(a.id) === String(apptId));
+  updateMileageLog(tripId, { linkedJobId: apptId || null, linkedJobLabel: appt?.label ?? '' });
+  setLinkModal(null);
+}, [appointmentOptions, updateMileageLog]);
 
-  // ── live trip ───────────────────────────────────────────────────────────────
+// ── live trip ───────────────────────────────────────────────────────────────
   const startTrip = useCallback((info) => {
     setLiveTrip({ ...info, startTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) });
   }, []);
 
   const stopTrip = useCallback(() => {
-    if (!liveTrip) return;
-    const end = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    setTrips(ts => [{
-      id: `t${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      start: liveTrip.startTime, end,
-      origin: liveTrip.origin,
-      destination: liveTrip.destination,
-      miles: (Math.random() * 15 + 3).toFixed(1),  // simulated — real app uses GPS
-      purpose: liveTrip.purpose,
-      linkedJobId: liveTrip.linkedJobId || null,
-      linkedJobLabel: liveTrip.linkedJobLabel || '',
-      notes: '',
-      verified: false,
-    }, ...ts]);
-    setLiveTrip(null);
-  }, [liveTrip]);
+  if (!liveTrip) return;
+  const end = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  addMileageLog({
+    id: `t${Date.now()}`,
+    date: new Date().toISOString().split('T')[0],
+    start: liveTrip.startTime,
+    end,
+    origin: liveTrip.origin,
+    destination: liveTrip.destination,
+    miles: Number((Math.random() * 15 + 3).toFixed(1)), // simulated — GPS would populate this
+    purpose: liveTrip.purpose,
+    linkedJobId: liveTrip.linkedJobId || null,
+    linkedJobLabel: liveTrip.linkedJobLabel || '',
+    notes: '',
+    verified: false,
+  });
+  setLiveTrip(null);
+}, [addMileageLog, liveTrip]);
+
 
   // ── link modal ──────────────────────────────────────────────────────────────
   const [selectedAppt, setSelectedAppt] = useState('');
@@ -661,7 +850,7 @@ export default function Mileage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500">All-in-one mileage log · IRS-ready exports · No NG split.</p>
+          <p className="text-sm text-slate-500">All-in-one mileage log · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setExportModal(true)}
@@ -679,13 +868,14 @@ export default function Mileage() {
       <LiveTripBanner
         active={!!liveTrip} trip={liveTrip} elapsed={elapsed}
         onStart={startTrip} onStop={stopTrip}
+        appointments={appointmentOptions}
       />
 
       {/* ── KPI CARDS ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="Business YTD" value={`${businessYTD.toFixed(0)} mi`}
-          sub={`${allYTD.toFixed(0)} mi total`}
+          sub={pendingBusinessMilesYTD > 0 ? `+${pendingBusinessMilesYTD.toFixed(1)} mi pending review` : `${allYTD.toFixed(0)} mi verified total`}
           accent="border-cyan-500/20 bg-cyan-500/[0.04]"
           icon={TrendingUp}
         />
@@ -769,7 +959,7 @@ export default function Mileage() {
             <div className="space-y-8">
               {grouped.map(([date, dayTrips]) => {
                 const dayMiles = dayTrips.reduce((s, t) => s + parseFloat(t.miles), 0);
-                const dayDeduction = dayTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles) * IRS_RATE_2025, 0);
+                const dayDeduction = dayTrips.filter(t => t.purpose === 'Business' && t.verified).reduce((s, t) => s + parseFloat(t.miles) * IRS_RATE_2025, 0);
                 return (
                   <div key={date}>
                     {/* Day header */}
@@ -793,7 +983,7 @@ export default function Mileage() {
                           onDelete={() => deleteTrip(trip.id)}
                           onSplit={() => setSplitModal(trip)}
                           onLinkJob={() => { setLinkModal(trip); setSelectedAppt(trip.linkedJobId || ''); }}
-                          onVerify={() => toggleVerify(trip.id)}
+                          onVerify={() => toggleVerify(trip)}
                         />
                       ))}
                     </div>
@@ -807,7 +997,7 @@ export default function Mileage() {
         /* ── SUMMARY VIEW ─────────────────────────────────────────────────── */
         <div className="space-y-6">
           {/* Chart */}
-          <MonthlyChart trips={trips} />
+          <MonthlyChart trips={verifiedTrips} />
 
           {/* By purpose breakdown */}
           <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
@@ -847,7 +1037,7 @@ export default function Mileage() {
               </thead>
               <tbody>
                 {months.map(month => {
-                  const mTrips = trips.filter(t => t.date.startsWith(month));
+                  const mTrips = trips.filter(t => t.verified && t.date.startsWith(month));
                   const biz = mTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
                   const personal = mTrips.filter(t => t.purpose !== 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
                   const total = biz + personal;
@@ -901,6 +1091,7 @@ export default function Mileage() {
             initial={editModal !== 'new' ? editModal : null}
             onSave={(form) => saveTrip(form, editModal !== 'new' ? editModal.id : null)}
             onCancel={() => setEditModal(null)}
+            appointments={appointmentOptions}
           />
         </Modal>
       )}
@@ -925,7 +1116,7 @@ export default function Mileage() {
             <select value={selectedAppt} onChange={e => setSelectedAppt(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-[#0e1b2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none transition-all">
               <option value="">— None —</option>
-              {MOCK_APPOINTMENTS.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
+              {appts.map(a => <option key={a.id} value={String(a.id)}>{a.label}</option>)}
             </select>
           </div>
           <div className="flex justify-end gap-3">
