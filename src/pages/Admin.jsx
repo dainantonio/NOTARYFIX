@@ -132,7 +132,7 @@ const ModalFooter = ({ onClose, label = 'Save', disabled }) => (
 
 // ─── STATE RULE FORM ──────────────────────────────────────────────────────────
 const StateRuleModal = ({ isOpen, onClose, onSave, initial }) => {
-  const blank = { state: '', stateCode: '', version: '', effectiveDate: '', status: 'draft', maxFeePerAct: '', thumbprintRequired: false, journalRequired: false, ronPermitted: false, ronStatute: '', seal: '', retentionYears: '', notarizationTypes: [], notes: '' };
+  const blank = { state: '', stateCode: '', version: '', effectiveDate: '', status: 'draft', publishedAt: null, maxFeePerAct: '', thumbprintRequired: false, journalRequired: false, ronPermitted: false, ronStatute: '', seal: '', retentionYears: '', notarizationTypes: [], witnessRequirements: '', specialActCaveats: '', officialSourceUrl: '', notes: '' };
   const [form, setForm] = useState(blank);
 
   React.useEffect(() => {
@@ -211,6 +211,25 @@ const StateRuleModal = ({ isOpen, onClose, onSave, initial }) => {
             </button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <Label>Witness Requirements</Label>
+        <textarea rows={3} placeholder="Grounded notes: e.g., when witnesses are required for specific documents or acts."
+          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          value={form.witnessRequirements} onChange={(e) => set('witnessRequirements', e.target.value)} />
+      </div>
+
+      <div>
+        <Label>Special Act Caveats</Label>
+        <textarea rows={3} placeholder="Grounded notes: special act exceptions, RON caveats, document-specific limitations, etc."
+          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          value={form.specialActCaveats} onChange={(e) => set('specialActCaveats', e.target.value)} />
+      </div>
+
+      <div>
+        <Label>Official Source URL</Label>
+        <Input placeholder="e.g. Secretary of State / statute link" value={form.officialSourceUrl} onChange={(e) => set('officialSourceUrl', e.target.value)} />
       </div>
 
       <div>
@@ -431,7 +450,7 @@ const RowActions = ({ onEdit, onDelete, extra }) => (
 const Admin = () => {
   const {
     data,
-    addStateRule, updateStateRule, deleteStateRule,
+    addStateRule, updateStateRule, publishStateRule, unpublishStateRule, deleteStateRule,
     addFeeSchedule, updateFeeSchedule, deleteFeeSchedule,
     addIdRequirement, updateIdRequirement, deleteIdRequirement,
     addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
@@ -636,14 +655,14 @@ const Admin = () => {
             <table className="w-full text-sm min-w-[740px]">
               <thead className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
                 <tr>
-                  {['State', 'Version', 'Effective', 'Max Fee', 'Flags', 'Act Types', 'Status', ''].map((h) => (
+                  {['State', 'Version', 'Effective', 'Published', 'Max Fee', 'Flags', 'Act Types', 'Status', ''].map((h) => (
                     <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                 {filteredRules.length === 0 ? (
-                  <tr><td colSpan={8} className="py-10 text-center text-sm text-slate-400">No state policies. Add one to get started.</td></tr>
+                  <tr><td colSpan={9} className="py-10 text-center text-sm text-slate-400">No state policies. Add one to get started.</td></tr>
                 ) : filteredRules.map((rule) => (
                   <tr key={rule.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/40">
                     <td className="px-5 py-3">
@@ -654,6 +673,7 @@ const Admin = () => {
                     </td>
                     <td className="px-5 py-3"><span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">{rule.version}</span></td>
                     <td className="px-5 py-3 text-xs text-slate-500">{fmtDate(rule.effectiveDate)}</td>
+                    <td className="px-5 py-3 text-xs text-slate-500">{rule.publishedAt ? fmtDate(rule.publishedAt) : '—'}</td>
                     <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">${rule.maxFeePerAct}</td>
                     <td className="px-5 py-3">
                       <div className="flex gap-1">
@@ -675,9 +695,13 @@ const Admin = () => {
                       <RowActions
                         onEdit={() => setStateModal({ open: true, item: rule })}
                         onDelete={() => setDeleteTarget({ type: 'stateRule', id: rule.id, label: `${rule.state} ${rule.version}` })}
-                        extra={rule.status === 'draft' && (
-                          <Button variant="ghost" size="sm" title="Publish" onClick={() => updateStateRule(rule.id, { status: 'active' }, actor, 'status: draft → active')}>
-                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                        extra={rule.publishedAt ? (
+                          <Button variant="ghost" size="sm" title="Unpublish from AI Trainer" onClick={() => unpublishStateRule(rule.id, actor)}>
+                            <EyeOff className="h-3.5 w-3.5 text-amber-500" />
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="sm" title="Publish to AI Trainer" onClick={() => publishStateRule(rule.id, actor)} disabled={rule.status === 'archived'}>
+                            <Eye className="h-3.5 w-3.5 text-emerald-500" />
                           </Button>
                         )}
                       />
