@@ -1,6 +1,6 @@
 // File: src/pages/Mileage.jsx
 // NotaryOS — Mileage Tracker  (the moat feature)
-// Replaces MileIQ + Everlance entirely.
+// v2: GPS auto-distance + appointment location transfer
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Car, Play, Square, MapPin, Navigation, ChevronDown, ChevronRight,
@@ -8,7 +8,7 @@ import {
   Calendar, Clock, Check, X, AlertCircle, Briefcase, Home, Star,
   Filter, Search, ArrowUpDown, ChevronLeft, ChevronUp,
   MoreVertical, Zap, Shield, DollarSign, BarChart3, Target, Copy,
-  Bell, Printer,
+  Bell, Printer, Satellite, WifiOff, Loader2,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
@@ -24,21 +24,21 @@ const PURPOSE_COLORS  = {
 };
 
 const SEED_TRIPS = [
-  { id: 't1', date: '2025-02-17', start: '8:12 AM',  end: '8:54 AM',  origin: 'Home',                  destination: 'Downtown Title Office',      miles: 14.5, purpose: 'Business', linkedJobId: '1',  linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '',                       verified: true  },
-  { id: 't2', date: '2025-02-17', start: '3:40 PM',  end: '4:18 PM',  origin: 'Downtown Title Office',  destination: 'Home',                       miles: 14.2, purpose: 'Business', linkedJobId: '1',  linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '',                       verified: true  },
-  { id: 't3', date: '2025-02-15', start: '1:05 PM',  end: '1:31 PM',  origin: 'Home',                  destination: 'TechCorp HQ',                miles: 8.2,  purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: 'I-9 batch session',      verified: true  },
-  { id: 't4', date: '2025-02-14', start: '9:30 AM',  end: '10:47 AM', origin: 'Office',                destination: 'Riverside Medical Center',   miles: 22.7, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: 'Hospital loan signing',  verified: false },
-  { id: 't5', date: '2025-02-12', start: '6:00 PM',  end: '6:28 PM',  origin: 'Home',                  destination: 'Grocery Store',              miles: 3.8,  purpose: 'Personal', linkedJobId: null, linkedJobLabel: '',                             notes: '',                       verified: true  },
-  { id: 't6', date: '2025-02-11', start: '7:15 AM',  end: '8:02 AM',  origin: 'Home',                  destination: 'County Recorder',            miles: 18.3, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: 'Document filing',        verified: true  },
-  { id: 't7', date: '2025-02-10', start: '2:00 PM',  end: '2:44 PM',  origin: 'Home',                  destination: "St. Luke's Hospital",        miles: 11.9, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: '',                       verified: false },
-  { id: 't8', date: '2025-02-08', start: '10:20 AM', end: '11:15 AM', origin: 'Office',                destination: 'Willow Creek Assisted Living',miles: 16.4, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: '',                       verified: true  },
+  { id: 't1', date: '2025-02-17', start: '8:12 AM',  end: '8:54 AM',  origin: 'Home',                  destination: 'Downtown Title Office',       miles: 14.5, purpose: 'Business', linkedJobId: '1',  linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '',                       verified: true  },
+  { id: 't2', date: '2025-02-17', start: '3:40 PM',  end: '4:18 PM',  origin: 'Downtown Title Office',  destination: 'Home',                        miles: 14.2, purpose: 'Business', linkedJobId: '1',  linkedJobLabel: 'Loan Signing — Sarah Johnson', notes: '',                       verified: true  },
+  { id: 't3', date: '2025-02-15', start: '1:05 PM',  end: '1:31 PM',  origin: 'Home',                  destination: 'TechCorp HQ',                 miles: 8.2,  purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: 'I-9 batch session',      verified: true  },
+  { id: 't4', date: '2025-02-14', start: '9:30 AM',  end: '10:47 AM', origin: 'Office',                destination: 'Riverside Medical Center',    miles: 22.7, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: 'Hospital loan signing',  verified: false },
+  { id: 't5', date: '2025-02-12', start: '6:00 PM',  end: '6:28 PM',  origin: 'Home',                  destination: 'Grocery Store',               miles: 3.8,  purpose: 'Personal', linkedJobId: null, linkedJobLabel: '',                             notes: '',                       verified: true  },
+  { id: 't6', date: '2025-02-11', start: '7:15 AM',  end: '8:02 AM',  origin: 'Home',                  destination: 'County Recorder',             miles: 18.3, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: 'Document filing',        verified: true  },
+  { id: 't7', date: '2025-02-10', start: '2:00 PM',  end: '2:44 PM',  origin: 'Home',                  destination: "St. Luke's Hospital",         miles: 11.9, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: '',                       verified: false },
+  { id: 't8', date: '2025-02-08', start: '10:20 AM', end: '11:15 AM', origin: 'Office',                destination: 'Willow Creek Assisted Living', miles: 16.4, purpose: 'Business', linkedJobId: null, linkedJobLabel: '',                             notes: '',                       verified: true  },
 ];
 
 const FALLBACK_APPOINTMENTS = [
-  { id: 'appt-1', label: 'Loan Signing — Sarah Johnson (Feb 17)' },
-  { id: 'appt-2', label: 'I-9 Verification — TechCorp (Feb 19)'  },
-  { id: 'appt-3', label: 'Jurat — Marcus Webb (Feb 20)'           },
-  { id: 'appt-4', label: 'Acknowledgment — Linda Rivera (Feb 22)' },
+  { id: 'appt-1', label: 'Loan Signing — Sarah Johnson (Feb 17)',  location: '425 Downtown Blvd',  isInPerson: true  },
+  { id: 'appt-2', label: 'I-9 Verification — TechCorp (Feb 19)',   location: null,                 isInPerson: false },
+  { id: 'appt-3', label: 'Jurat — Marcus Webb (Feb 20)',            location: '88 Oak Street',      isInPerson: true  },
+  { id: 'appt-4', label: 'Acknowledgment — Linda Rivera (Feb 22)',  location: null,                 isInPerson: false },
 ];
 
 const fmtCurrency = (n)  => '$' + n.toFixed(2);
@@ -76,9 +76,87 @@ const normalizeTrips = (logs) => {
       linkedJobLabel:t?.linkedJobLabel ?? '',
       notes:         t?.notes        ?? (PURPOSES.includes(rawPurpose) ? '' : String(rawPurpose ?? '')),
       verified:      typeof t?.verified === 'boolean' ? t.verified : true,
+      gpsTracked:    t?.gpsTracked ?? false,
     };
   });
 };
+
+// ─── HAVERSINE DISTANCE (miles) ──────────────────────────────────────────────
+function haversine(lat1, lon1, lat2, lon2) {
+  const R    = 3958.8;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a    =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ─── GPS TRACKER HOOK ─────────────────────────────────────────────────────────
+// status: 'idle' | 'acquiring' | 'active' | 'denied' | 'unavailable'
+function useGPSTracker() {
+  const [status,    setStatus]    = useState('idle');
+  const [liveMiles, setLiveMiles] = useState(0);
+  const watchIdRef    = useRef(null);
+  const lastPosRef    = useRef(null);
+  const totalMilesRef = useRef(0);
+
+  const start = useCallback(() => {
+    if (!navigator?.geolocation) { setStatus('unavailable'); return; }
+    setStatus('acquiring');
+    setLiveMiles(0);
+    totalMilesRef.current = 0;
+    lastPosRef.current    = null;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        setStatus('active');
+        const { latitude: lat, longitude: lon } = pos.coords;
+        if (lastPosRef.current) {
+          const d = haversine(lastPosRef.current.lat, lastPosRef.current.lon, lat, lon);
+          // Filter GPS jitter: only count moves > ~50 feet (0.0095 mi)
+          if (d > 0.0095) {
+            totalMilesRef.current += d;
+            setLiveMiles(Math.round(totalMilesRef.current * 10) / 10);
+            lastPosRef.current = { lat, lon };
+          }
+        } else {
+          lastPosRef.current = { lat, lon };
+        }
+      },
+      (err) => {
+        setStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'unavailable');
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  }, []);
+
+  // Returns the final miles total and resets the tracker
+  const stop = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    const miles = Math.round(totalMilesRef.current * 10) / 10;
+    setStatus('idle');
+    setLiveMiles(0);
+    totalMilesRef.current = 0;
+    lastPosRef.current    = null;
+    return miles;
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  return { status, liveMiles, start, stop };
+}
 
 // ─── LIVE TRIP TIMER ────────────────────────────────────────────────────────────
 function useTripTimer(active) {
@@ -96,6 +174,25 @@ function useTripTimer(active) {
   const m = Math.floor(elapsed / 60);
   const s = elapsed % 60;
   return { display: `${m}:${String(s).padStart(2, '0')}`, minutes: m };
+}
+
+// ─── GPS STATUS BADGE ─────────────────────────────────────────────────────────
+function GPSBadge({ status }) {
+  if (status === 'idle') return null;
+  const cfg = {
+    acquiring:   { icon: Loader2,   label: 'GPS acquiring…', cls: 'text-amber-400  border-amber-400/30  bg-amber-400/10',  spin: true  },
+    active:      { icon: Satellite, label: 'GPS tracking',   cls: 'text-cyan-400   border-cyan-400/30   bg-cyan-400/10',   spin: false },
+    denied:      { icon: WifiOff,   label: 'GPS denied',     cls: 'text-rose-400   border-rose-400/30   bg-rose-400/10',   spin: false },
+    unavailable: { icon: WifiOff,   label: 'GPS unavailable',cls: 'text-slate-400  border-slate-400/30  bg-slate-400/10',  spin: false },
+  }[status] || null;
+  if (!cfg) return null;
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${cfg.cls}`}>
+      <Icon className={`h-3 w-3 ${cfg.spin ? 'animate-spin' : ''}`} />
+      {cfg.label}
+    </span>
+  );
 }
 
 // ─── MODALS ─────────────────────────────────────────────────────────────────────
@@ -119,14 +216,15 @@ function Modal({ open, onClose, title, children, wide }) {
   );
 }
 
-function FInput({ label, value, onChange, type = 'text', placeholder, className = '' }) {
+function FInput({ label, value, onChange, type = 'text', placeholder, className = '', readOnly }) {
   return (
     <div className={className}>
       {label && <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">{label}</label>}
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all"
+        readOnly={readOnly}
+        className={`w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all ${readOnly ? 'opacity-60 cursor-default' : ''}`}
       />
     </div>
   );
@@ -197,11 +295,10 @@ function TripForm({ initial, onSave, onCancel, appointments }) {
 }
 
 // ─── STOP TRIP MODAL ─────────────────────────────────────────────────────────────
-// Shown when user taps "Stop Trip" — lets them confirm/enter actual miles,
-// verify destination, and optionally link to an appointment.
-function StopTripModal({ liveTrip, elapsed, appointments, onConfirm, onCancel }) {
+function StopTripModal({ liveTrip, elapsed, appointments, suggestedMiles, gpsTracked, onConfirm, onCancel }) {
   const appts = appointments?.length ? appointments : FALLBACK_APPOINTMENTS;
-  const [miles, setMiles]   = useState('');
+  // Pre-fill with GPS miles if available, otherwise blank
+  const [miles, setMiles]   = useState(suggestedMiles > 0 ? String(suggestedMiles) : '');
   const [dest,  setDest]    = useState(liveTrip?.destination || '');
   const [purpose, setPurpose] = useState(liveTrip?.purpose || 'Business');
   const [notes, setNotes]   = useState('');
@@ -226,6 +323,22 @@ function StopTripModal({ liveTrip, elapsed, appointments, onConfirm, onCancel })
           </div>
         </div>
 
+        {/* GPS status */}
+        {gpsTracked && suggestedMiles > 0 && (
+          <div className="flex items-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2">
+            <Satellite className="h-4 w-4 text-cyan-400 shrink-0" />
+            <p className="text-xs text-cyan-300 font-semibold">
+              GPS tracked <strong>{suggestedMiles.toFixed(1)} mi</strong> — pre-filled below. Edit if needed.
+            </p>
+          </div>
+        )}
+        {!gpsTracked && (
+          <div className="flex items-center gap-2 rounded-xl border border-slate-500/20 bg-slate-500/5 px-3 py-2">
+            <WifiOff className="h-4 w-4 text-slate-500 shrink-0" />
+            <p className="text-xs text-slate-500">GPS wasn't available — enter miles manually.</p>
+          </div>
+        )}
+
         <FInput
           label="Destination *"
           value={dest}
@@ -233,16 +346,20 @@ function StopTripModal({ liveTrip, elapsed, appointments, onConfirm, onCancel })
           placeholder="Client address, Title company…"
         />
 
-        <FInput
-          label="Miles Driven *"
-          type="number"
-          value={miles}
-          onChange={setMiles}
-          placeholder="Enter odometer difference or estimated miles"
-        />
-        <p className="text-xs text-slate-600 -mt-2">
-          Tip: check your odometer for IRS-quality records. GPS auto-capture coming soon.
-        </p>
+        <div>
+          <FInput
+            label={gpsTracked && suggestedMiles > 0 ? 'Miles Driven (GPS auto-filled) *' : 'Miles Driven *'}
+            type="number"
+            value={miles}
+            onChange={setMiles}
+            placeholder="0.0"
+          />
+          <p className="text-xs text-slate-600 mt-1">
+            {gpsTracked
+              ? 'GPS calculated this from your actual route. Always double-check for accuracy.'
+              : 'Tip: enter your odometer difference for IRS-quality records.'}
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <FSelect label="Purpose" value={purpose} onChange={setPurpose} options={PURPOSES} />
@@ -272,7 +389,15 @@ function StopTripModal({ liveTrip, elapsed, appointments, onConfirm, onCancel })
           </button>
           <button
             disabled={!valid}
-            onClick={() => onConfirm({ destination: dest, miles: parseFloat(miles), purpose, notes, linkedJobId: linkedJobId || null, linkedJobLabel })}
+            onClick={() => onConfirm({
+              destination: dest,
+              miles: parseFloat(miles),
+              purpose,
+              notes,
+              linkedJobId: linkedJobId || null,
+              linkedJobLabel,
+              gpsTracked,
+            })}
             className="rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-500/20 disabled:opacity-40 hover:brightness-110 transition-all flex items-center gap-2"
           >
             <Square className="h-4 w-4 fill-white" /> Save Trip
@@ -373,7 +498,7 @@ function ExportModal({ trips, onClose }) {
 
   const csvHeader = [
     'Date','Start','End','Origin','Destination','Miles',
-    'Purpose Category','Business Purpose','Linked Appointment','Verified','Notes',
+    'Purpose Category','Business Purpose','Linked Appointment','GPS Tracked','Verified','Notes',
   ].join(',');
 
   const filteredTrips = trips
@@ -388,6 +513,7 @@ function ExportModal({ trips, onClose }) {
       csvEscape(parseFloat(t.miles || 0).toFixed(1)),
       csvEscape(t.purpose), csvEscape(t.businessPurpose),
       csvEscape(t.linkedJobLabel || ''),
+      csvEscape(t.gpsTracked ? 'GPS' : 'Manual'),
       csvEscape(t.verified ? 'true' : 'false'),
       csvEscape(t.notes || ''),
     ].join(','))),
@@ -413,6 +539,7 @@ function ExportModal({ trips, onClose }) {
         <td style="text-align:right">${parseFloat(t.miles || 0).toFixed(1)}</td>
         <td>${t.purpose}</td>
         <td>${t.purpose === 'Business' ? (t.linkedJobLabel || t.notes || 'Business travel') : ''}</td>
+        <td style="text-align:center">${t.gpsTracked ? '📡' : '✎'}</td>
         <td style="text-align:center">${t.verified ? '✓' : '⚠'}</td>
       </tr>`).join('');
 
@@ -442,16 +569,16 @@ function ExportModal({ trips, onClose }) {
 <table>
   <thead><tr>
     <th>Date</th><th>Time</th><th>From</th><th>To</th>
-    <th>Miles</th><th>Purpose</th><th>Business Purpose</th><th>Verified</th>
+    <th>Miles</th><th>Purpose</th><th>Business Purpose</th><th>Source</th><th>Verified</th>
   </tr></thead>
   <tbody>${rows}</tbody>
   <tfoot><tr>
     <td colspan="4">Total</td>
     <td style="text-align:right">${filteredTrips.reduce((s,t)=>s+parseFloat(t.miles||0),0).toFixed(1)}</td>
-    <td colspan="3"></td>
+    <td colspan="4"></td>
   </tr></tfoot>
 </table>
-<p class="note">Generated by NotaryOS · Records meet IRS Publication 463 substantiation requirements.</p>
+<p class="note">📡 = GPS tracked &nbsp;|&nbsp; ✎ = Manually entered &nbsp;|&nbsp; Generated by NotaryOS · Records meet IRS Publication 463 substantiation requirements.</p>
 </body></html>`;
 
     const w = window.open('', '_blank', 'width=900,height=700');
@@ -569,6 +696,11 @@ function TripRow({ trip, onEdit, onDelete, onSplit, onLinkJob, onVerify, onDupli
                 <Link2 className="h-3 w-3" />{trip.linkedJobLabel.split('—')[0].trim()}
               </span>
             )}
+            {trip.gpsTracked && (
+              <span className="shrink-0 flex items-center gap-1 rounded-full border border-cyan-400/20 bg-cyan-400/8 px-2 py-0.5 text-[10px] font-bold text-cyan-400">
+                <Satellite className="h-3 w-3" />GPS
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <span>{trip.origin}</span>
@@ -645,10 +777,30 @@ function StatCard({ label, value, sub, accent, icon: Icon }) {
 }
 
 // ─── LIVE TRIP BANNER (one-tap start/stop) ─────────────────────────────────────────
-function LiveTripBanner({ active, trip, elapsed, reminderActive, onReminderDismiss, onStop, onStart, appointments }) {
+function LiveTripBanner({
+  active, trip, elapsed, liveMiles, gpsStatus,
+  reminderActive, onReminderDismiss, onStop, onStart, appointments,
+}) {
   const appts = appointments?.length ? appointments : FALLBACK_APPOINTMENTS;
   const [startModal, setStartModal] = useState(false);
-  const [newTrip, setNewTrip] = useState({ origin: 'Home', destination: '', purpose: 'Business', linkedJobId: '', linkedJobLabel: '' });
+  const [newTrip, setNewTrip] = useState({
+    origin: 'Home', destination: '', purpose: 'Business', linkedJobId: '', linkedJobLabel: '',
+  });
+  // Track whether destination was auto-filled from an appointment
+  const [apptLocation, setApptLocation] = useState(null);
+
+  const handleApptChange = (apptId) => {
+    const appt = appts.find(a => String(a.id) === String(apptId));
+    const autoDestination = appt?.isInPerson && appt?.location ? appt.location : null;
+    setNewTrip(t => ({
+      ...t,
+      linkedJobId:    apptId,
+      linkedJobLabel: appt?.label ?? '',
+      // Auto-fill destination only if in-person and not already customised
+      destination:    autoDestination || t.destination,
+    }));
+    setApptLocation(autoDestination);
+  };
 
   if (active) {
     return (
@@ -689,16 +841,30 @@ function LiveTripBanner({ active, trip, elapsed, reminderActive, onReminderDismi
               <Navigation className="h-7 w-7 text-cyan-400 animate-spin" style={{ animationDuration: '4s' }} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                 <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">Trip in progress</span>
+                <GPSBadge status={gpsStatus} />
               </div>
               <p className="text-base font-black text-white">{trip.origin} → {trip.destination || 'Destination not set'}</p>
               <p className="text-sm text-slate-400 mt-0.5">{trip.purpose} · started {trip.startTime}</p>
             </div>
+
+            {/* Live miles counter (GPS) */}
+            <div className="shrink-0 text-center hidden sm:block">
+              <p className="text-3xl font-black text-cyan-300 font-mono">
+                {gpsStatus === 'active' ? liveMiles.toFixed(1) : (gpsStatus === 'acquiring' ? '…' : '—')}
+              </p>
+              <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider">
+                {gpsStatus === 'active' ? 'mi (GPS)' : gpsStatus === 'acquiring' ? 'locating' : 'no GPS'}
+              </p>
+            </div>
+
+            {/* Timer */}
             <div className="shrink-0 text-right">
               <p className="text-3xl font-black text-cyan-400 font-mono">{elapsed}</p>
               <p className="text-xs text-slate-500 mt-0.5">elapsed</p>
             </div>
+
             <button
               onClick={onStop}
               className="shrink-0 flex items-center gap-2 rounded-2xl bg-rose-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-rose-500/30 hover:bg-rose-600 active:scale-95 transition-all"
@@ -723,9 +889,14 @@ function LiveTripBanner({ active, trip, elapsed, reminderActive, onReminderDismi
           </div>
           <div>
             <p className="font-bold text-white group-hover:text-cyan-100 transition-colors">Start a Trip</p>
-            <p className="text-sm text-slate-500">One tap to begin tracking · No more NG + MileIQ/Everlance split.</p>
+            <p className="text-sm text-slate-500">
+              One tap · GPS auto-tracks miles · No more NG + MileIQ/Everlance split.
+            </p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/8 px-2.5 py-1 text-[11px] font-bold text-cyan-400">
+              <Satellite className="h-3 w-3" /> GPS Auto-Miles
+            </span>
             <div className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 group-hover:brightness-110 transition-all flex items-center gap-2">
               <Play className="h-4 w-4 fill-white" /> Start Trip
             </div>
@@ -736,28 +907,59 @@ function LiveTripBanner({ active, trip, elapsed, reminderActive, onReminderDismi
       {startModal && (
         <Modal open onClose={() => setStartModal(false)} title="Start New Trip">
           <div className="space-y-4">
-            <p className="text-sm text-slate-400">No more NG + MileIQ/Everlance split.</p>
+            {/* GPS info banner */}
+            <div className="flex items-start gap-2.5 rounded-xl border border-cyan-500/20 bg-cyan-500/[0.06] px-3 py-2.5">
+              <Satellite className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-cyan-300 leading-relaxed">
+                <strong>GPS auto-miles</strong> — your browser will ask for location permission. Miles calculate automatically as you drive.
+              </p>
+            </div>
+
             <FInput label="From" value={newTrip.origin} onChange={v => setNewTrip(t => ({ ...t, origin: v }))} placeholder="Home, Office…" />
-            <FInput label="To"   value={newTrip.destination} onChange={v => setNewTrip(t => ({ ...t, destination: v }))} placeholder="Client address, Title company…" />
-            <FSelect label="Purpose" value={newTrip.purpose} onChange={v => setNewTrip(t => ({ ...t, purpose: v }))} options={PURPOSES} />
+
+            {/* Appointment picker — fills destination automatically */}
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Attach to appointment (optional)</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                Attach to appointment (auto-fills destination)
+              </label>
               <select
                 value={newTrip.linkedJobId || ''}
-                onChange={e => {
-                  const appt = appts.find(a => String(a.id) === String(e.target.value));
-                  setNewTrip(t => ({ ...t, linkedJobId: e.target.value, linkedJobLabel: appt?.label ?? '' }));
-                }}
+                onChange={e => handleApptChange(e.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-[#0e1b2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none transition-all"
               >
                 <option value="">— None —</option>
-                {appts.map(a => <option key={a.id} value={String(a.id)}>{a.label}</option>)}
+                {appts.map(a => (
+                  <option key={a.id} value={String(a.id)}>
+                    {a.label}{a.isInPerson ? ' 📍' : ''}
+                  </option>
+                ))}
               </select>
             </div>
+
+            {/* Destination — may be auto-populated */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">To</label>
+                {apptLocation && (
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                    <MapPin className="h-3 w-3" /> Loaded from appointment
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={newTrip.destination}
+                onChange={e => { setNewTrip(t => ({ ...t, destination: e.target.value })); setApptLocation(null); }}
+                placeholder="Client address, Title company…"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all"
+              />
+            </div>
+
+            <FSelect label="Purpose" value={newTrip.purpose} onChange={v => setNewTrip(t => ({ ...t, purpose: v }))} options={PURPOSES} />
+
             <button
-              disabled={!newTrip.destination}
-              onClick={() => { onStart(newTrip); setStartModal(false); }}
-              className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3.5 text-sm font-black text-white shadow-lg shadow-cyan-500/20 disabled:opacity-40 hover:brightness-110 active:scale-[.98] transition-all flex items-center justify-center gap-2"
+              onClick={() => { onStart(newTrip); setStartModal(false); setApptLocation(null); }}
+              className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3.5 text-sm font-black text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 active:scale-[.98] transition-all flex items-center justify-center gap-2"
             >
               <Play className="h-4 w-4 fill-white" /> Begin Tracking
             </button>
@@ -819,6 +1021,7 @@ function MonthlyChart({ trips }) {
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────────
 export default function Mileage() {
   const { data, addMileageLog, updateMileageLog, deleteMileageLog, setMileageLogs } = useData();
+  const gps = useGPSTracker();
 
   // Seed demo data once on mount if empty
   const seededRef = useRef(false);
@@ -837,33 +1040,42 @@ export default function Mileage() {
   );
 
   // ── State ──────────────────────────────────────────────────────────────────────
-  const [liveTrip,        setLiveTrip]        = useState(null);
-  const [stopModalOpen,   setStopModalOpen]    = useState(false);
-  const [reminderDismissed, setReminderDismissed] = useState(false);
-  const [view,            setView]            = useState('log'); // 'log' | 'summary'
-  const [search,          setSearch]          = useState('');
-  const [filterPurpose,   setFilterPurpose]   = useState('All');
-  const [filterMonth,     setFilterMonth]     = useState('All');
-  const [sortBy,          setSortBy]          = useState('date-desc');
-  const [editModal,       setEditModal]       = useState(null);
-  const [splitModal,      setSplitModal]      = useState(null);
-  const [exportModal,     setExportModal]     = useState(false);
-  const [linkModal,       setLinkModal]       = useState(null);
-  const [selectedAppt,    setSelectedAppt]    = useState('');
+  const [liveTrip,          setLiveTrip]          = useState(null);
+  const [stopModalOpen,     setStopModalOpen]      = useState(false);
+  const [stopGPSMiles,      setStopGPSMiles]       = useState(0);
+  const [reminderDismissed, setReminderDismissed]  = useState(false);
+  const [view,              setView]               = useState('log'); // 'log' | 'summary'
+  const [search,            setSearch]             = useState('');
+  const [filterPurpose,     setFilterPurpose]      = useState('All');
+  const [filterMonth,       setFilterMonth]        = useState('All');
+  const [sortBy,            setSortBy]             = useState('date-desc');
+  const [editModal,         setEditModal]          = useState(null);
+  const [splitModal,        setSplitModal]         = useState(null);
+  const [exportModal,       setExportModal]        = useState(false);
+  const [linkModal,         setLinkModal]          = useState(null);
+  const [selectedAppt,      setSelectedAppt]       = useState('');
 
   const { display: elapsedDisplay, minutes: elapsedMinutes } = useTripTimer(!!liveTrip);
 
   // Auto-end reminder: fires after REMINDER_MIN minutes, can be dismissed once
   const reminderActive = !!liveTrip && elapsedMinutes >= REMINDER_MIN && !reminderDismissed;
 
-  // ── Appointment options ────────────────────────────────────────────────────────
+  // ── Appointment options (includes location for auto-fill) ────────────────────
   const appointmentOptions = useMemo(() => {
     const apts = Array.isArray(data?.appointments) ? data.appointments : [];
     const opts = apts.map(a => {
-      const datePart = a?.date ? ` (${new Date(a.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})` : '';
-      return { id: String(a.id), label: `${a.type} — ${a.client}${datePart}`.trim() };
+      const datePart  = a?.date
+        ? ` (${new Date(a.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
+        : '';
+      const isInPerson = a?.location && a.location !== 'Remote' && a.location.trim() !== '';
+      return {
+        id:         String(a.id),
+        label:      `${a.type} — ${a.client}${datePart}`.trim(),
+        location:   isInPerson ? a.location : null,
+        isInPerson,
+      };
     });
-    return opts.length ? opts : FALLBACK_APPOINTMENTS.map(a => ({ id: String(a.id), label: a.label }));
+    return opts.length ? opts : FALLBACK_APPOINTMENTS;
   }, [data?.appointments]);
 
   // ── Computed stats ─────────────────────────────────────────────────────────────
@@ -871,15 +1083,15 @@ export default function Mileage() {
   const yearPrefix  = String(now.getFullYear());
   const monthPrefix = `${yearPrefix}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  const verifiedTrips          = trips.filter(t => t.verified);
-  const ytdTrips               = verifiedTrips.filter(t => t.date.startsWith(yearPrefix));
-  const mtdTrips               = verifiedTrips.filter(t => t.date.startsWith(monthPrefix));
+  const verifiedTrips           = trips.filter(t => t.verified);
+  const ytdTrips                = verifiedTrips.filter(t => t.date.startsWith(yearPrefix));
+  const mtdTrips                = verifiedTrips.filter(t => t.date.startsWith(monthPrefix));
 
-  const businessYTD            = ytdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
-  const allYTD                 = ytdTrips.reduce((s, t) => s + parseFloat(t.miles), 0);
-  const deductionYTD           = businessYTD * IRS_RATE_2025;
-  const businessMTD            = mtdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
-  const unverified             = trips.filter(t => !t.verified).length;
+  const businessYTD             = ytdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
+  const allYTD                  = ytdTrips.reduce((s, t) => s + parseFloat(t.miles), 0);
+  const deductionYTD            = businessYTD * IRS_RATE_2025;
+  const businessMTD             = mtdTrips.filter(t => t.purpose === 'Business').reduce((s, t) => s + parseFloat(t.miles), 0);
+  const unverified              = trips.filter(t => !t.verified).length;
   const pendingBusinessMilesYTD = trips
     .filter(t => !t.verified && t.purpose === 'Business' && t.date.startsWith(yearPrefix))
     .reduce((s, t) => s + parseFloat(t.miles), 0);
@@ -967,14 +1179,17 @@ export default function Mileage() {
       ...info,
       startTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
     });
-  }, []);
+    gps.start(); // kick off GPS tracking
+  }, [gps]);
 
-  // Tapping "Stop" opens the confirmation modal
+  // Tapping "Stop" → snapshot GPS miles, open confirmation modal
   const requestStopTrip = useCallback(() => {
+    const miles = gps.stop(); // stops GPS and returns total miles
+    setStopGPSMiles(miles);
     setStopModalOpen(true);
-  }, []);
+  }, [gps]);
 
-  // Confirm stop: save the trip with real miles entered by user
+  // Confirm stop: save the trip
   const confirmStopTrip = useCallback((details) => {
     if (!liveTrip) return;
     addMileageLog({
@@ -989,10 +1204,12 @@ export default function Mileage() {
       linkedJobId:    details.linkedJobId,
       linkedJobLabel: details.linkedJobLabel,
       notes:          details.notes,
-      verified:       false, // always starts unverified — user can mark after review
+      gpsTracked:     details.gpsTracked ?? false,
+      verified:       false, // starts unverified — user marks after review
     });
     setLiveTrip(null);
     setStopModalOpen(false);
+    setStopGPSMiles(0);
     setReminderDismissed(false);
   }, [addMileageLog, liveTrip]);
 
@@ -1014,7 +1231,7 @@ export default function Mileage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500">All-in-one mileage log · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
+          <p className="text-sm text-slate-500">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setExportModal(true)}
@@ -1033,6 +1250,8 @@ export default function Mileage() {
         active={!!liveTrip}
         trip={liveTrip}
         elapsed={elapsedDisplay}
+        liveMiles={gps.liveMiles}
+        gpsStatus={gps.status}
         reminderActive={reminderActive}
         onReminderDismiss={() => setReminderDismissed(true)}
         onStart={startTrip}
@@ -1231,7 +1450,7 @@ export default function Mileage() {
             <div>
               <p className="font-bold text-white mb-1">IRS Audit-Ready</p>
               <p className="text-sm text-slate-400">
-                NotaryOS logs origin, destination, business purpose, and timestamps for every trip —
+                NotaryOS logs origin, destination, business purpose, timestamps, and GPS source for every trip —
                 meeting IRS Publication 463 substantiation requirements. Export your log as CSV or
                 print a formatted PDF report for your accountant or tax filing.
               </p>
@@ -1248,6 +1467,8 @@ export default function Mileage() {
           liveTrip={liveTrip}
           elapsed={elapsedDisplay}
           appointments={appointmentOptions}
+          suggestedMiles={stopGPSMiles}
+          gpsTracked={stopGPSMiles > 0}
           onConfirm={confirmStopTrip}
           onCancel={() => setStopModalOpen(false)}
         />
@@ -1274,33 +1495,39 @@ export default function Mileage() {
         />
       )}
 
-      {/* Attach to appointment */}
+      {/* Attach to job */}
       {linkModal && (
-        <Modal open onClose={() => setLinkModal(null)} title="Attach to Appointment">
-          <p className="mb-4 text-sm text-slate-400">
-            Linking <strong className="text-white">{linkModal.destination}</strong> to a job lets you include
-            mileage in job reports and auto-fill invoices.
-          </p>
-          <div className="mb-5">
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Select Appointment</label>
-            <select value={selectedAppt} onChange={e => setSelectedAppt(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#0e1b2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none transition-all">
-              <option value="">— None —</option>
-              {appointmentOptions.map(a => <option key={a.id} value={String(a.id)}>{a.label}</option>)}
-            </select>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button onClick={() => setLinkModal(null)} className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all">Cancel</button>
-            <button onClick={() => attachJob(linkModal.id, selectedAppt)}
-              className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all">
-              Attach
-            </button>
+        <Modal open onClose={() => setLinkModal(null)} title="Attach Trip to Appointment">
+          <div className="space-y-4">
+            <p className="text-sm text-slate-400">
+              Linking <strong className="text-white">{linkModal.destination}</strong> to an appointment.
+            </p>
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Appointment</label>
+              <select
+                value={selectedAppt}
+                onChange={e => setSelectedAppt(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-[#0e1b2e] px-3 py-2.5 text-sm text-white focus:border-cyan-500/50 focus:outline-none transition-all"
+              >
+                <option value="">— None —</option>
+                {appointmentOptions.map(a => <option key={a.id} value={String(a.id)}>{a.label}</option>)}
+              </select>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setLinkModal(null)} className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all">Cancel</button>
+              <button onClick={() => attachJob(linkModal.id, selectedAppt)}
+                className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all">
+                Save
+              </button>
+            </div>
           </div>
         </Modal>
       )}
 
       {/* Export */}
-      {exportModal && <ExportModal trips={trips} onClose={() => setExportModal(false)} />}
+      {exportModal && (
+        <ExportModal trips={trips} onClose={() => setExportModal(false)} />
+      )}
     </div>
   );
 }
