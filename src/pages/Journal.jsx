@@ -9,6 +9,9 @@ import {
   Button, Badge, Input, Label, Select, Progress,
 } from '../components/UI';
 import { useData } from '../context/DataContext';
+import { useLocation } from 'react-router-dom';
+import { useLinker } from '../hooks/useLinker';
+import { isJournalAtLimit } from '../utils/gates';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ACT_TYPES = [
@@ -446,6 +449,10 @@ const Journal = () => {
     addJournalEntry, updateJournalEntry, deleteJournalEntry,
     createJournalDraftFromAppointment, scoreEntry,
   } = useData();
+  const location = useLocation();
+  const { afterJournalSave } = useLinker();
+  const planTier = data.settings?.planTier || 'free';
+  const atJournalLimit = isJournalAtLimit(data.journalEntries || [], planTier);
 
   const entries = data.journalEntries || [];
   const journalSettings = data.journalSettings || {};
@@ -505,6 +512,9 @@ const Journal = () => {
   }, [scoredEntries, query, filterActType, filterMonth, sortAsc]);
 
   const openNew = (prefill = null) => {
+    if (atJournalLimit && !prefill) {
+      // Show inline notice — handled in the UI
+    }
     setEditing(prefill);
     setModalOpen(true);
   };
@@ -519,6 +529,8 @@ const Journal = () => {
       updateJournalEntry(editing.id, form);
     } else {
       addJournalEntry(form);
+      // Suggest invoice after saving a new entry with a fee
+      afterJournalSave(form);
     }
     setEditing(null);
   };
@@ -535,6 +547,21 @@ const Journal = () => {
   };
 
   const linkedApptIds = useMemo(() => new Set(entries.map((e) => e.linkedAppointmentId).filter(Boolean)), [entries]);
+
+  // Handle deep-link from Schedule "Mark Complete" flow
+  React.useEffect(() => {
+    const aptId = location.state?.prefillFromAppointment;
+    if (!aptId) return;
+    const apt = appointments.find((a) => a.id === aptId || a.id === Number(aptId));
+    if (apt) {
+      const alreadyLogged = entries.some((e) => e.linkedAppointmentId === apt.id);
+      if (!alreadyLogged) {
+        const draft = createJournalDraftFromAppointment(apt);
+        openNew(draft);
+      }
+    }
+    window.history.replaceState({}, '');
+  }, [location.state]);
 
   return (
     <div className="space-y-6 pb-10">
