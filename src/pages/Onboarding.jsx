@@ -181,11 +181,11 @@ export default function Onboarding() {
 
   // ── LEFT PANEL CONTENT PER STEP ─────────────────────────────────────────
   const leftContent = {
-    0: { title: 'Your business,\none platform.', sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — built for how you actually work.', Illustration: IllustrationWelcome },
-    1: { title: 'Let's get\nto know you.', sub: 'Your name and profile power your invoices, journal entries, and client-facing documents.', Illustration: IllustrationWelcome },
-    2: { title: 'Build your\nbusiness identity.', sub: 'Your business name appears on every invoice and client-facing document you generate.', Illustration: IllustrationBusiness },
-    3: { title: 'Pick the plan\nthat fits you.', sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
-    4: { title: 'Ready to\nlaunch.', sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
+    0: { title: `Your business, one platform.`,    sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — built for how you actually work.', Illustration: IllustrationWelcome },
+    1: { title: `Let's get to know you.`,           sub: 'Your name and profile power your invoices, journal entries, and client-facing documents.', Illustration: IllustrationWelcome },
+    2: { title: `Build your business identity.`,   sub: 'Your business name appears on every invoice and client-facing document you generate.', Illustration: IllustrationBusiness },
+    3: { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
+    4: { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
   };
   const lc = leftContent[step];
 
