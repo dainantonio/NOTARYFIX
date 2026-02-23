@@ -287,6 +287,257 @@ const defaultData = {
       isPinned: false,
     },
   ],
+
+  // ─── ADMIN DATA ─────────────────────────────────────────────────────────────
+  stateRules: [
+    {
+      id: 1,
+      state: 'Washington',
+      stateCode: 'WA',
+      version: '2024-v2',
+      effectiveDate: '2024-01-01',
+      status: 'active',
+      maxFeePerAct: 10,
+      thumbprintRequired: true,
+      journalRequired: true,
+      ronPermitted: true,
+      ronStatute: 'RCW 42.44.265',
+      seal: 'Required — black ink embossed',
+      retentionYears: 10,
+      notarizationTypes: ['Acknowledgment', 'Jurat', 'Oath / Affirmation', 'Copy Certification', 'RON'],
+      notes: 'WA amended notary rules effective 2024. RON permitted with approved platform.',
+      publishedAt: new Date(Date.now() - 90 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+    },
+    {
+      id: 2,
+      state: 'California',
+      stateCode: 'CA',
+      version: '2023-v3',
+      effectiveDate: '2023-07-01',
+      status: 'active',
+      maxFeePerAct: 15,
+      thumbprintRequired: true,
+      journalRequired: true,
+      ronPermitted: false,
+      ronStatute: '',
+      seal: 'Required — blue or black ink',
+      retentionYears: 10,
+      notarizationTypes: ['Acknowledgment', 'Jurat', 'Oath / Affirmation', 'Copy Certification', 'Deposition'],
+      notes: 'CA does not permit RON as of current statute. $15 max per signature.',
+      publishedAt: new Date(Date.now() - 180 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    },
+    {
+      id: 3,
+      state: 'Texas',
+      stateCode: 'TX',
+      version: '2024-v1',
+      effectiveDate: '2024-03-01',
+      status: 'draft',
+      maxFeePerAct: 6,
+      thumbprintRequired: false,
+      journalRequired: false,
+      ronPermitted: true,
+      ronStatute: 'Gov. Code §406.110',
+      seal: 'Required — black ink',
+      retentionYears: 3,
+      notarizationTypes: ['Acknowledgment', 'Jurat', 'Oath / Affirmation', 'RON'],
+      notes: 'TX journal not required by statute but recommended. Max $6 per notarial act.',
+      publishedAt: null,
+      updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
+  ],
+
+  feeSchedules: [
+    {
+      id: 1,
+      stateCode: 'WA',
+      actType: 'Acknowledgment',
+      maxFee: 10,
+      notes: 'Per signature, per signer.',
+      effectiveDate: '2024-01-01',
+      updatedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+    },
+    {
+      id: 2,
+      stateCode: 'WA',
+      actType: 'Jurat',
+      maxFee: 10,
+      notes: 'Per signature.',
+      effectiveDate: '2024-01-01',
+      updatedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+    },
+    {
+      id: 3,
+      stateCode: 'CA',
+      actType: 'Acknowledgment',
+      maxFee: 15,
+      notes: 'Per signature. CA max is $15 since 2023.',
+      effectiveDate: '2023-07-01',
+      updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    },
+    {
+      id: 4,
+      stateCode: 'CA',
+      actType: 'Jurat',
+      maxFee: 15,
+      notes: 'Per signature.',
+      effectiveDate: '2023-07-01',
+      updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    },
+    {
+      id: 5,
+      stateCode: 'TX',
+      actType: 'Acknowledgment',
+      maxFee: 6,
+      notes: 'Per act.',
+      effectiveDate: '2024-03-01',
+      updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
+  ],
+
+  idRequirements: [
+    {
+      id: 1,
+      stateCode: 'WA',
+      acceptedIdTypes: ["Driver's License", 'Passport', 'Passport Card', 'State ID Card', 'Military ID', 'Tribal ID', 'Permanent Resident Card'],
+      expirationRequired: true,
+      twoFormAllowed: true,
+      credibleWitnessAllowed: true,
+      notes: 'ID must be current (not expired). Credible witnesses allowed when ID unavailable.',
+      updatedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+    },
+    {
+      id: 2,
+      stateCode: 'CA',
+      acceptedIdTypes: ["Driver's License", 'Passport', 'Passport Card', 'State ID Card', 'Military ID', 'Inmate ID', 'Foreign Passport'],
+      expirationRequired: true,
+      twoFormAllowed: false,
+      credibleWitnessAllowed: true,
+      notes: 'CA requires thumbprint in journal for deeds of trust affecting real property. Single current ID typically required.',
+      updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    },
+    {
+      id: 3,
+      stateCode: 'TX',
+      acceptedIdTypes: ["Driver's License", 'Passport', 'Passport Card', 'State ID Card', 'Military ID'],
+      expirationRequired: true,
+      twoFormAllowed: true,
+      credibleWitnessAllowed: false,
+      notes: 'TX does not allow credible witnesses. Two forms of ID accepted if neither alone is sufficient.',
+      updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
+  ],
+
+  knowledgeArticles: [
+    {
+      id: 1,
+      title: 'Washington RON Requirements & Platform Setup',
+      category: 'State Rules',
+      stateCode: 'WA',
+      content: 'Washington permits Remote Online Notarization under RCW 42.44.265. Notaries must use an approved platform, maintain audio-video records for 10 years, and obtain a $5,000 E&O endorsement. Signers must present ID via credential analysis technology.',
+      tags: ['RON', 'Washington', 'Technology', 'Compliance'],
+      status: 'published',
+      authorName: 'Dain Antonio',
+      publishedAt: new Date(Date.now() - 45 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 20 * 86400000).toISOString(),
+    },
+    {
+      id: 2,
+      title: 'California Thumbprint Journal Requirements',
+      category: 'Compliance',
+      stateCode: 'CA',
+      content: 'California notaries are required by GC §8206 to take the right thumbprint of the signer for all deeds affecting real property, including deeds of trust, grant deeds, and mortgages. The thumbprint must be placed in the sequential journal entry. Failure to comply may result in suspension.',
+      tags: ['California', 'Thumbprint', 'Journal', 'Deeds'],
+      status: 'published',
+      authorName: 'Dain Antonio',
+      publishedAt: new Date(Date.now() - 90 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 45 * 86400000).toISOString(),
+    },
+    {
+      id: 3,
+      title: 'Handling Expired or Questionable ID',
+      category: 'Best Practices',
+      stateCode: null,
+      content: 'If a signer presents an expired ID, you must generally refuse to notarize unless your state permits credible witnesses. Document your refusal in writing. Never notarize when you cannot satisfy yourself of the signer\'s identity. A credible witness must personally know both you and the signer in most states.',
+      tags: ['ID Verification', 'Best Practice', 'Refusal'],
+      status: 'published',
+      authorName: 'Dain Antonio',
+      publishedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    },
+    {
+      id: 4,
+      title: 'Texas Fee Schedule Update 2024',
+      category: 'Fee Tables',
+      stateCode: 'TX',
+      content: 'Texas maximum notary fees remain $6 per notarial act effective March 2024. This applies to all acknowledgments, jurats, and oaths. There is no maximum on travel or convenience fees. Always disclose total fees to clients in advance.',
+      tags: ['Texas', 'Fees', '2024'],
+      status: 'draft',
+      authorName: 'Dain Antonio',
+      publishedAt: null,
+      updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    },
+  ],
+
+  adminAuditLog: [
+    {
+      id: 1,
+      actor: 'Dain Antonio',
+      actorRole: 'owner',
+      action: 'updated',
+      resourceType: 'stateRules',
+      resourceId: 1,
+      resourceLabel: 'Washington v2024-v2',
+      diff: 'ronPermitted: false → true; ronStatute: "" → "RCW 42.44.265"',
+      timestamp: new Date(Date.now() - 30 * 86400000).toISOString(),
+    },
+    {
+      id: 2,
+      actor: 'Dain Antonio',
+      actorRole: 'owner',
+      action: 'published',
+      resourceType: 'knowledgeArticles',
+      resourceId: 1,
+      resourceLabel: 'Washington RON Requirements & Platform Setup',
+      diff: 'status: draft → published',
+      timestamp: new Date(Date.now() - 20 * 86400000).toISOString(),
+    },
+    {
+      id: 3,
+      actor: 'Dain Antonio',
+      actorRole: 'owner',
+      action: 'created',
+      resourceType: 'feeSchedules',
+      resourceId: 5,
+      resourceLabel: 'TX — Acknowledgment ($6)',
+      diff: 'New record',
+      timestamp: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
+    {
+      id: 4,
+      actor: 'Dain Antonio',
+      actorRole: 'owner',
+      action: 'created',
+      resourceType: 'stateRules',
+      resourceId: 3,
+      resourceLabel: 'Texas v2024-v1 (draft)',
+      diff: 'New record',
+      timestamp: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
+    {
+      id: 5,
+      actor: 'Dain Antonio',
+      actorRole: 'owner',
+      action: 'updated',
+      resourceType: 'knowledgeArticles',
+      resourceId: 2,
+      resourceLabel: 'California Thumbprint Journal Requirements',
+      diff: 'content: updated body text',
+      timestamp: new Date(Date.now() - 5 * 86400000).toISOString(),
+    },
+  ],
 };
 
 // ─── JOURNAL SCORING ─────────────────────────────────────────────────────────
@@ -322,7 +573,12 @@ export const DataProvider = ({ children }) => {
             journalEntries:  Array.isArray(parsed.journalEntries)  ? parsed.journalEntries  : defaultData.journalEntries,
             teamMembers:     Array.isArray(parsed.teamMembers)     ? parsed.teamMembers     : defaultData.teamMembers,
             dispatchJobs:    Array.isArray(parsed.dispatchJobs)    ? parsed.dispatchJobs    : defaultData.dispatchJobs,
-            dispatchNotes:   Array.isArray(parsed.dispatchNotes)   ? parsed.dispatchNotes   : defaultData.dispatchNotes,
+            dispatchNotes:     Array.isArray(parsed.dispatchNotes)     ? parsed.dispatchNotes     : defaultData.dispatchNotes,
+            stateRules:        Array.isArray(parsed.stateRules)        ? parsed.stateRules        : defaultData.stateRules,
+            feeSchedules:      Array.isArray(parsed.feeSchedules)      ? parsed.feeSchedules      : defaultData.feeSchedules,
+            idRequirements:    Array.isArray(parsed.idRequirements)    ? parsed.idRequirements    : defaultData.idRequirements,
+            knowledgeArticles: Array.isArray(parsed.knowledgeArticles) ? parsed.knowledgeArticles : defaultData.knowledgeArticles,
+            adminAuditLog:     Array.isArray(parsed.adminAuditLog)     ? parsed.adminAuditLog     : defaultData.adminAuditLog,
             settings:        { ...defaultData.settings,        ...(parsed.settings        || {}) },
             journalSettings: { ...defaultData.journalSettings, ...(parsed.journalSettings || {}) },
           };
@@ -459,6 +715,79 @@ export const DataProvider = ({ children }) => {
   const updateDispatchNote = (id, u) => setData((p) => ({ ...p, dispatchNotes: (p.dispatchNotes || []).map((n) => (n.id === id ? { ...n, ...u } : n)) }));
   const deleteDispatchNote = (id)    => setData((p) => ({ ...p, dispatchNotes: (p.dispatchNotes || []).filter((n) => n.id !== id) }));
 
+  // ── Admin: Audit helper ───────────────────────────────────────────────────────
+  const _appendAuditLog = (p, entry) => ({
+    ...p,
+    adminAuditLog: [
+      { ...entry, id: Date.now() + Math.random(), timestamp: new Date().toISOString() },
+      ...(p.adminAuditLog || []),
+    ].slice(0, 200), // cap at 200 entries
+  });
+
+  const appendAuditLog = (entry) => setData((p) => _appendAuditLog(p, entry));
+
+  // ── State Rules ───────────────────────────────────────────────────────────────
+  const addStateRule = (rule, actor) => setData((p) => {
+    const next = { ...rule, id: Date.now(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    return _appendAuditLog({ ...p, stateRules: [next, ...(p.stateRules || [])] }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'created', resourceType: 'stateRules', resourceId: next.id, resourceLabel: `${rule.state} ${rule.version || ''}`, diff: 'New record' });
+  });
+  const updateStateRule = (id, u, actor, diff) => setData((p) => {
+    const rule = (p.stateRules || []).find((r) => r.id === id);
+    return _appendAuditLog({ ...p, stateRules: (p.stateRules || []).map((r) => r.id === id ? { ...r, ...u, updatedAt: new Date().toISOString() } : r) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'updated', resourceType: 'stateRules', resourceId: id, resourceLabel: `${rule?.state} ${rule?.version || ''}`, diff: diff || 'Record updated' });
+  });
+  const deleteStateRule = (id, actor) => setData((p) => {
+    const rule = (p.stateRules || []).find((r) => r.id === id);
+    return _appendAuditLog({ ...p, stateRules: (p.stateRules || []).filter((r) => r.id !== id) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'deleted', resourceType: 'stateRules', resourceId: id, resourceLabel: `${rule?.state} ${rule?.version || ''}`, diff: 'Record deleted' });
+  });
+
+  // ── Fee Schedules ─────────────────────────────────────────────────────────────
+  const addFeeSchedule = (fee, actor) => setData((p) => {
+    const next = { ...fee, id: Date.now(), updatedAt: new Date().toISOString() };
+    return _appendAuditLog({ ...p, feeSchedules: [next, ...(p.feeSchedules || [])] }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'created', resourceType: 'feeSchedules', resourceId: next.id, resourceLabel: `${fee.stateCode} — ${fee.actType} ($${fee.maxFee})`, diff: 'New record' });
+  });
+  const updateFeeSchedule = (id, u, actor, diff) => setData((p) => {
+    const fee = (p.feeSchedules || []).find((f) => f.id === id);
+    return _appendAuditLog({ ...p, feeSchedules: (p.feeSchedules || []).map((f) => f.id === id ? { ...f, ...u, updatedAt: new Date().toISOString() } : f) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'updated', resourceType: 'feeSchedules', resourceId: id, resourceLabel: `${fee?.stateCode} — ${fee?.actType}`, diff: diff || 'Record updated' });
+  });
+  const deleteFeeSchedule = (id, actor) => setData((p) => {
+    const fee = (p.feeSchedules || []).find((f) => f.id === id);
+    return _appendAuditLog({ ...p, feeSchedules: (p.feeSchedules || []).filter((f) => f.id !== id) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'deleted', resourceType: 'feeSchedules', resourceId: id, resourceLabel: `${fee?.stateCode} — ${fee?.actType}`, diff: 'Record deleted' });
+  });
+
+  // ── ID Requirements ───────────────────────────────────────────────────────────
+  const addIdRequirement = (req, actor) => setData((p) => {
+    const next = { ...req, id: Date.now(), updatedAt: new Date().toISOString() };
+    return _appendAuditLog({ ...p, idRequirements: [next, ...(p.idRequirements || [])] }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'created', resourceType: 'idRequirements', resourceId: next.id, resourceLabel: `${req.stateCode} ID Rules`, diff: 'New record' });
+  });
+  const updateIdRequirement = (id, u, actor, diff) => setData((p) => {
+    const req = (p.idRequirements || []).find((r) => r.id === id);
+    return _appendAuditLog({ ...p, idRequirements: (p.idRequirements || []).map((r) => r.id === id ? { ...r, ...u, updatedAt: new Date().toISOString() } : r) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'updated', resourceType: 'idRequirements', resourceId: id, resourceLabel: `${req?.stateCode} ID Rules`, diff: diff || 'Record updated' });
+  });
+  const deleteIdRequirement = (id, actor) => setData((p) => {
+    const req = (p.idRequirements || []).find((r) => r.id === id);
+    return _appendAuditLog({ ...p, idRequirements: (p.idRequirements || []).filter((r) => r.id !== id) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'deleted', resourceType: 'idRequirements', resourceId: id, resourceLabel: `${req?.stateCode} ID Rules`, diff: 'Record deleted' });
+  });
+
+  // ── Knowledge Articles ────────────────────────────────────────────────────────
+  const addKnowledgeArticle = (article, actor) => setData((p) => {
+    const next = { ...article, id: Date.now(), authorName: actor, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), publishedAt: article.status === 'published' ? new Date().toISOString() : null };
+    return _appendAuditLog({ ...p, knowledgeArticles: [next, ...(p.knowledgeArticles || [])] }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'created', resourceType: 'knowledgeArticles', resourceId: next.id, resourceLabel: article.title, diff: 'New record' });
+  });
+  const updateKnowledgeArticle = (id, u, actor, diff) => setData((p) => {
+    const article = (p.knowledgeArticles || []).find((a) => a.id === id);
+    const wasPublished = article?.status === 'published';
+    const nowPublished = u.status === 'published';
+    const publishedAt = !wasPublished && nowPublished ? new Date().toISOString() : article?.publishedAt;
+    return _appendAuditLog(
+      { ...p, knowledgeArticles: (p.knowledgeArticles || []).map((a) => a.id === id ? { ...a, ...u, publishedAt, updatedAt: new Date().toISOString() } : a) },
+      { actor, actorRole: p.settings?.userRole || 'owner', action: !wasPublished && nowPublished ? 'published' : u.status === 'unpublished' ? 'unpublished' : 'updated', resourceType: 'knowledgeArticles', resourceId: id, resourceLabel: article?.title || '', diff: diff || 'Record updated' }
+    );
+  });
+  const deleteKnowledgeArticle = (id, actor) => setData((p) => {
+    const article = (p.knowledgeArticles || []).find((a) => a.id === id);
+    return _appendAuditLog({ ...p, knowledgeArticles: (p.knowledgeArticles || []).filter((a) => a.id !== id) }, { actor, actorRole: p.settings?.userRole || 'owner', action: 'deleted', resourceType: 'knowledgeArticles', resourceId: id, resourceLabel: article?.title || '', diff: 'Record deleted' });
+  });
+
   return (
     <DataContext.Provider
       value={{
@@ -478,6 +807,11 @@ export const DataProvider = ({ children }) => {
         addDispatchJob, updateDispatchJob, deleteDispatchJob,
         assignDispatchJob, advanceDispatchJobStatus,
         addDispatchNote, updateDispatchNote, deleteDispatchNote,
+        addStateRule, updateStateRule, deleteStateRule,
+        addFeeSchedule, updateFeeSchedule, deleteFeeSchedule,
+        addIdRequirement, updateIdRequirement, deleteIdRequirement,
+        addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
+        appendAuditLog,
       }}
     >
       {children}
