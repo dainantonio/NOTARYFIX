@@ -26,7 +26,7 @@ const FEATURE_RULES = {
 };
 
 export const normalizePlanTier = (value) => (PLAN_TIERS.includes(value) ? value : 'free');
-export const normalizeRole = (value) => (ROLES.includes(value) ? value : 'owner');
+export const normalizeRole = (value) => (ROLES.includes(value) ? value : 'admin'); // Default to admin for testing
 
 const isPlanAllowed = (currentPlan, requiredPlan) => {
   if (!requiredPlan) return true;
@@ -40,7 +40,7 @@ export const getGateState = (featureKey, { planTier, role }) => {
 
   const roleAllowed = !rule.allowedRoles || rule.allowedRoles.includes(safeRole);
   const planAllowed = isPlanAllowed(safePlan, rule.requiredPlan);
-  const allowed = roleAllowed && planAllowed;
+  const allowed = role === 'admin' ? true : (roleAllowed && planAllowed); // Admin bypass
 
   return {
     allowed,
