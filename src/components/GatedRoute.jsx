@@ -10,7 +10,7 @@ const GatedRoute = ({ featureKey, children }) => {
   const gate = getGateState(featureKey, { planTier, role });
 
   if (!gate.allowed) {
-    return <FeaturePaywall badge={gate.badge} title={gate.title} description={gate.description} />;
+    return <FeaturePaywall badge={gate.badge} title={gate.title} description={gate.description} featureKey={featureKey} />;
   }
 
   return children;
