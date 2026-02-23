@@ -3,7 +3,7 @@ import {
   AlertTriangle, BookOpen, Check, ChevronDown, ChevronRight, Clock,
   Edit2, Eye, EyeOff, FileText, Fingerprint, Globe, Hash, Info,
   MapPin, Plus, RefreshCw, ScrollText, Shield, Tag, Trash2,
-  TrendingUp, X, Zap, Activity, Database,
+  TrendingUp, X, Zap, Activity, Database, Sparkles,
 } from 'lucide-react';
 import {
   Badge, Button, Card, CardContent, CardHeader, CardTitle,
@@ -132,7 +132,7 @@ const ModalFooter = ({ onClose, label = 'Save', disabled }) => (
 
 // ─── STATE RULE FORM ──────────────────────────────────────────────────────────
 const StateRuleModal = ({ isOpen, onClose, onSave, initial }) => {
-  const blank = { state: '', stateCode: '', version: '', effectiveDate: '', status: 'draft', maxFeePerAct: '', thumbprintRequired: false, journalRequired: false, ronPermitted: false, ronStatute: '', seal: '', retentionYears: '', notarizationTypes: [], notes: '' };
+  const blank = { state: '', stateCode: '', version: '', effectiveDate: '', status: 'draft', publishedAt: null, maxFeePerAct: '', thumbprintRequired: false, journalRequired: false, ronPermitted: false, ronStatute: '', seal: '', retentionYears: '', notarizationTypes: [], witnessRequirements: '', specialActCaveats: '', officialSourceUrl: '', notes: '' };
   const [form, setForm] = useState(blank);
 
   React.useEffect(() => {
@@ -211,6 +211,25 @@ const StateRuleModal = ({ isOpen, onClose, onSave, initial }) => {
             </button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <Label>Witness Requirements</Label>
+        <textarea rows={3} placeholder="Grounded notes: e.g., when witnesses are required for specific documents or acts."
+          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          value={form.witnessRequirements} onChange={(e) => set('witnessRequirements', e.target.value)} />
+      </div>
+
+      <div>
+        <Label>Special Act Caveats</Label>
+        <textarea rows={3} placeholder="Grounded notes: special act exceptions, RON caveats, document-specific limitations, etc."
+          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          value={form.specialActCaveats} onChange={(e) => set('specialActCaveats', e.target.value)} />
+      </div>
+
+      <div>
+        <Label>Official Source URL</Label>
+        <Input placeholder="e.g. Secretary of State / statute link" value={form.officialSourceUrl} onChange={(e) => set('officialSourceUrl', e.target.value)} />
       </div>
 
       <div>
@@ -427,11 +446,123 @@ const RowActions = ({ onEdit, onDelete, extra }) => (
   </div>
 );
 
+// ─── AI TRAINER COVERAGE DASHBOARD ────────────────────────────────────────────
+const CoverageDashboard = ({ stateRules, feeSchedules, idRequirements, knowledgeArticles }) => {
+  const [coverageFilter, setCoverageFilter] = useState('all'); // all | complete | partial | missing
+
+  const coverage = useMemo(() => {
+    return US_STATES.map((s) => {
+      const hasPolicy = stateRules.some((r) => r.stateCode === s.code && r.publishedAt && r.status !== 'archived');
+      const hasFees = feeSchedules.some((f) => f.stateCode === s.code);
+      const hasIds = idRequirements.some((r) => r.stateCode === s.code);
+      const hasArticles = knowledgeArticles.some((a) => a.status === 'published' && a.stateCode === s.code);
+      const sections = [hasPolicy, hasFees, hasIds, hasArticles];
+      const filled = sections.filter(Boolean).length;
+      const percent = Math.round((filled / 4) * 100);
+      const tier = filled === 4 ? 'complete' : filled > 0 ? 'partial' : 'missing';
+      return { ...s, hasPolicy, hasFees, hasIds, hasArticles, filled, percent, tier };
+    });
+  }, [stateRules, feeSchedules, idRequirements, knowledgeArticles]);
+
+  const totals = useMemo(() => ({
+    complete: coverage.filter((c) => c.tier === 'complete').length,
+    partial: coverage.filter((c) => c.tier === 'partial').length,
+    missing: coverage.filter((c) => c.tier === 'missing').length,
+  }), [coverage]);
+
+  const filtered = coverageFilter === 'all' ? coverage : coverage.filter((c) => c.tier === coverageFilter);
+
+  return (
+    <SectionCard
+      icon={<Sparkles className="h-4 w-4 text-blue-500" />}
+      title="AI Trainer Coverage"
+      count={`${totals.complete}/${US_STATES.length} ready`}
+    >
+      {/* Summary strip */}
+      <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-700">
+        <div className="flex items-center gap-6 text-xs">
+          <button onClick={() => setCoverageFilter('all')}
+            className={`flex items-center gap-1.5 font-semibold transition-colors ${coverageFilter === 'all' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+            <Database className="h-3 w-3" /> All ({US_STATES.length})
+          </button>
+          <button onClick={() => setCoverageFilter('complete')}
+            className={`flex items-center gap-1.5 font-semibold transition-colors ${coverageFilter === 'complete' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Complete ({totals.complete})
+          </button>
+          <button onClick={() => setCoverageFilter('partial')}
+            className={`flex items-center gap-1.5 font-semibold transition-colors ${coverageFilter === 'partial' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+            <span className="w-2 h-2 rounded-full bg-amber-500" /> Partial ({totals.partial})
+          </button>
+          <button onClick={() => setCoverageFilter('missing')}
+            className={`flex items-center gap-1.5 font-semibold transition-colors ${coverageFilter === 'missing' ? 'text-red-600 dark:text-red-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+            <span className="w-2 h-2 rounded-full bg-red-500" /> Missing ({totals.missing})
+          </button>
+        </div>
+
+        {/* Overall progress */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Overall readiness</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{Math.round((totals.complete / US_STATES.length) * 100)}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+            <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all" style={{ width: `${(totals.complete / US_STATES.length) * 100}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <CardContent className="p-0 overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
+          <thead className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
+            <tr>
+              {['State', 'Policy', 'Fees', 'IDs', 'Articles', 'Coverage'].map((h) => (
+                <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+            {filtered.length === 0 ? (
+              <tr><td colSpan={6} className="py-10 text-center text-sm text-slate-400">No states match this filter.</td></tr>
+            ) : filtered.map((s) => (
+              <tr key={s.code} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <td className="px-5 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{s.code}</span>
+                    <span className="text-xs text-slate-400 hidden sm:inline">{s.name}</span>
+                  </div>
+                </td>
+                {[s.hasPolicy, s.hasFees, s.hasIds, s.hasArticles].map((ok, i) => (
+                  <td key={i} className="px-5 py-2.5">
+                    {ok
+                      ? <Check className="h-4 w-4 text-emerald-500" />
+                      : <X className="h-4 w-4 text-slate-300 dark:text-slate-600" />}
+                  </td>
+                ))}
+                <td className="px-5 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-16">
+                      <Progress value={s.percent} />
+                    </div>
+                    <span className={`text-xs font-bold ${s.tier === 'complete' ? 'text-emerald-600 dark:text-emerald-400' : s.tier === 'partial' ? 'text-amber-600 dark:text-amber-400' : 'text-red-500 dark:text-red-400'}`}>
+                      {s.percent}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </SectionCard>
+  );
+};
+
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 const Admin = () => {
   const {
     data,
-    addStateRule, updateStateRule, deleteStateRule,
+    addStateRule, updateStateRule, publishStateRule, unpublishStateRule, deleteStateRule,
     addFeeSchedule, updateFeeSchedule, deleteFeeSchedule,
     addIdRequirement, updateIdRequirement, deleteIdRequirement,
     addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
@@ -480,6 +611,18 @@ const Admin = () => {
     recentChanges:    auditLog.filter((l) => (Date.now() - new Date(l.timestamp)) < 7 * 86400000).length,
   }), [stateRules, knowledgeArticles, feeSchedules, idRequirements, auditLog]);
 
+  // ── Coverage KPI ─────────────────────────────────────────────────────────────
+  const coverageReadyCount = useMemo(() =>
+    US_STATES.filter((s) => {
+      const hasPolicy = stateRules.some((r) => r.stateCode === s.code && r.publishedAt && r.status !== 'archived');
+      const hasFees = feeSchedules.some((f) => f.stateCode === s.code);
+      const hasIds = idRequirements.some((r) => r.stateCode === s.code);
+      const hasArticles = knowledgeArticles.some((a) => a.status === 'published' && a.stateCode === s.code);
+      return hasPolicy && hasFees && hasIds && hasArticles;
+    }).length,
+    [stateRules, feeSchedules, idRequirements, knowledgeArticles]
+  );
+
   // ── Filtered helpers ─────────────────────────────────────────────────────────
   const filteredRules = useMemo(() =>
     stateFilter ? stateRules.filter((r) => r.stateCode === stateFilter) : stateRules,
@@ -512,11 +655,12 @@ const Admin = () => {
   };
 
   const TABS = [
-    { key: 'stateRules',       icon: <Globe className="h-4 w-4" />,    label: 'State Policies',   count: stateRules.length },
-    { key: 'feeSchedules',     icon: <Hash className="h-4 w-4" />,     label: 'Fee Tables',       count: feeSchedules.length },
-    { key: 'idRequirements',   icon: <Shield className="h-4 w-4" />,   label: 'ID Requirements',  count: idRequirements.length },
-    { key: 'knowledgeArticles',icon: <BookOpen className="h-4 w-4" />, label: 'AI Content',       count: knowledgeArticles.length },
-    { key: 'auditLog',         icon: <Activity className="h-4 w-4" />, label: 'Audit Log',        count: auditLog.length },
+    { key: 'stateRules',       icon: <Globe className="h-4 w-4" />,     label: 'State Policies',   count: stateRules.length },
+    { key: 'feeSchedules',     icon: <Hash className="h-4 w-4" />,      label: 'Fee Tables',       count: feeSchedules.length },
+    { key: 'idRequirements',   icon: <Shield className="h-4 w-4" />,    label: 'ID Requirements',  count: idRequirements.length },
+    { key: 'knowledgeArticles',icon: <BookOpen className="h-4 w-4" />,  label: 'AI Content',       count: knowledgeArticles.length },
+    { key: 'coverage',         icon: <Sparkles className="h-4 w-4" />,  label: 'AI Coverage',      count: `${coverageReadyCount}/${US_STATES.length}` },
+    { key: 'auditLog',         icon: <Activity className="h-4 w-4" />,  label: 'Audit Log',        count: auditLog.length },
   ];
 
   return (
@@ -592,11 +736,12 @@ const Admin = () => {
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {[
               { label: 'Active Policies', value: kpis.activeRules, color: 'text-emerald-400' },
               { label: 'AI Articles',     value: kpis.publishedArticles, color: 'text-violet-400' },
               { label: 'Fee Entries',     value: kpis.feeEntries,        color: 'text-blue-400'   },
+              { label: 'AI Ready',        value: `${coverageReadyCount}/${US_STATES.length}`, color: 'text-cyan-400' },
               { label: '7-Day Changes',   value: kpis.recentChanges,     color: 'text-amber-400'  },
             ].map((k) => (
               <div key={k.label} className="rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-center">
@@ -636,14 +781,14 @@ const Admin = () => {
             <table className="w-full text-sm min-w-[740px]">
               <thead className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
                 <tr>
-                  {['State', 'Version', 'Effective', 'Max Fee', 'Flags', 'Act Types', 'Status', ''].map((h) => (
+                  {['State', 'Version', 'Effective', 'Published', 'Max Fee', 'Flags', 'Act Types', 'Status', ''].map((h) => (
                     <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                 {filteredRules.length === 0 ? (
-                  <tr><td colSpan={8} className="py-10 text-center text-sm text-slate-400">No state policies. Add one to get started.</td></tr>
+                  <tr><td colSpan={9} className="py-10 text-center text-sm text-slate-400">No state policies. Add one to get started.</td></tr>
                 ) : filteredRules.map((rule) => (
                   <tr key={rule.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/40">
                     <td className="px-5 py-3">
@@ -654,6 +799,7 @@ const Admin = () => {
                     </td>
                     <td className="px-5 py-3"><span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">{rule.version}</span></td>
                     <td className="px-5 py-3 text-xs text-slate-500">{fmtDate(rule.effectiveDate)}</td>
+                    <td className="px-5 py-3 text-xs text-slate-500">{rule.publishedAt ? fmtDate(rule.publishedAt) : '—'}</td>
                     <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">${rule.maxFeePerAct}</td>
                     <td className="px-5 py-3">
                       <div className="flex gap-1">
@@ -675,9 +821,13 @@ const Admin = () => {
                       <RowActions
                         onEdit={() => setStateModal({ open: true, item: rule })}
                         onDelete={() => setDeleteTarget({ type: 'stateRule', id: rule.id, label: `${rule.state} ${rule.version}` })}
-                        extra={rule.status === 'draft' && (
-                          <Button variant="ghost" size="sm" title="Publish" onClick={() => updateStateRule(rule.id, { status: 'active' }, actor, 'status: draft → active')}>
-                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                        extra={rule.publishedAt ? (
+                          <Button variant="ghost" size="sm" title="Unpublish from AI Trainer" onClick={() => unpublishStateRule(rule.id, actor)}>
+                            <EyeOff className="h-3.5 w-3.5 text-amber-500" />
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="sm" title="Publish to AI Trainer" onClick={() => publishStateRule(rule.id, actor)} disabled={rule.status === 'archived'}>
+                            <Eye className="h-3.5 w-3.5 text-emerald-500" />
                           </Button>
                         )}
                       />
@@ -849,6 +999,16 @@ const Admin = () => {
             })}
           </div>
         </SectionCard>
+      )}
+
+      {/* ═══════════════════════ AI COVERAGE ════════════════════════════════ */}
+      {activeTab === 'coverage' && (
+        <CoverageDashboard
+          stateRules={stateRules}
+          feeSchedules={feeSchedules}
+          idRequirements={idRequirements}
+          knowledgeArticles={knowledgeArticles}
+        />
       )}
 
       {/* ═══════════════════════ AUDIT LOG ═══════════════════════════════════ */}
