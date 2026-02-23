@@ -209,10 +209,10 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080f1e] text-white antialiased">
+    <div className="min-h-screen bg-[#060d1b] text-white antialiased" style={{backgroundImage:'linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)',backgroundSize:'44px 44px'}}>
 
       {/* ══ NAV ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#080f1e]/92 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 bg-[#060d1b]/95 backdrop-blur-xl shadow-[0_1px_0_rgba(255,255,255,0.05)]">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
           {/* Logo */}
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
@@ -251,7 +251,7 @@ export default function Landing() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="border-t border-white/8 bg-[#080f1e] px-6 py-4 md:hidden">
+          <div className="bg-[#060d1b] px-6 py-4 md:hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
             <div className="flex flex-col gap-3">
               {NAV_LINKS.map(link => (
                 <button key={link.id} onClick={() => scrollTo(link.id)}
@@ -269,12 +269,12 @@ export default function Landing() {
       </header>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden bg-[#060d1b]">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-600/8 blur-[140px]" />
           <div className="absolute right-0 top-0 h-[400px] w-[400px] rounded-full bg-blue-600/8 blur-[120px]" />
-          <div className="absolute inset-0 opacity-[0.024]"
-            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px)', backgroundSize: '44px 44px' }} />
+          <div className="absolute inset-0 opacity-0"
+            style={{ backgroundImage: 'none' }} />
         </div>
         <div className="relative mx-auto max-w-7xl px-6 pb-20 pt-24 md:pt-32">
           <div className="mb-6 flex justify-center">
@@ -339,7 +339,7 @@ export default function Landing() {
       </section>
 
       {/* ══ STATS BAR ═════════════════════════════════════════════════════════ */}
-      <section className="border-y border-white/8 bg-white/[0.02] py-10">
+      <section className="bg-[#0a1525] py-10">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {STATS.map(s => (
@@ -353,7 +353,8 @@ export default function Landing() {
       </section>
 
       {/* ══ AI COACH ══════════════════════════════════════════════════════════ */}
-      <section className="mx-auto max-w-7xl px-6 py-24">
+      <section className="bg-[#060d1b] py-24">
+        <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Compliance Coach</span>
@@ -379,7 +380,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="rounded-2xl border border-white/10 bg-[#0d1a2e] p-6 shadow-2xl">
-            <div className="flex items-center gap-3 border-b border-white/8 pb-4">
+            <div className="flex items-center gap-3 border-b border-white/[0.06] pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400/15">
                 <Bot className="h-5 w-5 text-cyan-400" />
               </div>
@@ -414,7 +415,7 @@ export default function Landing() {
       </section>
 
       {/* ══ BEFORE / AFTER + CALCULATOR ═══════════════════════════════════════ */}
-      <section id="features" className="border-y border-white/8 bg-[#05101e] py-24">
+      <section id="features" className="bg-[#0a1525] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
@@ -634,7 +635,7 @@ export default function Landing() {
       </section>
 
       {/* ══ HOW IT WORKS ══════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="border-y border-white/8 bg-[#05101e] py-24">
+      <section id="how-it-works" className="bg-[#0a1525] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
             <span className="inline-flex rounded-full border border-blue-400/25 bg-blue-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">How It Works</span>
@@ -680,7 +681,7 @@ export default function Landing() {
       </section>
 
       {/* ══ PRICING ═══════════════════════════════════════════════════════════ */}
-      <section id="pricing" className="border-y border-white/8 bg-[#05101e] py-24">
+      <section id="pricing" className="bg-[#0a1525] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 text-center">
             <span className="inline-flex rounded-full border border-emerald-400/25 bg-emerald-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">Pricing</span>
@@ -816,7 +817,7 @@ export default function Landing() {
       </section>
 
       {/* ══ FINAL CTA ═════════════════════════════════════════════════════════ */}
-      <section className="border-t border-white/8 bg-gradient-to-b from-[#05101e] to-[#080f1e] py-24">
+      <section className="bg-[#0a1525] py-24">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-2xl shadow-cyan-500/30">
             <Zap className="h-8 w-8 text-white" />
@@ -839,10 +840,10 @@ export default function Landing() {
       </section>
 
       {/* ══ FOOTER ════════════════════════════════════════════════════════════ */}
-      <footer className="border-t border-white/8 bg-[#040c1a] px-6 pt-14 pb-8">
+      <footer className="bg-[#030b17] px-6 pt-14 pb-8">
         <div className="mx-auto max-w-7xl">
           {/* Four columns */}
-          <div className="grid grid-cols-2 gap-10 pb-12 md:grid-cols-4 border-b border-white/8">
+          <div className="grid grid-cols-2 gap-10 pb-12 md:grid-cols-4 border-b border-white/[0.05]">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4 flex items-center gap-2.5">
