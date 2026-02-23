@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, BrowserRouter, useInRouterContext } from 'react-router-dom';
+import { Link, useLocation, BrowserRouter, useInRouterContext, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
@@ -68,7 +68,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
     </div>
   );
 };
-// ----------------------------------------
+
+// Tier badge colors
+const TIER_STYLES = {
+  free:   { bg: 'bg-slate-100 dark:bg-slate-700', text: 'text-slate-600 dark:text-slate-300', label: 'Free' },
+  pro:    { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', label: 'Pro' },
+  agency: { bg: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', label: 'Agency' },
+};
 
 const LayoutInner = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -80,9 +86,18 @@ const LayoutInner = ({ children }) => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { data } = useData();
-  const gateContext = { planTier: data.settings?.planTier, role: data.settings?.userRole };
+  const { data, updateSettings } = useData();
+
+  const planTier = data.settings?.planTier || 'free';
+  const userRole = data.settings?.userRole || 'owner';
+  const userName = data.settings?.name || 'User';
+  const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'DA';
+
+  const tierStyle = TIER_STYLES[planTier] || TIER_STYLES.free;
+
+  const gateContext = { planTier, role: userRole };
   const signerPortalGate = getGateState('signerPortal', gateContext);
   const teamDispatchGate = getGateState('teamDispatch', gateContext);
   const aiTrainerGate = getGateState('aiTrainer', gateContext);
@@ -92,7 +107,6 @@ const LayoutInner = ({ children }) => {
     localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
   }, [isSidebarCollapsed]);
 
-  // Command+K Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -103,6 +117,12 @@ const LayoutInner = ({ children }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const handleSignOut = () => {
+    // Reset to free tier so auth page shows clean state
+    updateSettings({ planTier: 'free', userRole: 'owner' });
+    navigate('/auth');
+  };
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -123,11 +143,11 @@ const LayoutInner = ({ children }) => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex transition-colors duration-300">
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
 
-      {/* Sidebar Navigation - Desktop */}
+      {/* Sidebar - Desktop */}
       <aside className={`hidden md:flex flex-col bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 fixed h-full z-20 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
         <div className={`p-6 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">N</div>
-          {!isSidebarCollapsed && <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight animate-fade-in">NotaryFix</span>}
+          {!isSidebarCollapsed && <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">NotaryOS</span>}
         </div>
 
         {!isSidebarCollapsed && (
@@ -139,7 +159,7 @@ const LayoutInner = ({ children }) => {
           </div>
         )}
 
-        <nav className="flex-1 px-3 space-y-1 mt-2">
+        <nav className="flex-1 px-3 space-y-1 mt-2 overflow-y-auto">
           {navItems.map((item) => (
             <Link key={item.path} to={item.path} title={isSidebarCollapsed ? item.label : ''} className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all group ${location.pathname === item.path ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <item.icon className={`w-5 h-5 transition-colors ${location.pathname === item.path ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
@@ -154,7 +174,7 @@ const LayoutInner = ({ children }) => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-4 relative">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-3 relative">
           <button onClick={toggleTheme} className={`w-full flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
               {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
@@ -164,25 +184,46 @@ const LayoutInner = ({ children }) => {
 
           {!isSidebarCollapsed ? (
             <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl animate-fade-in">
-              <div className="mb-3 rounded-xl border border-blue-200 bg-gradient-to-br from-indigo-600 to-purple-600 p-3 text-white shadow-md">
-                <div className="flex items-center gap-2 text-sm font-semibold">Upgrade to Pro</div>
-                <p className="mt-1 text-xs text-blue-100">Unlock premium features and workflows.</p>
-                <Button size="sm" className="mt-2 w-full bg-white text-indigo-700 hover:bg-indigo-50">Upgrade Now</Button>
+              {/* Current tier indicator */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{userRole}</p>
+                  </div>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tierStyle.bg} ${tierStyle.text}`}>
+                  {tierStyle.label}
+                </span>
               </div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">DA</div>
-                <div className="overflow-hidden">
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">Dain Antonio</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Pro Plan</p>
+
+              {/* Dev tier switcher - quick access */}
+              <div className="mb-3 rounded-lg border border-dashed border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1.5">Dev: Switch Tier</p>
+                <div className="flex gap-1">
+                  {['free','pro','agency'].map(tier => (
+                    <button
+                      key={tier}
+                      onClick={() => updateSettings({ planTier: tier })}
+                      className={`flex-1 text-[9px] font-bold rounded px-1 py-1 capitalize transition-all ${planTier === tier ? 'bg-amber-400 text-amber-900' : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-amber-100'}`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="w-full justify-start text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-0 pl-1">
+
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="w-full justify-start text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-0 pl-1">
                 <LogOut className="w-4 h-4 mr-2" /> Sign Out
               </Button>
             </div>
           ) : (
-            <div className="flex justify-center">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-offset-2 ring-blue-500 transition-all">DA</div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-offset-2 ring-blue-500 transition-all">{initials}</div>
+              <button onClick={handleSignOut} title="Sign Out" className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors">
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           )}
 
@@ -197,7 +238,7 @@ const LayoutInner = ({ children }) => {
         <header className="md:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-2">
              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">N</div>
-             <span className="font-bold text-slate-900 dark:text-white">NotaryFix</span>
+             <span className="font-bold text-slate-900 dark:text-white">NotaryOS</span>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={() => setIsCommandPaletteOpen(true)}><Search className="w-5 h-5 dark:text-white" /></Button>
@@ -207,14 +248,34 @@ const LayoutInner = ({ children }) => {
 
         {isMobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-40 bg-slate-800/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="bg-white dark:bg-slate-900 w-3/4 h-full p-4 shadow-xl border-r border-slate-200 dark:border-slate-700" onClick={e => e.stopPropagation()}>
-               <nav className="space-y-2 mt-4">
+            <div className="bg-white dark:bg-slate-900 w-3/4 h-full p-4 shadow-xl border-r border-slate-200 dark:border-slate-700 overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <nav className="space-y-2 mt-4">
                 {navItems.map((item) => (
                   <Link key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
                     <item.icon className="w-5 h-5 text-slate-400" />{item.label}
+                    {item.locked && <Lock className="w-3.5 h-3.5 text-amber-500 ml-auto" />}
                   </Link>
                 ))}
               </nav>
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="rounded-lg border border-dashed border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">Dev: Switch Tier</p>
+                  <div className="flex gap-1">
+                    {['free','pro','agency'].map(tier => (
+                      <button
+                        key={tier}
+                        onClick={() => { updateSettings({ planTier: tier }); setIsMobileMenuOpen(false); }}
+                        className={`flex-1 text-[10px] font-bold rounded px-2 py-1.5 capitalize transition-all ${planTier === tier ? 'bg-amber-400 text-amber-900' : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                      >
+                        {tier}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                  <LogOut className="w-5 h-5" /> Sign Out
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -228,7 +289,6 @@ const LayoutInner = ({ children }) => {
 };
 
 export default function Layout({ children }) {
-  // Gracefully handles standalone preview mode by providing a Router wrapper if missing.
   const inRouter = useInRouterContext();
   if (!inRouter) {
     return (
