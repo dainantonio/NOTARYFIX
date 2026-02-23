@@ -245,8 +245,8 @@ const LayoutInner = ({ children }) => {
       </aside>
 
       {/* Mobile Wrapper */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
-        <header className="md:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between sticky top-0 z-30">
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} min-w-0`}>
+        <header className="md:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-2">
              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">N</div>
              <span className="font-bold text-slate-900 dark:text-white">NotaryOS</span>
@@ -259,7 +259,7 @@ const LayoutInner = ({ children }) => {
 
         {isMobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-40 bg-slate-800/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="bg-white dark:bg-slate-900 w-3/4 h-full p-4 shadow-xl border-r border-slate-200 dark:border-slate-700 overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="bg-white dark:bg-slate-900 w-4/5 max-w-xs h-full p-5 shadow-xl border-r border-slate-200 dark:border-slate-700 overflow-y-auto" onClick={e => e.stopPropagation()}>
               <nav className="space-y-2 mt-4">
                 {navItems.map((item) => {
                   if (item.adminOnly && !adminGate.allowed) return null;
@@ -294,15 +294,35 @@ const LayoutInner = ({ children }) => {
           </div>
         )}
 
-        <main className="flex-1 p-6 md:p-8 lg:p-10 w-full max-w-[1920px] mx-auto overflow-x-hidden">
+        <main className="flex-1 p-0 pb-20 md:pb-0 w-full max-w-[1920px] mx-auto overflow-x-hidden">
           {children}
         </main>
-      </div>
-    </div>
 
-      {/* Global cross-module overlays */}
-      <ToastStack />
-      <PromptModal />
+        {/* ── Mobile Bottom Nav Bar ─────────────────────────────────────── */}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex items-center justify-around px-1"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          {[
+            { Icon: LayoutDashboard, label: 'Home',     path: '/dashboard' },
+            { Icon: Calendar,        label: 'Schedule', path: '/schedule'  },
+            { Icon: ScrollText,      label: 'Journal',  path: '/journal'   },
+            { Icon: Wallet,          label: 'Finances', path: '/invoices'  },
+            { Icon: Settings,        label: 'Settings', path: '/settings'  },
+          ].map(item => {
+            const active = location.pathname === item.path;
+            return (
+              <Link key={item.path} to={item.path}
+                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <item.Icon className="h-5 w-5" />
+                <span className="text-[9px] font-semibold tracking-wide">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Global cross-module overlays */}
+        <ToastStack />
+        <PromptModal />
+      </div>
     </div>
   );
 };
