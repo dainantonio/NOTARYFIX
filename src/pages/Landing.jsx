@@ -412,6 +412,7 @@ export default function Landing() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* ══ BEFORE / AFTER + CALCULATOR ═══════════════════════════════════════ */}
