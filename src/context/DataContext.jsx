@@ -42,6 +42,7 @@ const defaultData = {
     commissionRate: 12,
     complianceReviewDay: 'Monday',
     eAndOExpiresOn: '2026-12-31',
+    onboardingComplete: true,
   },
   complianceItems: [
     { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },
