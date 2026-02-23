@@ -483,8 +483,15 @@ const IDScanModal = ({ isOpen, onClose, onConfirm }) => {
     setStep('processing');
     setOcrProgress(0);
     try {
-      // Dynamic import — only loads when user taps Scan ID
-      const Tesseract = await import('tesseract.js');
+      // CDN load — only injected when user taps Scan ID, no npm dep needed
+      const Tesseract = await new Promise((resolve, reject) => {
+        if (window.Tesseract) return resolve(window.Tesseract);
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload = () => resolve(window.Tesseract);
+        s.onerror = () => reject(new Error('Failed to load Tesseract from CDN'));
+        document.head.appendChild(s);
+      });
       const worker = await Tesseract.createWorker('eng', 1, {
         logger: (m) => {
           if (m.status === 'recognizing text') setOcrProgress(Math.round(m.progress * 100));
