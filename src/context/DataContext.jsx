@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const DataContext = createContext();
@@ -36,6 +37,19 @@ const defaultData = {
     { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },
     { id: 2, title: 'Journal Entries Up To Date', category: 'Records', dueDate: new Date().toISOString().split('T')[0], status: 'Needs Review', notes: 'Review latest 5 signings for completeness.' },
   ],
+  signerSessions: [
+    { id: 1, clientId: 2, title: 'Sarah Johnson Loan Docs', signingDate: '2025-11-15', signingTime: '10:00 AM', location: 'Remote', status: 'pending', tasks: [{ id: 1, description: 'Upload Photo ID', completed: false }, { id: 2, description: 'Review Loan Agreement', completed: false }] },
+    { id: 2, clientId: 1, title: 'TechCorp I-9 Verification', signingDate: '2025-11-20', signingTime: '02:00 PM', location: 'Client Office', status: 'in-progress', tasks: [{ id: 1, description: 'Sign I-9 Form', completed: false }] },
+  ],
+  signerDocuments: [
+    { id: 1, sessionId: 1, name: 'Loan Agreement', status: 'pending upload', eSignReady: false, fileUrl: '' },
+    { id: 2, sessionId: 1, name: 'Promissory Note', status: 'pending upload', eSignReady: false, fileUrl: '' },
+    { id: 3, sessionId: 2, name: 'I-9 Form', status: 'uploaded', eSignReady: true, fileUrl: '/docs/i9_form.pdf' },
+  ],
+  portalMessages: [
+    { id: 1, sessionId: 1, sender: 'notary', timestamp: '2025-11-10T10:00:00Z', message: 'Please upload your photo ID for verification.' },
+    { id: 2, sessionId: 1, sender: 'signer', timestamp: '2025-11-10T10:15:00Z', message: 'I will upload it by end of day.' },
+  ],
 };
 
 export const DataProvider = ({ children }) => {
@@ -53,6 +67,9 @@ export const DataProvider = ({ children }) => {
             invoices: Array.isArray(parsed.invoices) ? parsed.invoices : defaultData.invoices,
             mileageLogs: Array.isArray(parsed.mileageLogs) ? parsed.mileageLogs : defaultData.mileageLogs,
             complianceItems: Array.isArray(parsed.complianceItems) ? parsed.complianceItems : defaultData.complianceItems,
+            signerSessions: Array.isArray(parsed.signerSessions) ? parsed.signerSessions : defaultData.signerSessions,
+            signerDocuments: Array.isArray(parsed.signerDocuments) ? parsed.signerDocuments : defaultData.signerDocuments,
+            portalMessages: Array.isArray(parsed.portalMessages) ? parsed.portalMessages : defaultData.portalMessages,
             settings: { ...defaultData.settings, ...(parsed.settings || {}) },
           };
         } catch {
@@ -165,6 +182,78 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  // Signer Portal Functions
+  const addSignerSession = (session) => {
+    setData((prev) => ({
+      ...prev,
+      signerSessions: [session, ...(prev.signerSessions || [])],
+    }));
+  };
+
+  const updateSignerSession = (sessionId, updates) => {
+    setData((prev) => ({
+      ...prev,
+      signerSessions: (prev.signerSessions || []).map((session) =>
+        session.id === sessionId ? { ...session, ...updates } : session
+      ),
+    }));
+  };
+
+  const deleteSignerSession = (sessionId) => {
+    setData((prev) => ({
+      ...prev,
+      signerSessions: (prev.signerSessions || []).filter((session) => session.id !== sessionId),
+      signerDocuments: (prev.signerDocuments || []).filter((doc) => doc.sessionId !== sessionId),
+      portalMessages: (prev.portalMessages || []).filter((msg) => msg.sessionId !== sessionId),
+    }));
+  };
+
+  const addSignerDocument = (document) => {
+    setData((prev) => ({
+      ...prev,
+      signerDocuments: [document, ...(prev.signerDocuments || [])],
+    }));
+  };
+
+  const updateSignerDocument = (documentId, updates) => {
+    setData((prev) => ({
+      ...prev,
+      signerDocuments: (prev.signerDocuments || []).map((doc) =>
+        doc.id === documentId ? { ...doc, ...updates } : doc
+      ),
+    }));
+  };
+
+  const deleteSignerDocument = (documentId) => {
+    setData((prev) => ({
+      ...prev,
+      signerDocuments: (prev.signerDocuments || []).filter((doc) => doc.id !== documentId),
+    }));
+  };
+
+  const addPortalMessage = (message) => {
+    setData((prev) => ({
+      ...prev,
+      portalMessages: [message, ...(prev.portalMessages || [])],
+    }));
+  };
+
+  const updatePortalMessage = (messageId, updates) => {
+    setData((prev) => ({
+      ...prev,
+      portalMessages: (prev.portalMessages || []).map((msg) =>
+        msg.id === messageId ? { ...msg, ...updates } : msg
+      ),
+    }));
+  };
+
+  const deletePortalMessage = (messageId) => {
+    setData((prev) => ({
+      ...prev,
+      portalMessages: (prev.portalMessages || []).filter((msg) => msg.id !== messageId),
+    }));
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -183,6 +272,15 @@ export const DataProvider = ({ children }) => {
         addComplianceItem,
         updateComplianceItem,
         deleteComplianceItem,
+        addSignerSession,
+        updateSignerSession,
+        deleteSignerSession,
+        addSignerDocument,
+        updateSignerDocument,
+        deleteSignerDocument,
+        addPortalMessage,
+        updatePortalMessage,
+        deletePortalMessage,
       }}
     >
       {children}
