@@ -1,486 +1,818 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  FileSignature,
-  DollarSign,
-  MapPin,
-  Plus,
-  Clock,
-  Bell,
-  ArrowUpRight,
-  ArrowDownRight,
-  Zap,
-  Award,
-  Wallet,
-  Search,
-  TrendingUp,
-  CheckCircle2,
-  ChevronRight,
-  ChevronDown,
-  CalendarClock,
-  BarChart3,
-  Users,
+  Activity, AlertTriangle, ArrowUpRight, Award, BarChart3,
+  Bell, BookOpen, Brain, Building2, CalendarClock, CheckCircle2,
+  ChevronDown, ChevronRight, Clock, DollarSign, FileSignature,
+  FileText, MapPin, Moon, Plus, ScrollText, Search, Shield,
+  Sparkles, Sun, Sunset, TrendingUp, Truck, Users, Wallet, Zap,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Select, CircularProgress, Skeleton, Progress } from '../components/UI';
+import {
+  Card, CardContent, CardHeader, CardTitle,
+  Button, Badge, Select, CircularProgress, Skeleton, Progress,
+} from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { getGateState } from '../utils/gates';
+import {
+  AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
-const revenueData = [
-  { name: 'Jan', amount: 2400 },
-  { name: 'Feb', amount: 1398 },
-  { name: 'Mar', amount: 9800 },
-  { name: 'Apr', amount: 3908 },
-  { name: 'May', amount: 4800 },
-  { name: 'Jun', amount: 3800 },
-  { name: 'Jul', amount: 4300 },
-];
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const todayISO = () => new Date().toISOString().split('T')[0];
 
-const DASHBOARD_PROFILES = {
-  owner: {
-    label: 'Owner View',
-    heroSubtitle: 'Executive visibility on growth, profit, and strategic bottlenecks.',
-    primaryKpi: { title: 'Net Profit', accent: 'purple' },
-    quickActions: [
-      { label: 'Create Appointment', icon: FileSignature, action: 'newAppointment', variant: 'primary' },
-      { label: 'Open Invoices', icon: BarChart3, action: 'invoices', variant: 'secondary' },
-      { label: 'Open Clients', icon: Users, action: 'clients', variant: 'secondary' },
-      { label: 'Business Settings', icon: MapPin, action: 'settings', variant: 'secondary' },
-    ],
-    proTip: 'Owner focus: review margin trends daily and clear pending invoices before end-of-week.',
-  },
-  operator: {
-    label: 'Operator View',
-    heroSubtitle: 'Execution-focused workflow for scheduling, fulfillment, and same-day actions.',
-    primaryKpi: { title: 'Upcoming Signings', accent: 'orange' },
-    quickActions: [
-      { label: 'Create Appointment', icon: FileSignature, action: 'newAppointment', variant: 'primary' },
-      { label: 'Open Calendar', icon: CalendarClock, action: 'schedule', variant: 'secondary' },
-      { label: 'Open Clients', icon: Users, action: 'clients', variant: 'secondary' },
-      { label: 'Open Invoices', icon: BarChart3, action: 'invoices', variant: 'secondary' },
-    ],
-    proTip: 'Operator focus: block similar service types together to reduce travel/context-switching.',
-  },
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return { label: 'Good morning', Icon: Sun,    color: 'text-amber-400' };
+  if (h < 17) return { label: 'Good afternoon', Icon: Sunset, color: 'text-orange-400' };
+  return        { label: 'Good evening',   Icon: Moon,   color: 'text-indigo-400' };
 };
 
-const StatsCard = ({ title, value, change, icon: Icon, trend, loading, accent = 'blue' }) => {
-  const accentStyles = {
-    blue: 'from-blue-500 to-blue-600',
-    green: 'from-emerald-500 to-emerald-600',
-    orange: 'from-orange-500 to-amber-500',
-    purple: 'from-violet-500 to-fuchsia-500',
-  };
+const fmt12h = (time24) => {
+  if (!time24) return '';
+  const [h, m] = time24.split(':').map(Number);
+  if (isNaN(h)) return time24;
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${suffix}`;
+};
+
+const timeAgo = (iso) => {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const hr = Math.floor(m / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.floor(hr / 24)}d ago`;
+};
+
+// ─── BASE REVENUE (YTD + live last point) ────────────────────────────────────
+const BASE_YTD = [
+  { name: 'Aug', amount: 6400  },
+  { name: 'Sep', amount: 8200  },
+  { name: 'Oct', amount: 11400 },
+  { name: 'Nov', amount: 9800  },
+  { name: 'Dec', amount: 7600  },
+  { name: 'Jan', amount: 10200 },
+];
+
+// ─── TYPE ACCENT MAP ─────────────────────────────────────────────────────────
+const APT_ACCENT = {
+  'Loan Signing':                  { dot: 'bg-blue-500',    bar: 'border-l-2 border-blue-500' },
+  'I-9 Verification':              { dot: 'bg-emerald-500', bar: 'border-l-2 border-emerald-500' },
+  'General Notary Work (GNW)':     { dot: 'bg-slate-400',   bar: 'border-l-2 border-slate-400' },
+  'Apostille':                     { dot: 'bg-violet-500',  bar: 'border-l-2 border-violet-500' },
+  'Remote Online Notary (RON)':    { dot: 'bg-indigo-500',  bar: 'border-l-2 border-indigo-500' },
+};
+const aptAccent = (type) => APT_ACCENT[type] || { dot: 'bg-slate-400', bar: 'border-l-2 border-slate-300' };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUB-COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── KPI TILE ─────────────────────────────────────────────────────────────────
+const KpiTile = ({ title, value, sub, Icon, accent = 'blue', loading, onClick }) => {
+  const g = {
+    blue:   'from-blue-500 to-blue-700',
+    green:  'from-emerald-500 to-emerald-700',
+    orange: 'from-orange-400 to-amber-600',
+    purple: 'from-violet-500 to-fuchsia-600',
+    rose:   'from-rose-500 to-pink-600',
+  }[accent] || 'from-blue-500 to-blue-700';
 
   return (
-    <Card className={`border-0 bg-gradient-to-br ${accentStyles[accent]} text-white shadow-lg`}>
-      <CardContent className="p-5">
-        <div className="mb-4 flex items-start justify-between">
-          <div className="rounded-lg bg-black/15 p-2">
-            <Icon className="h-5 w-5 text-white" />
-          </div>
-          {loading ? (
-            <Skeleton className="h-6 w-14 bg-white/20" />
-          ) : (
-            <Badge variant="default" className="border-0 bg-black/20 text-white">
-              {trend === 'up' ? <ArrowUpRight className="mr-1 h-3 w-3" /> : <ArrowDownRight className="mr-1 h-3 w-3" />}
-              {change}
-            </Badge>
-          )}
-        </div>
-        <p className="mb-1 text-xs uppercase tracking-wider text-white/80">{title}</p>
-        {loading ? <Skeleton className="h-8 w-24 bg-white/20" /> : <h3 className="text-3xl font-bold tracking-tight">{value}</h3>}
-      </CardContent>
-    </Card>
+    <button onClick={onClick}
+      className={`group w-full rounded-2xl bg-gradient-to-br ${g} p-4 text-left text-white shadow-lg transition-all active:scale-[.97] hover:shadow-xl`}>
+      <div className="mb-3 flex items-start justify-between">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/20">
+          <Icon className="h-4 w-4 text-white" />
+        </span>
+      </div>
+      <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/70">{title}</p>
+      {loading
+        ? <div className="mt-1 h-7 w-24 animate-pulse rounded-lg bg-white/20" />
+        : <p className="text-2xl font-bold tracking-tight sm:text-3xl">{value}</p>
+      }
+      {sub && !loading && <p className="mt-1 text-xs text-white/60">{sub}</p>}
+    </button>
   );
 };
 
-const SetupProgress = ({ loading, checklist, onToggle, onCompleteNext }) => {
-  if (loading) return <Skeleton className="h-36 w-full rounded-xl" />;
-  const completed = checklist.filter((i) => i.done).length;
-  const percent = Math.round((completed / checklist.length) * 100);
-  const hasIncomplete = checklist.some((i) => !i.done);
+// ─── DAILY BRIEF ─────────────────────────────────────────────────────────────
+const DailyBrief = ({ data, navigate }) => {
+  const today = todayISO();
+
+  const todayApts = useMemo(() =>
+    (data.appointments || [])
+      .filter(a => a.date === today)
+      .sort((a, b) => (a.time || '').localeCompare(b.time || '')),
+    [data.appointments, today]
+  );
+
+  const pendingInvoices = useMemo(() =>
+    (data.invoices || []).filter(i => i.status === 'Pending' || i.status === 'Overdue'),
+    [data.invoices]
+  );
+
+  const openDispatch = useMemo(() =>
+    (data.dispatchJobs || []).filter(j => j.status !== 'completed').length,
+    [data.dispatchJobs]
+  );
+
+  const activeSessions = useMemo(() =>
+    (data.signerSessions || []).filter(s => s.status === 'active').length,
+    [data.signerSessions]
+  );
+
+  const complianceAlerts = useMemo(() => {
+    const alerts = [];
+    (data.complianceItems || []).forEach(c => {
+      if (c.status === 'Needs Review' || c.status === 'Expired')
+        alerts.push({ label: c.title, urgent: c.status === 'Expired' });
+    });
+    const eao = data.settings?.eAndOExpiresOn;
+    if (eao) {
+      const days = Math.ceil((new Date(eao) - Date.now()) / 86400000);
+      if (days <= 60) alerts.push({ label: `E&O expires in ${days}d`, urgent: days <= 14 });
+    }
+    return alerts.slice(0, 2);
+  }, [data.complianceItems, data.settings]);
+
+  const todayEarnings = todayApts.reduce((s, a) => s + (Number(a.amount) || 0), 0);
+
+  const items = [
+    {
+      Icon: CalendarClock,
+      iconCls: 'text-blue-600 dark:text-blue-400',
+      bgCls: 'bg-blue-50 dark:bg-blue-900/20',
+      label: todayApts.length === 0
+        ? 'No appointments today'
+        : `${todayApts.length} appointment${todayApts.length > 1 ? 's' : ''} today`,
+      sub: todayApts.length > 0
+        ? `$${todayEarnings} projected · First at ${todayApts[0].time}`
+        : 'Schedule is clear',
+      path: '/schedule',
+    },
+    {
+      Icon: DollarSign,
+      iconCls: pendingInvoices.length > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400',
+      bgCls: pendingInvoices.length > 0 ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-emerald-50 dark:bg-emerald-900/20',
+      label: pendingInvoices.length === 0
+        ? 'All invoices cleared'
+        : `${pendingInvoices.length} invoice${pendingInvoices.length > 1 ? 's' : ''} outstanding`,
+      sub: pendingInvoices.length > 0
+        ? `$${pendingInvoices.reduce((s,i) => s + Number(i.amount||0), 0).toLocaleString()} total`
+        : 'Finances up to date',
+      path: '/invoices',
+    },
+    ...(openDispatch > 0 ? [{
+      Icon: Truck,
+      iconCls: 'text-violet-600 dark:text-violet-400',
+      bgCls: 'bg-violet-50 dark:bg-violet-900/20',
+      label: `${openDispatch} dispatch job${openDispatch > 1 ? 's' : ''} open`,
+      sub: 'Team coordination needed',
+      path: '/team-dispatch',
+    }] : []),
+    ...(activeSessions > 0 ? [{
+      Icon: Users,
+      iconCls: 'text-indigo-600 dark:text-indigo-400',
+      bgCls: 'bg-indigo-50 dark:bg-indigo-900/20',
+      label: `${activeSessions} signer session${activeSessions > 1 ? 's' : ''} active`,
+      sub: 'Awaiting client action',
+      path: '/signer-portal',
+    }] : []),
+    {
+      Icon: ScrollText,
+      iconCls: 'text-slate-500 dark:text-slate-400',
+      bgCls: 'bg-slate-50 dark:bg-slate-800/50',
+      label: `${(data.journalEntries || []).length} journal entries logged`,
+      sub: 'Tap to review or add',
+      path: '/journal',
+    },
+    ...complianceAlerts.map(a => ({
+      Icon: a.urgent ? AlertTriangle : Shield,
+      iconCls: a.urgent ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400',
+      bgCls: a.urgent ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20',
+      label: a.label,
+      sub: 'Compliance attention required',
+      path: '/compliance',
+    })),
+  ];
 
   return (
     <Card className="border-slate-200/70 dark:border-slate-700">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base"><Zap className="h-4 w-4 text-blue-500" /> Setup Progress</CardTitle>
-          <Badge variant="blue">{percent}%</Badge>
-        </div>
+      <CardHeader className="px-5 py-3.5">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <Sparkles className="h-4 w-4 text-amber-400" />
+          Daily Brief
+        </CardTitle>
+        <span className="text-xs text-slate-400 dark:text-slate-500">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+        </span>
       </CardHeader>
-      <CardContent>
-        <Progress value={percent} className="mb-4 h-2" />
-        <div className="space-y-2">
-          {checklist.map((item) => (
-            <button key={item.id} onClick={() => onToggle(item.id)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-700">
-              <span className={`h-3 w-3 rounded-full border ${item.done ? 'border-emerald-500 bg-emerald-500' : 'border-slate-400'}`} />
-              <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300'}>{item.label}</span>
-            </button>
-          ))}
-        </div>
-        <Button size="xs" className="mt-4 w-full" disabled={!hasIncomplete} onClick={onCompleteNext}>
-          {hasIncomplete ? 'Complete next setup step' : 'Setup complete'}
-        </Button>
+      <CardContent className="p-0">
+        {items.map((item, i) => (
+          <button key={i} onClick={() => navigate(item.path)}
+            className="group flex w-full items-center gap-3 border-b border-slate-100 px-5 py-3 text-left last:border-0 transition-colors hover:bg-slate-50 dark:border-slate-700/50 dark:hover:bg-slate-700/30">
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${item.bgCls}`}>
+              <item.Icon className={`h-4 w-4 ${item.iconCls}`} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{item.label}</p>
+              <p className="truncate text-xs text-slate-400 dark:text-slate-500">{item.sub}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 dark:text-slate-600" />
+          </button>
+        ))}
       </CardContent>
     </Card>
   );
 };
 
-const Dashboard = () => {
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [chartType, setChartType] = useState(() => {
-    if (typeof window === 'undefined') return 'area';
-    return localStorage.getItem('dashboard_chart_type') || 'area';
-  });
-  const [dashboardRole, setDashboardRole] = useState(() => {
-    if (typeof window === 'undefined') return 'owner';
-    const saved = localStorage.getItem('dashboard_role_profile');
-    return saved && DASHBOARD_PROFILES[saved] ? saved : 'owner';
-  });
-  const [setupChecklist, setSetupChecklist] = useState([
-    { id: 'profile', label: 'Complete business profile', done: true },
-    { id: 'client', label: 'Add first client', done: true },
-    { id: 'invoice', label: 'Create first invoice', done: false },
-    { id: 'payment', label: 'Connect payout settings', done: false },
-  ]);
-  const [isProTipExpanded, setIsProTipExpanded] = useState(false);
-  const [lastUpdatedAt] = useState(() => new Date());
-  const [dashboardSearch, setDashboardSearch] = useState('');
-  const searchInputRef = useRef(null);
+// ─── TODAY'S TIMELINE ─────────────────────────────────────────────────────────
+const TodayTimeline = ({ appointments, navigate }) => {
+  const today = todayISO();
+  const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
 
-  const { theme } = useTheme();
-  const navigate = useNavigate();
-  const { data, addAppointment } = useData();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 700);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const handleShortcut = (event) => {
-      const isSearchShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
-      if (!isSearchShortcut) return;
-      event.preventDefault();
-      searchInputRef.current?.focus();
-    };
-
-    window.addEventListener('keydown', handleShortcut);
-    return () => window.removeEventListener('keydown', handleShortcut);
-  }, []);
-
-  const totalRevenue = 12450 + data.appointments.reduce((sum, apt) => sum + (Number(apt.amount) || 0), 0);
-  const upcomingCount = data.appointments.filter((a) => a.status === 'upcoming').length;
-  const completedCount = data.appointments.filter((a) => a.status === 'completed').length;
-
-  const estimatedExpense = 1200;
-  const netProfit = totalRevenue - estimatedExpense;
-  const profitMargin = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
-
-  const currentMonthRevenue = 9800 + data.appointments.reduce((sum, apt) => sum + (Number(apt.amount) || 0), 0);
-  const goalPercent = Math.min(100, Math.round((currentMonthRevenue / data.settings.monthlyGoal) * 100));
-
-  const avgTicket = useMemo(() => {
-    const all = 52 + data.appointments.length;
-    return all > 0 ? Math.round(totalRevenue / all) : 0;
-  }, [data.appointments.length, totalRevenue]);
-
-  const completionRate = useMemo(() => {
-    const total = upcomingCount + completedCount;
-    return total ? Math.round((completedCount / total) * 100) : 0;
-  }, [upcomingCount, completedCount]);
-
-  const upcomingAppointments = useMemo(
-    () => data.appointments.filter((apt) => apt.status === 'upcoming').slice(0, 5),
-    [data.appointments],
+  const todayApts = useMemo(() =>
+    appointments.filter(a => a.date === today).sort((a,b) => (a.time||'').localeCompare(b.time||'')),
+    [appointments, today]
   );
-  const activeProfile = DASHBOARD_PROFILES[dashboardRole] || DASHBOARD_PROFILES.owner;
-  const normalizedSearch = dashboardSearch.trim().toLowerCase();
-  const filteredUpcomingAppointments = useMemo(() => {
-    if (!normalizedSearch) return upcomingAppointments;
-    return upcomingAppointments.filter((apt) => [apt.client, apt.type, apt.time].join(' ').toLowerCase().includes(normalizedSearch));
-  }, [normalizedSearch, upcomingAppointments]);
-  const filteredQuickActions = useMemo(() => {
-    if (!normalizedSearch) return activeProfile.quickActions;
-    return activeProfile.quickActions.filter((actionItem) => actionItem.label.toLowerCase().includes(normalizedSearch));
-  }, [activeProfile.quickActions, normalizedSearch]);
+  const tomorrowApts = useMemo(() =>
+    appointments.filter(a => a.date === tomorrow && a.status !== 'completed').sort((a,b) => (a.time||'').localeCompare(b.time||'')).slice(0,2),
+    [appointments, tomorrow]
+  );
 
-  const handleSaveAppointment = (formData) => {
-    addAppointment({
-      id: Date.now(),
-      client: formData.client,
-      type: formData.type,
-      date: formData.date || 'Upcoming',
-      time: formData.time,
-      status: 'upcoming',
-      amount: parseFloat(formData.fee) || 0,
-      location: formData.location || 'TBD',
-      notes: formData.notes || '',
-      receiptName: formData.receiptName || '',
-      receiptImage: formData.receiptImage || '',
-    });
-  };
+  const all = [
+    ...todayApts.map(a => ({ ...a, _day: 'Today' })),
+    ...tomorrowApts.map(a => ({ ...a, _day: 'Tomorrow' })),
+  ];
 
-  const toggleSetup = (id) => {
-    setSetupChecklist((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
-  };
-
-  const completeNextSetup = () => {
-    setSetupChecklist((prev) => {
-      const nextIncompleteIndex = prev.findIndex((item) => !item.done);
-      if (nextIncompleteIndex < 0) return prev;
-      return prev.map((item, index) => (index === nextIncompleteIndex ? { ...item, done: true } : item));
-    });
-  };
-
-  const handleChartTypeChange = (value) => {
-    setChartType(value);
-    if (typeof window !== 'undefined') localStorage.setItem('dashboard_chart_type', value);
-  };
-
-  const handleRoleProfileChange = (value) => {
-    setDashboardRole(value);
-    if (typeof window !== 'undefined') localStorage.setItem('dashboard_role_profile', value);
-  };
-
-  const runQuickAction = (action) => {
-    if (action === 'newAppointment') return setIsModalOpen(true);
-    if (action === 'schedule') return navigate('/schedule');
-    if (action === 'clients') return navigate('/clients');
-    if (action === 'invoices') return navigate('/invoices');
-    if (action === 'settings') return navigate('/settings');
-  };
-
-  const chartStroke = theme === 'dark' ? '#60a5fa' : '#2563eb';
-  const gridStroke = theme === 'dark' ? '#334155' : '#e2e8f0';
-  const kpiPeriodLabel = 'Last 30 days';
-  const chartPeriodLabel = 'Monthly trend (YTD)';
-  const formattedLastUpdated = useMemo(
-    () => lastUpdatedAt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
-    [lastUpdatedAt],
+  if (all.length === 0) return (
+    <div className="flex flex-col items-center py-10 text-center">
+      <CalendarClock className="mb-3 h-10 w-10 text-slate-200 dark:text-slate-700" />
+      <p className="text-sm text-slate-400">Nothing scheduled yet</p>
+      <button onClick={() => navigate('/schedule')}
+        className="mt-2 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
+        Open Calendar →
+      </button>
+    </div>
   );
 
   return (
-    <div className="min-h-screen pb-10">
-      <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-8 md:px-8">
-        <AppointmentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveAppointment} />
-
-        <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
-          <CardContent className="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Enterprise Command Center</p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight">Good {new Date().getHours() >= 12 ? 'afternoon' : 'morning'}, {data.settings.name.split(' ')[0]}</h1>
-              <p className="mt-1 text-sm text-slate-200">{activeProfile.heroSubtitle}</p>
+    <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+      {all.map(apt => {
+        const { bar } = aptAccent(apt.type);
+        const done = apt.status === 'completed';
+        return (
+          <button key={apt.id}
+            onClick={() => navigate('/schedule', { state: { editAppointmentId: apt.id } })}
+            className="group flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30">
+            {/* time */}
+            <div className="w-14 shrink-0 text-right">
+              <p className={`text-xs font-bold tabular-nums ${done ? 'text-slate-300 dark:text-slate-600 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
+                {apt.time || '—'}
+              </p>
+              <p className="text-[10px] text-slate-400">{apt._day}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Select
-                value={dashboardRole}
-                onChange={(e) => handleRoleProfileChange(e.target.value)}
-                options={Object.entries(DASHBOARD_PROFILES).map(([value, profile]) => ({ value, label: profile.label }))}
-                className="w-40 border-white/20 bg-white/10 text-white"
-                aria-label="Select dashboard role profile"
-              />
-              <label className="hidden items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white/90 md:flex">
-                <Search className="h-4 w-4" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={dashboardSearch}
-                  onChange={(e) => setDashboardSearch(e.target.value)}
-                  placeholder="Search dashboard..."
-                  aria-label="Search dashboard actions and appointments"
-                  className="w-44 bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
-                />
-              </label>
-              <Button variant="secondary" size="icon" className="relative border-white/20 bg-white/10 text-white hover:bg-white/20" aria-label="Notifications">
-                <Bell className="h-5 w-5" />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500"></span>
-              </Button>
-              <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> New Appointment</Button>
+            {/* accent bar */}
+            <div className={`h-10 w-0.5 shrink-0 rounded-full ${bar.replace('border-l-2 ','bg-').replace('border-','bg-')} opacity-80`} />
+            {/* content */}
+            <div className="min-w-0 flex-1">
+              <p className={`truncate text-sm font-semibold ${done ? 'text-slate-400 line-through dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
+                {apt.client}
+              </p>
+              <p className="truncate text-xs text-slate-400">{apt.type} · {apt.location || 'TBD'}</p>
+            </div>
+            {/* right */}
+            <div className="shrink-0 text-right">
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${apt.amount || 0}</p>
+              {done
+                ? <p className="text-[10px] font-bold text-emerald-500">Done</p>
+                : <p className="text-[10px] text-blue-500">Upcoming</p>
+              }
+            </div>
+            <ChevronRight className="ml-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 dark:text-slate-600" />
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// ─── MODULE STATUS ROW ────────────────────────────────────────────────────────
+const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
+  const ctx = { planTier, role: userRole };
+  const portalOK   = getGateState('signerPortal', ctx).allowed;
+  const dispatchOK = getGateState('teamDispatch', ctx).allowed;
+  const aiOK       = getGateState('aiTrainer', ctx).allowed;
+  const adminOK    = getGateState('admin', ctx).allowed;
+
+  const now = new Date();
+  const journalThisMonth = (data.journalEntries || []).filter(e => {
+    const d = new Date(e.createdAt || e.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
+  const modules = [
+    { Icon: ScrollText, label: 'Journal',     value: `${journalThisMonth} this mo`,              color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20', path: '/journal',        ok: true },
+    { Icon: Shield,     label: 'Compliance',  value: `${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length} OK`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', path: '/compliance', ok: true },
+    { Icon: Users,      label: 'Portal',      value: portalOK ? `${(data.signerSessions||[]).filter(s=>s.status==='active').length} active` : 'PRO', color: portalOK ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400', bg: portalOK ? 'bg-violet-50 dark:bg-violet-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/signer-portal', ok: portalOK },
+    { Icon: Truck,      label: 'Dispatch',    value: dispatchOK ? `${(data.dispatchJobs||[]).filter(j=>j.status!=='completed').length} open` : 'AGENCY', color: dispatchOK ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400', bg: dispatchOK ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/team-dispatch', ok: dispatchOK },
+    { Icon: Brain,      label: 'AI Trainer',  value: aiOK ? `${(data.knowledgeArticles||[]).filter(a=>a.status==='published').length} art.` : 'PRO', color: aiOK ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400', bg: aiOK ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/ai-trainer', ok: aiOK },
+    { Icon: Building2,  label: 'Admin',       value: adminOK ? `${(data.stateRules||[]).filter(r=>r.status==='active').length} rules` : 'ADMIN', color: adminOK ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400', bg: adminOK ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/admin', ok: adminOK },
+  ];
+
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+      {modules.map(m => (
+        <button key={m.label} onClick={() => navigate(m.path)}
+          className={`flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-all hover:scale-[1.04] active:scale-95 ${!m.ok ? 'opacity-50' : ''}`}>
+          <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${m.bg}`}>
+            <m.Icon className={`h-5 w-5 ${m.color}`} />
+          </span>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{m.label}</p>
+          <p className={`text-xs font-semibold ${m.color}`}>{m.value}</p>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ─── QUICK ACTIONS GRID ───────────────────────────────────────────────────────
+const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
+  const ctx = { planTier, role: userRole };
+  const portalOK   = getGateState('signerPortal', ctx).allowed;
+  const dispatchOK = getGateState('teamDispatch', ctx).allowed;
+  const aiOK       = getGateState('aiTrainer', ctx).allowed;
+
+  const actions = [
+    { Icon: FileSignature, label: 'New Appt',      cls: 'bg-blue-600 hover:bg-blue-700 text-white',    fn: onNew,                          locked: false },
+    { Icon: ScrollText,    label: 'Log Journal',   cls: 'bg-indigo-600 hover:bg-indigo-700 text-white', fn: () => navigate('/journal'),     locked: false },
+    { Icon: DollarSign,    label: 'New Invoice',   cls: 'bg-emerald-600 hover:bg-emerald-700 text-white', fn: () => navigate('/invoices'), locked: false },
+    { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO' },
+    { Icon: Truck,         label: 'Dispatch',      cls: dispatchOK ? 'bg-amber-600 hover:bg-amber-700 text-white'  : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/team-dispatch'),  locked: !dispatchOK, lockLabel:'AGENCY' },
+    { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO' },
+  ];
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {actions.map(a => (
+        <button key={a.label} onClick={a.fn}
+          className={`relative flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center text-[11px] font-semibold leading-tight transition-all active:scale-95 ${a.cls}`}>
+          <a.Icon className="h-5 w-5" />
+          {a.label}
+          {a.locked && (
+            <span className="absolute right-1 top-1 rounded-full bg-black/25 px-1.5 py-px text-[8px] font-bold tracking-wide">
+              {a.lockLabel}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ─── ACTIVITY FEED ────────────────────────────────────────────────────────────
+const ActivityFeed = ({ data, navigate }) => {
+  const events = useMemo(() => {
+    const list = [];
+    (data.appointments||[]).filter(a => a.status==='completed' && a.completedAt).slice(0,2).forEach(a =>
+      list.push({ Icon: CheckCircle2, cls:'text-emerald-500', label:`Completed: ${a.client}`, sub:a.type, ts:a.completedAt, path:'/schedule' })
+    );
+    (data.journalEntries||[]).slice(0,2).forEach(j =>
+      list.push({ Icon: ScrollText, cls:'text-indigo-500', label:`Journal: ${j.actType}`, sub:j.signerName, ts:j.createdAt, path:'/journal' })
+    );
+    (data.invoices||[]).slice(0,2).forEach(inv =>
+      list.push({ Icon: DollarSign, cls:'text-blue-500', label:`Invoice ${inv.id}`, sub:`${inv.client} · $${inv.amount}`, ts:null, path:'/invoices' })
+    );
+    (data.adminAuditLog||[]).slice(0,1).forEach(log =>
+      list.push({ Icon: Activity, cls:'text-slate-400', label:`${log.action}: ${log.resourceLabel}`, sub:log.actor, ts:log.timestamp, path:'/admin' })
+    );
+    return list.sort((a,b) => (b.ts||'0').localeCompare(a.ts||'0')).slice(0,6);
+  }, [data]);
+
+  if (!events.length) return <p className="px-5 py-6 text-center text-xs text-slate-400">No recent activity.</p>;
+
+  return (
+    <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+      {events.map((ev,i) => (
+        <button key={i} onClick={() => navigate(ev.path)}
+          className="group flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30">
+          <ev.Icon className={`h-4 w-4 shrink-0 ${ev.cls}`} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-medium text-slate-700 dark:text-slate-200">{ev.label}</p>
+            <p className="truncate text-[10px] text-slate-400">{ev.sub}</p>
+          </div>
+          {ev.ts && <span className="shrink-0 text-[10px] text-slate-400">{timeAgo(ev.ts)}</span>}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ─── SETUP CHECKLIST ─────────────────────────────────────────────────────────
+const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
+  const done = checklist.filter(i => i.done).length;
+  const pct = Math.round((done / checklist.length) * 100);
+  if (pct === 100) return null;
+  return (
+    <Card className="border-slate-200/70 dark:border-slate-700">
+      <CardHeader className="px-5 py-3.5">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <Zap className="h-4 w-4 text-blue-500" /> Setup
+        </CardTitle>
+        <Badge variant="blue">{pct}%</Badge>
+      </CardHeader>
+      <CardContent className="px-5 pb-4 pt-3">
+        <Progress value={pct} className="mb-3 h-1.5" />
+        <div className="space-y-1.5">
+          {checklist.map(item => (
+            <button key={item.id} onClick={() => onToggle(item.id)}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-slate-50 dark:hover:bg-slate-700/50">
+              <span className={`h-3 w-3 shrink-0 rounded-full border-2 transition-colors ${item.done ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 dark:border-slate-600'}`} />
+              <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300'}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+        <Button size="sm" className="mt-3 w-full" onClick={onCompleteNext}>Complete next step</Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════════
+const Dashboard = () => {
+  const [loading,       setLoading]       = useState(true);
+  const [isModalOpen,   setIsModalOpen]   = useState(false);
+  const [chartType,     setChartType]     = useState(() =>
+    typeof window !== 'undefined' ? (localStorage.getItem('dashboard_chart_type') || 'area') : 'area'
+  );
+  const [isProTip,      setIsProTip]      = useState(false);
+  const [setupChecklist, setSetup]        = useState([
+    { id: 'profile',  label: 'Complete business profile',    done: true  },
+    { id: 'client',   label: 'Add first client',             done: true  },
+    { id: 'invoice',  label: 'Create first invoice',         done: false },
+    { id: 'journal',  label: 'Log first journal entry',      done: true  },
+    { id: 'payment',  label: 'Connect payout settings',      done: false },
+  ]);
+
+  const { theme }             = useTheme();
+  const navigate              = useNavigate();
+  const { data, addAppointment } = useData();
+
+  const planTier  = data.settings?.planTier  || 'free';
+  const userRole  = data.settings?.userRole  || 'owner';
+  const firstName = (data.settings?.name || 'there').split(' ')[0];
+
+  useEffect(() => { const t = setTimeout(() => setLoading(false), 600); return () => clearTimeout(t); }, []);
+
+  // ── KPIs ──────────────────────────────────────────────────────────────────
+  const apts     = data.appointments || [];
+  const invoices = data.invoices     || [];
+  const miles    = data.mileageLogs  || [];
+
+  const totalRevenue = useMemo(() =>
+    12450 + apts.reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
+
+  const completedCount = apts.filter(a => a.status === 'completed').length;
+  const upcomingCount  = apts.filter(a => a.status === 'upcoming').length;
+
+  const pendingAmt = invoices
+    .filter(i => i.status === 'Pending' || i.status === 'Overdue')
+    .reduce((s,i) => s + Number(i.amount||0), 0);
+
+  const totalMiles = miles.reduce((s,m) => s + Number(m.miles||0), 0);
+  const cpm        = data.settings?.costPerMile || 0.67;
+  const netProfit  = totalRevenue - 1200 - Math.round(totalMiles * cpm);
+  const margin     = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
+
+  const monthlyGoal        = data.settings?.monthlyGoal || 15000;
+  const currentMonthRevenue = useMemo(() =>
+    9800 + apts.reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
+  const goalPct = Math.min(100, Math.round((currentMonthRevenue / monthlyGoal) * 100));
+
+  const revenueData = useMemo(() => [
+    ...BASE_YTD,
+    { name: 'Feb', amount: currentMonthRevenue },
+  ], [currentMonthRevenue]);
+
+  // ── chart theming ────────────────────────────────────────────────────────
+  const chartStroke = theme === 'dark' ? '#60a5fa' : '#2563eb';
+  const gridStroke  = theme === 'dark' ? '#1e293b' : '#f1f5f9';
+  const tickFill    = theme === 'dark' ? '#475569' : '#94a3b8';
+
+  // ── handlers ─────────────────────────────────────────────────────────────
+  const handleSave = fd => {
+    addAppointment({
+      id: Date.now(),
+      client: fd.client, type: fd.type,
+      date: fd.date || todayISO(),
+      time: fd.time, status: 'upcoming',
+      amount: parseFloat(fd.fee) || 0,
+      location: fd.location || 'TBD',
+      notes: fd.notes || '',
+      receiptName: fd.receiptName || '',
+      receiptImage: fd.receiptImage || '',
+    });
+    setIsModalOpen(false);
+  };
+
+  const toggleSetup     = id => setSetup(prev => prev.map(i => i.id === id ? { ...i, done: !i.done } : i));
+  const completeNext    = ()  => setSetup(prev => {
+    const idx = prev.findIndex(i => !i.done);
+    return idx < 0 ? prev : prev.map((i,n) => n === idx ? { ...i, done: true } : i);
+  });
+
+  const greeting = getGreeting();
+  const GreetIcon = greeting.Icon;
+
+  const TIPS = [
+    'Owner focus: review margin trends daily and clear pending invoices before end-of-week.',
+    'Operator focus: block similar service types together to reduce travel and context-switching.',
+    'Batch mileage entries weekly — keeping them current saves hours at tax time.',
+  ];
+
+  return (
+    <div className="min-h-screen pb-16">
+      <AppointmentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} />
+
+      <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-5 sm:space-y-5 sm:px-6 sm:py-7 md:px-8 md:py-8">
+
+        {/* ══ HERO ════════════════════════════════════════════════════════════ */}
+        <Card className="overflow-hidden border-0 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white shadow-2xl">
+          {/* grid overlay */}
+          <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+          <CardContent className="relative px-5 py-5 sm:px-6 sm:py-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              {/* greeting */}
+              <div className="flex items-start gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                  <GreetIcon className={`h-5 w-5 ${greeting.color}`} />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-300">
+                    {data.settings?.businessName || 'NotaryOS'}
+                  </p>
+                  <h1 className="mt-0.5 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+                    {greeting.label}, {firstName}
+                  </h1>
+                  <p className="mt-0.5 text-xs text-slate-400">
+                    {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
+                  </p>
+                </div>
+              </div>
+              {/* hero right */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">
+                  {planTier.charAt(0).toUpperCase() + planTier.slice(1)} · {userRole}
+                </span>
+                <Button size="sm" variant="secondary"
+                  className="border-white/20 bg-white/10 text-white hover:bg-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                  onClick={() => navigate('/schedule')}>
+                  <CalendarClock className="mr-1.5 h-4 w-4" /> Schedule
+                </Button>
+                <Button onClick={() => setIsModalOpen(true)}
+                  className="border-0 bg-blue-500 text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600">
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  <span className="hidden xs:inline">New </span>Appointment
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} change="12.5%" trend="up" icon={DollarSign} loading={loading} accent="blue" />
-          <StatsCard title="Completion Rate" value={`${completionRate}%`} change="6.2%" trend="up" icon={CheckCircle2} loading={loading} accent="green" />
-          <StatsCard title="Upcoming Signings" value={`${upcomingCount}`} change="3 today" trend="up" icon={CalendarClock} loading={loading} accent="orange" />
-          <StatsCard title="Net Profit" value={`$${netProfit.toLocaleString()}`} change={`${profitMargin}% margin`} trend="up" icon={Wallet} loading={loading} accent="purple" />
+        {/* ══ KPI STRIP ═══════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {loading ? (
+            [1,2,3,4].map(i => <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-700" />)
+          ) : (
+            <>
+              <KpiTile title="Total Revenue"   value={`$${totalRevenue.toLocaleString()}`}  sub="All-time"             Icon={DollarSign}    accent="blue"   onClick={() => navigate('/invoices')} />
+              <KpiTile title="Net Profit"       value={`$${netProfit.toLocaleString()}`}     sub={`${margin}% margin`}  Icon={Wallet}        accent="purple" onClick={() => navigate('/invoices')} />
+              <KpiTile title="Upcoming"         value={String(upcomingCount)}                sub={`${completedCount} completed`} Icon={CalendarClock} accent="orange" onClick={() => navigate('/schedule')} />
+              <KpiTile title="Outstanding"      value={`$${pendingAmt.toLocaleString()}`}    sub="Invoices pending"     Icon={FileText}      accent={pendingAmt > 0 ? 'rose' : 'green'} onClick={() => navigate('/invoices')} />
+            </>
+          )}
         </div>
 
+        {/* ══ MODULE STATUS STRIP ═════════════════════════════════════════════ */}
         <Card className="border-slate-200/70 dark:border-slate-700">
-          <CardContent className="flex flex-col gap-2 p-4 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Badge variant="default">KPI Period</Badge>
-              <span>{kpiPeriodLabel}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="default">Last Updated</Badge>
-              <span>{formattedLastUpdated}</span>
-            </div>
+          <CardContent className="px-4 py-4 sm:px-5">
+            {loading
+              ? <div className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+              : <ModuleStatus data={data} navigate={navigate} planTier={planTier} userRole={userRole} />
+            }
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/70 dark:border-slate-700">
-          <CardContent className="flex items-center justify-between p-4 text-sm">
-            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
-              <Badge variant="blue">Profile</Badge>
-              <span>{activeProfile.label}</span>
-            </div>
-            <p className="text-slate-500 dark:text-slate-400">Saved automatically for this browser.</p>
-          </CardContent>
-        </Card>
+        {/* ══ MAIN 2-COL GRID ═════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-12">
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <section className="space-y-6 xl:col-span-8">
-            <Card className="h-[420px] border-slate-200/70 shadow-sm dark:border-slate-700">
-              <CardHeader>
-                <div>
-                  <CardTitle>Revenue Velocity</CardTitle>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Financial performance over time</p>
-                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{chartPeriodLabel} · Last updated {formattedLastUpdated}</p>
-                </div>
-                <Select value={chartType} onChange={(e) => handleChartTypeChange(e.target.value)} options={[{ label: 'Area', value: 'area' }, { label: 'Bar', value: 'bar' }]} className="w-28" aria-label="Select revenue chart type" />
+          {/* LEFT — 8 cols */}
+          <section className="space-y-4 sm:space-y-5 xl:col-span-8">
+
+            {/* Daily Brief */}
+            {loading
+              ? <div className="h-56 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+              : <DailyBrief data={data} navigate={navigate} />
+            }
+
+            {/* Today's Schedule */}
+            <Card className="border-slate-200/70 dark:border-slate-700">
+              <CardHeader className="px-5 py-3.5">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <CalendarClock className="h-4 w-4 text-blue-500" />
+                  Today's Schedule
+                  <Badge variant="blue">
+                    {(data.appointments||[]).filter(a => a.date === todayISO()).length} today
+                  </Badge>
+                </CardTitle>
+                <Button size="sm" variant="secondary" onClick={() => navigate('/schedule')}>
+                  Full calendar <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                </Button>
               </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-[300px] w-full" />
-                ) : (
-                  <div className="h-[300px] w-full">
-                    <figure role="img" aria-label={`Revenue chart for ${chartPeriodLabel}. Last updated ${formattedLastUpdated}.`} className="h-full w-full">
-                      <span className="sr-only">Revenue chart visualization. Use the chart type selector to switch between area and bar views.</span>
-                      <ResponsiveContainer width="100%" height="100%">
-                        {chartType === 'area' ? (
-                          <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={chartStroke} stopOpacity={0.3} />
-                              <stop offset="95%" stopColor={chartStroke} stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
-                          <RechartsTooltip />
-                          <Area type="monotone" dataKey="amount" stroke={chartStroke} strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-                          </AreaChart>
-                        ) : (
-                          <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
-                          <RechartsTooltip />
-                          <Bar dataKey="amount" fill={chartStroke} radius={[6, 6, 0, 0]} />
-                          </BarChart>
-                        )}
-                      </ResponsiveContainer>
-                    </figure>
-                  </div>
-                )}
+              <CardContent className="p-0">
+                {loading
+                  ? [1,2].map(i => <div key={i} className="mx-5 my-3 h-12 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />)
+                  : <TodayTimeline appointments={data.appointments||[]} navigate={navigate} />
+                }
               </CardContent>
             </Card>
 
+            {/* Revenue Chart */}
             <Card className="border-slate-200/70 dark:border-slate-700">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <CardTitle>Upcoming Schedule</CardTitle>
-                    <Badge variant="blue">{upcomingCount} Pending</Badge>
-                  </div>
-                  <Button size="xs" variant="secondary" onClick={() => navigate('/schedule')}>Open Calendar <ChevronRight className="ml-1 h-3.5 w-3.5" /></Button>
+              <CardHeader className="px-5 py-3.5">
+                <div>
+                  <CardTitle className="text-sm font-semibold">Revenue Velocity</CardTitle>
+                  <p className="text-xs text-slate-400">YTD · last 7 months</p>
                 </div>
+                <Select
+                  value={chartType}
+                  onChange={e => { setChartType(e.target.value); localStorage.setItem('dashboard_chart_type', e.target.value); }}
+                  options={[{ label:'Area', value:'area' }, { label:'Bar', value:'bar' }]}
+                  className="w-24"
+                />
+              </CardHeader>
+              <CardContent className="px-5 pb-5 pt-0">
+                {loading
+                  ? <div className="h-52 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  : (
+                    <div className="h-52 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'area' ? (
+                          <AreaChart data={revenueData} margin={{ top:8, right:0, left:-20, bottom:0 }}>
+                            <defs>
+                              <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%"  stopColor={chartStroke} stopOpacity={0.28} />
+                                <stop offset="95%" stopColor={chartStroke} stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill:tickFill, fontSize:11 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill:tickFill, fontSize:11 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+                            <RechartsTooltip formatter={v => [`$${Number(v).toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius:8, border:'none', boxShadow:'0 4px 20px rgba(0,0,0,.12)' }} />
+                            <Area type="monotone" dataKey="amount" stroke={chartStroke} strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)" />
+                          </AreaChart>
+                        ) : (
+                          <BarChart data={revenueData} margin={{ top:8, right:0, left:-20, bottom:0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill:tickFill, fontSize:11 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill:tickFill, fontSize:11 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+                            <RechartsTooltip formatter={v => [`$${Number(v).toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius:8, border:'none', boxShadow:'0 4px 20px rgba(0,0,0,.12)' }} />
+                            <Bar dataKey="amount" fill={chartStroke} radius={[4,4,0,0]} />
+                          </BarChart>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  )
+                }
+              </CardContent>
+            </Card>
+
+            {/* Activity Feed */}
+            <Card className="border-slate-200/70 dark:border-slate-700">
+              <CardHeader className="px-5 py-3.5">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <Activity className="h-4 w-4 text-slate-400" /> Recent Activity
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                  {loading ? (
-                    [1, 2, 3].map((i) => <div key={i} className="p-6"><Skeleton className="h-12 w-full" /></div>)
-                  ) : filteredUpcomingAppointments.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">No appointments scheduled.</div>
-                  ) : (
-                    filteredUpcomingAppointments.map((apt) => (
-                      <button
-                        key={apt.id}
-                        onClick={() => navigate('/schedule', { state: { editAppointmentId: apt.id } })}
-                        className="group flex w-full flex-col justify-between p-6 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 sm:flex-row sm:items-center"
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
-                            <Clock className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-slate-900 dark:text-white">{apt.client}</h4>
-                            <p className="mt-1 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                              <span className="font-medium">{apt.time}</span>
-                              <span className="h-1 w-1 rounded-full bg-slate-300"></span>
-                              <span>{apt.type}</span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex items-center gap-4 sm:mt-0">
-                          <span className="font-bold text-slate-900 dark:text-white">${apt.amount}</span>
-                          <Badge variant="blue">Scheduled</Badge>
-                          <span className="text-xs text-blue-600 dark:text-blue-400">Edit</span>
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
+                {loading
+                  ? [1,2,3].map(i => <div key={i} className="mx-5 my-2.5 h-9 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />)
+                  : <ActivityFeed data={data} navigate={navigate} />
+                }
               </CardContent>
             </Card>
           </section>
 
-          <aside className="space-y-6 xl:col-span-4">
-            <SetupProgress loading={loading} checklist={setupChecklist} onToggle={toggleSetup} onCompleteNext={completeNextSetup} />
+          {/* RIGHT — 4 cols */}
+          <aside className="space-y-4 sm:space-y-5 xl:col-span-4">
 
+            {/* Monthly Goal */}
             <Card className="border-slate-200/70 dark:border-slate-700">
-              <CardHeader><CardTitle>Monthly Goal</CardTitle></CardHeader>
-              <CardContent className="flex flex-col items-center">
-                {loading ? (
-                  <Skeleton className="h-32 w-32 rounded-full" />
-                ) : (
-                  <CircularProgress value={goalPercent} size={170} strokeWidth={11}>
-                    <div className="text-center">
-                      <span className="text-3xl font-bold text-slate-900 dark:text-white">{goalPercent}%</span>
-                      <p className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">of ${data.settings.monthlyGoal.toLocaleString()}</p>
-                    </div>
-                  </CircularProgress>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200/70 dark:border-slate-700">
-              <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                {filteredQuickActions.map((actionItem) => {
-                  const ActionIcon = actionItem.icon;
-                  return (
-                    <Button key={actionItem.label} className="w-full justify-start" variant={actionItem.variant === 'primary' ? 'default' : 'secondary'} onClick={() => runQuickAction(actionItem.action)}>
-                      <ActionIcon className="mr-2 h-4 w-4" /> {actionItem.label}
-                    </Button>
-                  );
-                })}
-                {!filteredQuickActions.length ? <p className="px-1 py-2 text-xs text-slate-500">No matching quick action.</p> : null}
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200/70 dark:border-slate-700">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">Premium Pro Tip</CardTitle>
-                  <Button size="xs" variant="secondary" onClick={() => setIsProTipExpanded((prev) => !prev)}>
-                    {isProTipExpanded ? 'Hide' : 'Show'} Tip <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isProTipExpanded ? 'rotate-180' : ''}`} />
-                  </Button>
-                </div>
+              <CardHeader className="px-5 py-3.5">
+                <CardTitle className="text-sm font-semibold">Monthly Goal</CardTitle>
+                <Badge variant={goalPct >= 100 ? 'success' : 'blue'}>{goalPct}%</Badge>
               </CardHeader>
-              {isProTipExpanded ? (
-                <CardContent className="rounded-b-xl bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20"><Award className="h-6 w-6" /></div>
-                  <p className="mb-4 text-sm text-indigo-100">{activeProfile.proTip}</p>
-                  <Button size="sm" className="bg-white/20 text-white hover:bg-white/30" onClick={() => navigate('/clients')}>Open Command Path</Button>
+              <CardContent className="flex flex-col items-center px-5 pb-5 pt-2">
+                {loading
+                  ? <div className="h-36 w-36 animate-pulse rounded-full bg-slate-100 dark:bg-slate-800" />
+                  : (
+                    <CircularProgress value={goalPct} size={148} strokeWidth={10}>
+                      <div className="text-center">
+                        <span className="text-3xl font-bold text-slate-900 dark:text-white">{goalPct}%</span>
+                        <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          of ${monthlyGoal.toLocaleString()}
+                        </p>
+                      </div>
+                    </CircularProgress>
+                  )
+                }
+                <div className="mt-3 grid w-full grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">This month</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${currentMonthRevenue.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Remaining</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${Math.max(0, monthlyGoal - currentMonthRevenue).toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card className="border-slate-200/70 dark:border-slate-700">
+              <CardHeader className="px-5 py-3.5">
+                <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 pt-0">
+                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} />
+              </CardContent>
+            </Card>
+
+            {/* Setup Progress */}
+            {!loading && (
+              <SetupProgress checklist={setupChecklist} onToggle={toggleSetup} onCompleteNext={completeNext} />
+            )}
+
+            {/* At a Glance */}
+            <Card className="border-slate-200/70 dark:border-slate-700">
+              <CardHeader className="px-5 py-3.5">
+                <CardTitle className="text-sm font-semibold">At a Glance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1 px-4 pb-4 pt-0">
+                {[
+                  { Icon:MapPin,    label:'Miles logged',    val:`${totalMiles.toFixed(1)} mi`,  sub:`$${(totalMiles*cpm).toFixed(0)} deductible`, cls:'text-blue-500',    path:'/mileage' },
+                  { Icon:Shield,    label:'Compliance',      val:`${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length}`, sub:'items compliant', cls:'text-emerald-500', path:'/compliance' },
+                  { Icon:BookOpen,  label:'Journal entries', val:String((data.journalEntries||[]).length), sub:'all time',   cls:'text-indigo-500', path:'/journal' },
+                  { Icon:TrendingUp,label:'Team members',    val:String((data.teamMembers||[]).length), sub:'on roster', cls:'text-amber-500',  path:'/team-dispatch' },
+                ].map(item => (
+                  <button key={item.label} onClick={() => navigate(item.path)}
+                    className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <item.Icon className={`h-4 w-4 shrink-0 ${item.cls}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                        {item.val} <span className="font-normal text-slate-400">{item.sub}</span>
+                      </p>
+                      <p className="text-[10px] text-slate-400">{item.label}</p>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 dark:text-slate-600" />
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Pro Tip */}
+            <Card className="border-slate-200/70 dark:border-slate-700">
+              <CardHeader className="px-5 py-3.5">
+                <CardTitle className="text-sm font-semibold">Pro Tip</CardTitle>
+                <Button size="sm" variant="secondary" onClick={() => setIsProTip(p => !p)}>
+                  {isProTip ? 'Hide' : 'Show'} <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isProTip ? 'rotate-180' : ''}`} />
+                </Button>
+              </CardHeader>
+              {isProTip && (
+                <CardContent className="rounded-b-xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-white">
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
+                    <Award className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-indigo-100">{TIPS[0]}</p>
+                  <Button size="sm" className="mt-4 bg-white/20 text-white hover:bg-white/30"
+                    onClick={() => navigate('/clients')}>
+                    Open Clients
+                  </Button>
                 </CardContent>
-              ) : null}
+              )}
             </Card>
           </aside>
         </div>
