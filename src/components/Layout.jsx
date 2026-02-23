@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
+import { ToastStack, PromptModal } from './GlobalOverlays';
 
 // --- INLINED COMPONENTS FOR STABILITY ---
 const Button = ({ children, variant = 'primary', size = 'default', className = '', ...props }) => {
@@ -134,7 +135,7 @@ const LayoutInner = ({ children }) => {
     { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
     { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
     { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
-    { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed },
+    { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
@@ -160,18 +161,28 @@ const LayoutInner = ({ children }) => {
         )}
 
         <nav className="flex-1 px-3 space-y-1 mt-2 overflow-y-auto">
-          {navItems.map((item) => (
-            <Link key={item.path} to={item.path} title={isSidebarCollapsed ? item.label : ''} className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all group ${location.pathname === item.path ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <item.icon className={`w-5 h-5 transition-colors ${location.pathname === item.path ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-              {!isSidebarCollapsed && (
-                <>
-                  <span className="animate-fade-in">{item.label}</span>
-                  {item.badge ? <span className="ml-auto rounded-full border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:border-amber-500 dark:text-amber-400">{item.badge}</span> : null}
-                  {item.locked ? <Lock className="h-3.5 w-3.5 text-amber-500" /> : null}
-                </>
-              )}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            // Hide admin-only items from non-admin roles entirely
+            if (item.adminOnly && !adminGate.allowed) return null;
+            return (
+              <Link key={item.path} to={item.path} title={isSidebarCollapsed ? item.label : item.locked ? `${item.label} — Upgrade required` : ''}
+                className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all group ${item.locked ? 'opacity-60' : ''} ${location.pathname === item.path ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                <item.icon className={`w-5 h-5 transition-colors ${location.pathname === item.path ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+                {!isSidebarCollapsed && (
+                  <>
+                    <span className="animate-fade-in flex-1">{item.label}</span>
+                    {item.badge && !item.locked ? <span className="rounded-full border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:border-amber-500 dark:text-amber-400">{item.badge}</span> : null}
+                    {item.locked ? (
+                      <span className="flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500 dark:text-slate-400">
+                        <Lock className="h-2.5 w-2.5" />
+                        {item.badge || 'LOCKED'}
+                      </span>
+                    ) : null}
+                  </>
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-3 relative">
@@ -250,12 +261,15 @@ const LayoutInner = ({ children }) => {
           <div className="md:hidden fixed inset-0 z-40 bg-slate-800/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="bg-white dark:bg-slate-900 w-3/4 h-full p-4 shadow-xl border-r border-slate-200 dark:border-slate-700 overflow-y-auto" onClick={e => e.stopPropagation()}>
               <nav className="space-y-2 mt-4">
-                {navItems.map((item) => (
-                  <Link key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <item.icon className="w-5 h-5 text-slate-400" />{item.label}
-                    {item.locked && <Lock className="w-3.5 h-3.5 text-amber-500 ml-auto" />}
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  if (item.adminOnly && !adminGate.allowed) return null;
+                  return (
+                    <Link key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 ${item.locked ? 'opacity-60' : ''}`}>
+                      <item.icon className="w-5 h-5 text-slate-400" />{item.label}
+                      {item.locked && <span className="ml-auto flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500"><Lock className="h-2.5 w-2.5" />{item.badge || 'LOCKED'}</span>}
+                    </Link>
+                  );
+                })}
               </nav>
               <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-3">
                 <div className="rounded-lg border border-dashed border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3">
@@ -284,6 +298,11 @@ const LayoutInner = ({ children }) => {
           {children}
         </main>
       </div>
+    </div>
+
+      {/* Global cross-module overlays */}
+      <ToastStack />
+      <PromptModal />
     </div>
   );
 };
