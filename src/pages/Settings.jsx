@@ -171,11 +171,11 @@ const Settings = () => {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-700">
                   <div>
                     <p className="font-medium text-slate-900 dark:text-white">Theme</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Customize how NotaryFix looks.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Dark mode is enforced to keep text and data contrast consistent.</p>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => theme === 'dark' && toggleTheme()} className={`flex w-24 flex-col items-center gap-2 rounded-lg border p-3 ${theme === 'light' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 dark:border-slate-700'}`}><Sun className="h-5 w-5" /><span className="text-xs font-medium">Light</span></button>
-                    <button onClick={() => theme === 'light' && toggleTheme()} className={`flex w-24 flex-col items-center gap-2 rounded-lg border p-3 ${theme === 'dark' ? 'border-blue-500 bg-blue-900/20 text-blue-400' : 'border-slate-200 text-slate-500 dark:border-slate-700'}`}><Moon className="h-5 w-5" /><span className="text-xs font-medium">Dark</span></button>
+                    <button type="button" disabled className="flex w-24 cursor-not-allowed flex-col items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/40 p-3 text-slate-500 opacity-60"><Sun className="h-5 w-5" /><span className="text-xs font-medium">Light</span></button>
+                    <button onClick={toggleTheme} className="flex w-24 flex-col items-center gap-2 rounded-lg border border-blue-500 bg-blue-900/20 p-3 text-blue-400"><Moon className="h-5 w-5" /><span className="text-xs font-medium">Dark</span></button>
                   </div>
                 </div>
               </CardContent>
