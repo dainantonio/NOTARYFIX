@@ -70,7 +70,7 @@ const Legal = () => {
         <Button variant="ghost" className="pl-0 hover:bg-transparent hover:text-blue-600"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Button>
       </Link>
 
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="p-6">
           <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Risk & Controls</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">Compliance Command</h1>
