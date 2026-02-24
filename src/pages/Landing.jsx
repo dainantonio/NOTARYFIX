@@ -89,7 +89,7 @@ const FAQ = [
   { q: 'Is signer data private?',                a: 'Absolutely. Signer workflows are fully isolated. We never share or sell signer data.' },
   { q: 'Why is dark mode the default experience?', a: 'We prioritize readability and contrast consistency across dense operational views like dispatch, finance tables, and audit logs.' },
   { q: 'Are Admin and Team Dispatch visuals standardized?', a: 'Yes. Core hero/header styles and spacing are standardized so switching between modules feels consistent and predictable.' },
-  { q: 'Can AI answers be grounded in jurisdiction JSON data?', a: 'Yes. Admin can import state JSON policy data and NotaryOS uses that schema for grounded fee, ID, and red-flag guidance.' },
+  { q: 'Can AI answers be grounded in jurisdiction policy records?', a: 'Yes. Admin can import state policy records and NotaryOS uses that structure for grounded fee, ID, and red-flag guidance.' },
   { q: 'Does it work offline?',                  a: 'Yes. The mobile-first design works offline for field signings. Data syncs automatically when you reconnect.' },
 ];
 
@@ -144,18 +144,18 @@ const answerAI = (q) => {
   const state = findStateRecord(q);
 
   if (state && (ql.includes('fee') || ql.includes('jurat') || ql.includes('acknowledg') || ql.includes('oath'))) {
-    return `${state.state} dataset: acknowledgment ${state.fees.acknowledgment}, jurat ${state.fees.jurat}, oath ${state.fees.oath}.`;
+    return `${state.state} policy: acknowledgment ${state.fees.acknowledgment}, jurat ${state.fees.jurat}, oath ${state.fees.oath}.`;
   }
   if (state && (ql.includes('id') || ql.includes('identification') || ql.includes('expired'))) {
-    return `${state.state} dataset: credible witnesses ${state.id_requirements.credible_witnesses}; expired ID rule ${state.id_requirements.expired_id_rule}.`;
+    return `${state.state} policy: credible witnesses ${state.id_requirements.credible_witnesses}; expired ID rule ${state.id_requirements.expired_id_rule}.`;
   }
   if (state && (ql.includes('red flag') || ql.includes('warning') || ql.includes('risk'))) {
     return `${state.state} red flags: ${state.red_flags.join('; ')}.`;
   }
   if (ql.includes('ron')) return 'RON requires KBA or credential analysis identity proofing, plus state-approved audio-video technology.';
   if (ql.includes('mileage') || ql.includes('mile')) return 'IRS mileage rate 2025: 67¢/mile. Log start/end odometer and route purpose for each trip.';
-  if (ql.includes('json') || ql.includes('dataset')) return 'NotaryOS AI demo is grounded to sample jurisdiction JSON records and mirrors the same schema used by Admin imports.';
-  return 'Ask a state-specific question like “California jurat fee”, “Texas expired ID rule”, or “Ohio red flags” to see JSON-grounded answers.';
+  if (ql.includes('json') || ql.includes('dataset')) return 'NotaryOS AI demo is grounded to sample jurisdiction policy records and mirrors the same structure used by Admin imports.';
+  return 'Ask a state-specific question like “California jurat fee”, “Texas expired ID rule”, or “Ohio red flags” to see grounded answers.';
 };
 
 // ─── COMPONENT ─────────────────────────────────────────────────────────────────
@@ -386,7 +386,7 @@ export default function Landing() {
               Your personal compliance expert,{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">available 24/7.</span>
             </h2>
-            <p className="mt-4 text-lg text-slate-400">Get instant, state-specific answers on fees, ID requirements, red flags, and journal rules grounded in jurisdiction JSON policy records.</p>
+            <p className="mt-4 text-lg text-slate-400">Get instant, state-specific answers on fees, ID requirements, red flags, and journal rules grounded in jurisdiction policy records.</p>
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
@@ -413,7 +413,7 @@ export default function Landing() {
                 <p className="flex items-center gap-1.5 text-xs text-emerald-400">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />Online · Answering instantly
                 </p>
-                <p className="text-[11px] text-slate-400">Source: jurisdiction JSON policy dataset</p>
+                <p className="text-[11px] text-slate-400">Source: jurisdiction policy records</p>
               </div>
             </div>
             <div className="mt-5 space-y-4">

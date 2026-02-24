@@ -1444,7 +1444,7 @@ const ComplianceAdvisor = ({
         ? computeConfidence(policy.updatedAt, policy.publishedAt)
         : staticConfidence();
       const sourceNote = conf.fromDataset
-        ? `Admin dataset · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        ? `Admin policy records · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
         : 'Built-in rule — verify with your state authority';
       result.push({
         id: 'thumbprint',
@@ -1488,7 +1488,7 @@ const ComplianceAdvisor = ({
         }`,
         confidence: conf,
         sourceNote: conf.fromDataset
-          ? 'Admin dataset · Fee schedule'
+          ? 'Admin policy records · Fee schedule'
           : 'Built-in rule — verify with your state authority',
         debug: {
           stateCode,
@@ -1512,7 +1512,7 @@ const ComplianceAdvisor = ({
         body,
         confidence: conf,
         sourceNote: conf.fromDataset
-          ? `Admin dataset · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+          ? `Admin policy records · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
           : 'Built-in rule — verify with your state authority',
         debug: {
           stateCode,
@@ -1535,7 +1535,7 @@ const ComplianceAdvisor = ({
         title: 'Accepted ID Types',
         body: `${idReq.acceptedIdTypes.join(', ')}${extraStr}.`,
         confidence: conf,
-        sourceNote: 'Admin dataset · ID requirements',
+        sourceNote: 'Admin policy records · ID requirements',
         debug: {
           stateCode,
           actType,
@@ -1555,7 +1555,7 @@ const ComplianceAdvisor = ({
         title: 'Special Act Caveats',
         body,
         confidence: conf,
-        sourceNote: `Admin dataset · Policy v${policy.version || '\u2014'}`,
+        sourceNote: `Admin policy records · Policy v${policy.version || '\u2014'}`,
         debug: {
           stateCode,
           actType,
@@ -1575,7 +1575,7 @@ const ComplianceAdvisor = ({
         body: `RON is ${policy.ronPermitted ? 'permitted' : 'not permitted'} in ${stateName}. Statute: ${policy.ronStatute || '\u2014'}`,
         confidence: conf,
         sourceNote: conf.fromDataset
-          ? `Admin dataset · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+          ? `Admin policy records · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
           : 'Built-in rule — verify with your state authority',
         debug: {
           stateCode,

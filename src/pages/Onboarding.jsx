@@ -276,7 +276,7 @@ export default function Onboarding() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { Icon: Shield,   title: 'Compliance Built-in',   sub: 'State-specific rules, fee limits, ID requirements, and red flags from jurisdiction datasets' },
+                    { Icon: Shield,   title: 'Compliance Built-in',   sub: 'State-specific rules, fee limits, ID requirements, and red flags from jurisdiction policy records' },
                     { Icon: Zap,      title: 'Smart Workflows',        sub: 'Auto journal prompts, invoice generation, and linking' },
                     { Icon: Target,   title: 'Revenue Tracking',       sub: 'Goals, mileage deductions, and profit visibility' },
                     { Icon: CheckCircle2, title: 'Consistent Workspace', sub: 'Unified dark-mode visuals and spacing across Admin, Dispatch, Invoices, and more' },
