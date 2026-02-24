@@ -916,7 +916,7 @@ const EntryModal = ({ isOpen, onClose, onSave, initial, appointments, invoices, 
           )}
 
           {/* Step tabs */}
-          <div className="flex overflow-x-auto border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4">
             {sections.map((s, i) => (
               <button
                 key={i} type="button" onClick={() => setSection(i)}

@@ -1027,7 +1027,7 @@ const Admin = () => {
       </div>
 
       {/* ── TABS ─────────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-700">
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-slate-700">
         {TABS.map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1 sm:gap-1.5 whitespace-nowrap px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] ${activeTab === tab.key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>

@@ -884,7 +884,7 @@ const TeamDispatch = () => {
       </div>
 
       {/* ── TABS ──────────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto scrollbar-hide">
         {TABS.map(([key, label]) => (
           <button key={key} onClick={() => setActiveTab(key)}
             className={`whitespace-nowrap px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] flex items-center ${activeTab === key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
@@ -927,7 +927,7 @@ const TeamDispatch = () => {
               </div>
             </CardContent>
           </Card>
-          <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
             {STATUSES.map((status) => (
               <KanbanColumn key={status} status={status} jobs={jobsByStatus[status] || []} onJobClick={setSelectedJob} />
             ))}

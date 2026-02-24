@@ -71,7 +71,7 @@ const Settings = () => {
 
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="w-full flex-shrink-0 md:w-56 lg:w-64">
-          <nav className="flex flex-row gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible md:pb-0">
+          <nav className="flex flex-row gap-2 overflow-x-auto scrollbar-hide pb-2 md:flex-col md:overflow-visible md:pb-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
