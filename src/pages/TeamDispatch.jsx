@@ -559,7 +559,7 @@ const KanbanColumn = ({ status, jobs, onJobClick }) => {
   const meta = STATUS_META[status];
   const borderColor = { unassigned: 'border-slate-300', assigned: 'border-blue-400', in_progress: 'border-amber-400', completed: 'border-emerald-400' }[status];
   return (
-    <div className="flex flex-col min-w-[260px] flex-1">
+    <div className="flex flex-col min-w-[82vw] sm:min-w-[260px] flex-1" style={{ scrollSnapAlign: "start" }}>
       <div className={`rounded-t-xl border-b-2 ${borderColor} px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-b-none`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -834,7 +834,7 @@ const TeamDispatch = () => {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
       {/* Modals */}
       <JobModal isOpen={jobModalOpen} onClose={() => { setJobModalOpen(false); setEditingJob(null); }} onSave={jobSave} initial={editingJob} />
       <MemberModal isOpen={memberModalOpen} onClose={() => { setMemberModalOpen(false); setEditingMember(null); }} onSave={memberSave} initial={editingMember} />
@@ -858,10 +858,10 @@ const TeamDispatch = () => {
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 text-white shadow-xl">
-        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+        <CardContent className="flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-indigo-200">Agency Operations</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">Agency OS</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Agency OS</h1>
             <p className="mt-1 text-sm text-slate-200">Dispatch board · SLA timers · QA · Payouts · Performance · Client reporting.</p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -887,7 +887,7 @@ const TeamDispatch = () => {
       <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
         {TABS.map(([key, label]) => (
           <button key={key} onClick={() => setActiveTab(key)}
-            className={`whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
+            className={`whitespace-nowrap px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] flex items-center ${activeTab === key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
             {label}
           </button>
         ))}
@@ -927,7 +927,7 @@ const TeamDispatch = () => {
               </div>
             </CardContent>
           </Card>
-          <div className="flex gap-4 overflow-x-auto pb-4">
+          <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
             {STATUSES.map((status) => (
               <KanbanColumn key={status} status={status} jobs={jobsByStatus[status] || []} onJobClick={setSelectedJob} />
             ))}
