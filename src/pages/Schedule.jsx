@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
@@ -211,6 +211,9 @@ const Schedule = () => {
                         <Button size="sm" variant="ghost" title="Mark Complete" onClick={() => completeAppointment(apt)} className="text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"><CheckCircle2 className="h-4 w-4" /></Button>
                       ) : (
                         <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 px-2"><CheckCircle2 className="h-3.5 w-3.5" /> Done</span>
+                      )}
+                      {apt.status !== 'completed' && (
+                        <Button size="sm" variant="ghost" title="Arrive Mode" onClick={() => navigate(`/arrive/${apt.id}`)} className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"><MapPin className="h-4 w-4" /></Button>
                       )}
                       <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="danger" onClick={() => deleteAppointment(apt.id)}><Trash2 className="h-4 w-4" /></Button>
