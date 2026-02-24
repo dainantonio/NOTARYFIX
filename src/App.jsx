@@ -14,6 +14,7 @@ import Legal from './pages/Legal';
 import Pricing from './pages/Pricing';
 import SignerPortal from './pages/SignerPortal';
 import Journal from './pages/Journal';
+import ArriveMode from './pages/ArriveMode';
 import TeamDispatch from './pages/TeamDispatch';
 import AITrainer from './pages/AITrainer';
 import Admin from './pages/Admin';
@@ -65,6 +66,7 @@ function App() {
             <Route path="/clients"     element={<Clients />} />
             <Route path="/invoices"    element={<Invoices />} />
             <Route path="/journal"     element={<Journal />} />
+            <Route path="/arrive/:id"   element={<ArriveMode />} />
             <Route path="/settings"    element={<Settings />} />
             <Route path="/mileage"     element={<Mileage />} />
 
