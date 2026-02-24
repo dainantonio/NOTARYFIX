@@ -27,20 +27,23 @@
 
 /* ── Mobile-first: smooth scroll + touch optimization ──────────────────── */
 html {
-  scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* scroll-behavior: smooth removed — causes janky momentum scroll on iOS */
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Prevent bounce/overscroll on the page level (iOS) */
+/* Allow natural scroll momentum — individual containers handle overscroll */
 body {
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto;
 }
 
-/* Smooth scrolling containers */
+/* Touch momentum for all scrollable areas */
+* {
+  -webkit-overflow-scrolling: touch;
+}
 .overflow-x-auto,
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
