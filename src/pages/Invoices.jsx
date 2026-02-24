@@ -136,21 +136,21 @@ const Invoices = () => {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} />
 
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Billing Pipeline</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">Invoices</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Invoices</h1>
             <p className="mt-1 text-sm text-slate-200">Enterprise invoicing and payment tracking.</p>
           </div>
           <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> Create Invoice</Button>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Collected</p><p className="text-2xl font-bold text-emerald-600">${totals.paid.toLocaleString()}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Outstanding</p><p className="text-2xl font-bold text-amber-600">${totals.pending.toLocaleString()}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Overdue</p><p className="text-2xl font-bold text-rose-600">${totals.overdue.toLocaleString()}</p></CardContent></Card>
@@ -158,7 +158,34 @@ const Invoices = () => {
 
       <Card>
         <CardHeader><CardTitle>All Invoices</CardTitle></CardHeader>
-        <CardContent className="overflow-x-auto p-0">
+
+        {/* ── Mobile card list ── */}
+        <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
+          {invoices.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">No invoices yet.</p>
+          ) : invoices.map((invoice) => (
+            <div key={invoice.id} className="flex items-center gap-3 px-4 py-3.5">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{invoice.id}</span>
+                  {getStatusBadge(invoice.status)}
+                </div>
+                <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{invoice.client}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Due {invoice.due}</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-base font-black text-emerald-600 dark:text-emerald-400">${Number(invoice.amount).toLocaleString()}</p>
+                <div className="flex gap-1 mt-1 justify-end">
+                  <button onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => deleteInvoice(invoice.id)} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Desktop table ── */}
+        <CardContent className="hidden sm:block overflow-x-auto p-0">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400">
               <tr>
@@ -177,7 +204,7 @@ const Invoices = () => {
               ) : invoices.map((invoice) => (
                 <tr key={invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{invoice.id}</td>
-                  <td className="px-6 py-4">{invoice.client}</td>
+                  <td className="px-6 py-4 max-w-[160px] truncate">{invoice.client}</td>
                   <td className="px-6 py-4 font-semibold">${Number(invoice.amount).toLocaleString()}</td>
                   <td className="px-6 py-4">{invoice.date}</td>
                   <td className="px-6 py-4">{invoice.due}</td>
