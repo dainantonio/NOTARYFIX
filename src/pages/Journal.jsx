@@ -1773,7 +1773,7 @@ const Journal = () => {
   }, []); // runs once on mount
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-10 mx-auto max-w-[1400px]">
       <EntryModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditing(null); }}
@@ -1946,20 +1946,27 @@ const Journal = () => {
       <Card>
         <CardContent className="p-0 overflow-x-auto">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-700 mb-4">
-                <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-500" />
+            entries.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-700 mb-4">
+                  <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-500" />
+                </div>
+                <p className="font-semibold text-slate-700 dark:text-slate-200">Your digital notary journal.</p>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">Every entry is tamper-evident and timestamped. Required by law in most states.</p>
+                <div className="mt-3 max-w-xl rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left">
+                  <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">First-run tip</p>
+                  <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">Start with your first act now so your compliance trail begins immediately.</p>
+                </div>
+                <Button className="mt-5" onClick={() => openNew()}>
+                  <Plus className="mr-2 h-4 w-4" /> Add your first journal entry
+                </Button>
               </div>
-              <p className="font-semibold text-slate-600 dark:text-slate-300">No journal entries found.</p>
-              <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">Add your first entry to build an audit-ready record.</p>
-              <div className="mt-3 max-w-xl rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left">
-                <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">Why this matters</p>
-                <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">A digital journal protects you in disputes, strengthens compliance audits, and signals professionalism to escrow/title partners.</p>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="font-semibold text-slate-600 dark:text-slate-300">No journal entries match your filters.</p>
+                <button onClick={() => { setQuery(''); setFilterActType(''); setFilterMonth(''); }} className="mt-2 text-sm text-blue-600 hover:underline">Clear filters</button>
               </div>
-              <Button className="mt-5" onClick={() => openNew()}>
-                <Plus className="mr-2 h-4 w-4" /> Add First Entry
-              </Button>
-            </div>
+            )
           ) : (
             <table className="w-full text-left text-sm min-w-[860px]">
               <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
