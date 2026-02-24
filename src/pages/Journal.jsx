@@ -1,6 +1,38 @@
-AlertTriangle, AlertOctagon, Info, ShieldAlert,
-  ChevronDown, ChevronRight, CheckCircle2,
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AlertOctagon,
+  AlertTriangle,
+  BookOpen,
+  CalendarDays,
+  Camera,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Clock,
+  DollarSign,
+  Download,
+  FileText,
+  Fingerprint,
+  Hash,
+  Info,
+  Link2,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  Trash2,
+  X,
+  ZoomIn
 } from 'lucide-react';
+import {
+import {
+import { useData } from '../context/DataContext';
+import { useLinker } from '../hooks/useLinker';
+import { isJournalAtLimit } from '../utils/gates';
 
 // ─── Static thumbprint act-type fallback ──────────────────────────────────────
 const STATIC_THUMB_ACTS = {
