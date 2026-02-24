@@ -434,6 +434,7 @@ const Schedule = () => {
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">{apt.client}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{apt.type} · {apt.date} · {apt.time}</p>
+                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">${Number(apt.amount || 0).toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {apt.status !== 'completed' ? <button onClick={() => completeAppointment(apt)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"><CheckCircle2 className="h-4 w-4" /></button> : null}

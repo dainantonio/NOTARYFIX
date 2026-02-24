@@ -91,6 +91,12 @@ const KpiTile = ({ title, value, sub, Icon, accent = 'blue', loading, onClick })
         : <p className="text-2xl font-bold tracking-tight sm:text-3xl">{value}</p>
       }
       {sub && !loading && <p className="mt-1 text-xs text-white/60">{sub}</p>}
+      {!loading && (
+        <div className="mt-2.5 flex items-center justify-end gap-1 text-[11px] font-semibold text-white/80 sm:hidden">
+          <span>Tap to open</span>
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </div>
+      )}
     </button>
   );
 };
