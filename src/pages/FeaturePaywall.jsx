@@ -111,8 +111,7 @@ const FeaturePaywall = ({ badge = 'PRO FEATURE', title = 'Premium Feature', desc
   return (
     <div className="space-y-8 pb-10">
       {/* Hero */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl overflow-hidden relative">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+      <Card className="app-hero-card">
         <CardContent className="relative p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-semibold text-slate-200 mb-3">
