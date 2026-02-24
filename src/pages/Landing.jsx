@@ -38,6 +38,7 @@ const NEW_WAY = [
   { title: 'Invoices Auto-Tracked',  desc: 'Generated invoices and real-time status keep your cash flow visible.',  icon: Check },
   { title: 'Compliance Confidence',  desc: 'State-aware prompts reduce mistakes and protect your commission.',       icon: Check },
   { title: 'Admin Time Back',        desc: 'Journal and workflow automation cut repetitive post-signing work.',      icon: Check },
+  { title: 'Consistent Interface',   desc: 'Unified hero cards, dark-mode contrast, and consistent spacing reduce visual friction.', icon: Check },
 ];
 
 const HOW_STEPS = [
@@ -60,12 +61,12 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup'],
+    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
     name: 'Agency', price: 79, yearly: 63, sub: 'For scaling operations.',
-    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Dedicated Manager'],
+    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Dedicated Manager', 'Standardized UI System'],
     cta: 'Contact Sales', highlight: false,
   },
 ];
@@ -76,6 +77,7 @@ const COMPARE_ROWS = [
   { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
   { feature: 'AI compliance coach',    starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
   { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
+  { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
   { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
 ];
 
@@ -85,6 +87,8 @@ const FAQ = [
   { q: 'Do you offer a free trial?',             a: 'Every paid plan starts with a 14-day full-feature trial. No credit card required.' },
   { q: 'Can agencies manage multiple notaries?', a: 'Yes. The Agency plan includes multi-user access, shared records, and full dispatch operations.' },
   { q: 'Is signer data private?',                a: 'Absolutely. Signer workflows are fully isolated. We never share or sell signer data.' },
+  { q: 'Why is dark mode the default experience?', a: 'We prioritize readability and contrast consistency across dense operational views like dispatch, finance tables, and audit logs.' },
+  { q: 'Are Admin and Team Dispatch visuals standardized?', a: 'Yes. Core hero/header styles and spacing are standardized so switching between modules feels consistent and predictable.' },
   { q: 'Does it work offline?',                  a: 'Yes. The mobile-first design works offline for field signings. Data syncs automatically when you reconnect.' },
 ];
 
