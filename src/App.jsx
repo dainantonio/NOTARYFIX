@@ -191,7 +191,7 @@ const STATE_FEE_CAPS = {
   SC: { cap: 5,    note: 'Per act — S.C. Code §26-1-120' },
   SD: { cap: 10,   note: 'Per act — SDCL §18-1-3' },
   TN: { cap: 5,    note: 'Per act — T.C.A. §8-16-119' },
-  TX: { cap: 6,    note: 'Per act — Tex. Gov't Code §406.024' },
+  TX: { cap: 6,    note: "Per act — Tex. Gov't Code §406.024" },
   UT: { cap: 10,   note: 'Per act — Utah Code §46-1-19' },
   VT: { cap: 5,    note: 'Per act — 26 V.S.A. §5718' },
   VA: { cap: 5,    note: 'Per act — Va. Code §47.1-19' },
