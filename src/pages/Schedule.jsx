@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus, LayoutList, CalendarDays } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
@@ -68,6 +68,7 @@ const Schedule = () => {
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
   const [alertPrefs, setAlertPrefs] = useState({ clientEmail: true, clientSms: false, notaryEmail: true, notarySms: true, leadHours: 24 });
   const [showOpsTools, setShowOpsTools] = useState(false);
+  const [viewMode, setViewMode] = useState('calendar');
   const calendarFileInputRef = useRef(null);
   const { data, addAppointment, updateAppointment, deleteAppointment } = useData();
   const { completeAppointment } = useLinker();
@@ -93,6 +94,10 @@ const Schedule = () => {
     }
     navigate('/schedule', { replace: true, state: {} });
   }, [location.state, data.appointments, navigate]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) setViewMode('agenda');
+  }, []);
 
   const handleSaveAppointment = (formData) => {
     if (editingAppointment) {
@@ -280,6 +285,34 @@ const Schedule = () => {
     return channels.length ? `${channels.join(', ')} @ ${alertPrefs.leadHours}h` : 'No reminders configured';
   }, [alertPrefs]);
 
+  const sortedAppointments = useMemo(() => {
+    const toStamp = (apt) => {
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(apt?.date || '') ? apt.date : new Date().toISOString().split('T')[0];
+      return new Date(`${date}T${String(toMinutes(apt.time) / 60 | 0).padStart(2, '0')}:${String(toMinutes(apt.time) % 60).padStart(2, '0')}:00`).getTime();
+    };
+    return [...(data.appointments || [])].sort((a, b) => toStamp(a) - toStamp(b));
+  }, [data.appointments]);
+
+  const agendaSections = useMemo(() => {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const weekEnd = new Date(now);
+    weekEnd.setDate(now.getDate() + 7);
+
+    const isFutureOrToday = (apt) => (apt.date || '') >= today;
+    const isThisWeek = (apt) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(apt.date || '')) return false;
+      const d = new Date(`${apt.date}T00:00:00`);
+      return d >= new Date(`${today}T00:00:00`) && d <= weekEnd;
+    };
+
+    return {
+      today: sortedAppointments.filter((a) => a.date === today),
+      thisWeek: sortedAppointments.filter((a) => a.date !== today && isThisWeek(a)),
+      upcoming: sortedAppointments.filter((a) => isFutureOrToday(a) && !isThisWeek(a)),
+    };
+  }, [sortedAppointments]);
+
   const toGoogleCalendarUrl = (eventData) => {
     if (!eventData) return '#';
     const startMinutes = toMinutes(eventData.time);
@@ -318,6 +351,10 @@ const Schedule = () => {
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => setCurrentDate(new Date())}>Today</Button>
             <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Event</Button>
+            <div className="rounded-lg border border-slate-300/40 bg-white/10 p-0.5 flex items-center gap-0.5">
+              <button onClick={() => setViewMode('agenda')} className={`rounded px-2 py-1 text-xs ${viewMode === 'agenda' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><LayoutList className="h-3.5 w-3.5" /></button>
+              <button onClick={() => setViewMode('calendar')} className={`rounded px-2 py-1 text-xs ${viewMode === 'calendar' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><CalendarDays className="h-3.5 w-3.5" /></button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -436,6 +473,7 @@ const Schedule = () => {
         </CardContent>
       </Card>
 
+      {viewMode === 'calendar' && (
       <Card>
         <CardContent className="p-0">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
@@ -475,9 +513,45 @@ const Schedule = () => {
           </div>
         </CardContent>
       </Card>
+      )}
 
       <Card>
-        {/* ── Mobile card list (shown on xs, hidden on sm+) ── */}
+        {/* ── Mobile agenda list ── */}
+        {viewMode === 'agenda' && (
+        <div className="sm:hidden space-y-4 p-3">
+          {[
+            ['Today', agendaSections.today],
+            ['This Week', agendaSections.thisWeek],
+            ['Upcoming', agendaSections.upcoming.slice(0, 12)],
+          ].map(([label, items]) => (
+            <div key={label}>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+                {label === 'Today' ? <button onClick={() => openNewModal()} className="text-xs text-blue-600 font-medium">+ Add</button> : null}
+              </div>
+              {items.length === 0 ? <p className="text-xs text-slate-400">No appointments</p> : null}
+              <div className="space-y-2">
+                {items.map((apt) => (
+                  <div key={apt.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3 flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">{apt.client}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{apt.type} · {apt.date} · {apt.time}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {apt.status !== 'completed' ? <button onClick={() => completeAppointment(apt)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"><CheckCircle2 className="h-4 w-4" /></button> : null}
+                      {apt.status !== 'completed' ? <button onClick={() => navigate(`/arrive/${apt.id}`)} className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"><MapPin className="h-4 w-4" /></button> : null}
+                      <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><Pencil className="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        )}
+
+        {/* ── Mobile card list when calendar mode ── */}
+        {viewMode === 'calendar' && (
         <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
           {data.appointments.slice(0, 8).map((apt) => (
             <div key={apt.id} className="flex items-start gap-3 px-4 py-3">
@@ -503,6 +577,7 @@ const Schedule = () => {
             </div>
           ))}
         </div>
+        )}
         {/* ── Desktop table (hidden on mobile) ── */}
         <CardContent className="p-0 hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm">
