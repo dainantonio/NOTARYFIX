@@ -17,12 +17,10 @@ import Journal from './pages/Journal';
 import ArriveMode from './pages/ArriveMode';
 import TeamDispatch from './pages/TeamDispatch';
 import AITrainer from './pages/AITrainer';
+import FormGuide from './pages/FormGuide';
 import Admin from './pages/Admin';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
-import FormGuide from './pages/FormGuide';
-// in routes:
-<Route path="/form-guide" element={<FormGuide />} />
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
 const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
@@ -72,6 +70,7 @@ function App() {
             <Route path="/arrive/:id"   element={<ArriveMode />} />
             <Route path="/settings"    element={<Settings />} />
             <Route path="/mileage"     element={<Mileage />} />
+            <Route path="/form-guide"  element={<FormGuide />} />
 
             {/* Gated */}
             <Route path="/signer-portal"  element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
