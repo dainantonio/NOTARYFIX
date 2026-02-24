@@ -107,7 +107,7 @@ const Schedule = () => {
   const monthRevenue = monthAppointments.reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
   return (
-    <div className="animate-fade-in space-y-6 pb-10">
+    <div className="animate-fade-in space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
       <AppointmentModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingAppointment(null); setPrefillDate(''); }}
@@ -120,7 +120,7 @@ const Schedule = () => {
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Scheduling Command</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">Schedule</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Schedule</h1>
             <p className="mt-1 text-sm text-slate-200">Enterprise calendar workflow with Smart Fill and inline edits.</p>
           </div>
           <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ const Schedule = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">This Month</p><p className="text-2xl font-bold text-slate-900 dark:text-white">{monthAppointments.length}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Upcoming</p><p className="text-2xl font-bold text-blue-600">{data.appointments.filter((a) => a.status === 'upcoming').length}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Projected Revenue</p><p className="text-2xl font-bold text-emerald-600">${monthRevenue.toLocaleString()}</p></CardContent></Card>
@@ -185,28 +185,55 @@ const Schedule = () => {
       </Card>
 
       <Card>
-        <CardContent className="p-0">
+        {/* ── Mobile card list (shown on xs, hidden on sm+) ── */}
+        <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
+          {data.appointments.slice(0, 8).map((apt) => (
+            <div key={apt.id} className="flex items-start gap-3 px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">{apt.client}</p>
+                  {apt.status === 'completed' && <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Done</span>}
+                  {apt.status === 'upcoming' && <span className="rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-400">Upcoming</span>}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">{apt.type} &middot; {apt.date} &middot; {apt.time}</p>
+                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">${Number(apt.amount || 0).toLocaleString()}</p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {apt.status !== 'completed' ? (
+                  <button onClick={() => completeAppointment(apt)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Mark Complete"><CheckCircle2 className="h-4 w-4" /></button>
+                ) : null}
+                {apt.status !== 'completed' && (
+                  <button onClick={() => navigate(`/arrive/${apt.id}`)} className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Arrive Mode"><MapPin className="h-4 w-4" /></button>
+                )}
+                <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-4 w-4" /></button>
+                <button onClick={() => deleteAppointment(apt.id)} className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="h-4 w-4" /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* ── Desktop table (hidden on mobile) ── */}
+        <CardContent className="p-0 hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
+            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
               <tr>
-                <th className="px-6 py-3">Appointment</th><th className="px-6 py-3">Date</th><th className="px-6 py-3">Amount</th><th className="px-6 py-3 text-right">Actions</th>
+                <th className="px-5 py-3">Appointment</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {data.appointments.slice(0, 8).map((apt) => (
-                <tr key={apt.id}>
-                  <td className="px-6 py-3">
+                <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{apt.client}</p>
+                      <p className="font-medium text-slate-800 dark:text-slate-100">{apt.client}</p>
                       {apt.status === 'completed' && <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Done</span>}
                       {apt.status === 'upcoming' && <span className="rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-400">Upcoming</span>}
                     </div>
-                    <p className="text-xs text-slate-500">{apt.type} · {apt.time}</p>
+                    <p className="text-xs text-slate-500">{apt.type} &middot; {apt.time}</p>
                   </td>
-                  <td className="px-6 py-3">{apt.date}</td>
-                  <td className="px-6 py-3">${Number(apt.amount || 0).toLocaleString()}</td>
-                  <td className="px-6 py-3 text-right">
-                    <div className="flex justify-end gap-2">
+                  <td className="px-5 py-3 text-sm text-slate-700 dark:text-slate-200">{apt.date}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">${Number(apt.amount || 0).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-right">
+                    <div className="flex justify-end gap-1">
                       {apt.status !== 'completed' ? (
                         <Button size="sm" variant="ghost" title="Mark Complete" onClick={() => completeAppointment(apt)} className="text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"><CheckCircle2 className="h-4 w-4" /></Button>
                       ) : (
