@@ -65,6 +65,7 @@ const Schedule = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [prefillDate, setPrefillDate] = useState('');
+  const [quickClientName, setQuickClientName] = useState('');
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
   const [alertPrefs, setAlertPrefs] = useState({ clientEmail: true, clientSms: false, notaryEmail: true, notarySms: true, leadHours: 24 });
   const [showOpsTools, setShowOpsTools] = useState(false);
@@ -86,13 +87,24 @@ const Schedule = () => {
 
   useEffect(() => {
     const editId = location.state?.editAppointmentId;
-    if (!editId) return;
-    const apt = data.appointments.find((a) => a.id === editId);
-    if (apt) {
-      setEditingAppointment(apt);
-      setIsModalOpen(true);
+    if (editId) {
+      const apt = data.appointments.find((a) => a.id === editId);
+      if (apt) {
+        setQuickClientName('');
+        setEditingAppointment(apt);
+        setIsModalOpen(true);
+      }
+      navigate('/schedule', { replace: true, state: {} });
+      return;
     }
-    navigate('/schedule', { replace: true, state: {} });
+
+    const quickClient = location.state?.quickClientName;
+    if (quickClient) {
+      setEditingAppointment(null);
+      setQuickClientName(quickClient);
+      setIsModalOpen(true);
+      navigate('/schedule', { replace: true, state: {} });
+    }
   }, [location.state, data.appointments, navigate]);
 
   const reminderSummary = useMemo(() => {
@@ -118,9 +130,11 @@ const Schedule = () => {
         receiptImage: formData.receiptImage || '',
       });
       setEditingAppointment(null);
+      setQuickClientName('');
       return;
     }
 
+    setQuickClientName('');
     addAppointment({
       id: Date.now(),
       client: formData.client,
@@ -333,9 +347,9 @@ const Schedule = () => {
     <div className="animate-fade-in space-y-4 sm:space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-20">
       <AppointmentModal
         isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingAppointment(null); setPrefillDate(''); }}
+        onClose={() => { setIsModalOpen(false); setEditingAppointment(null); setPrefillDate(''); setQuickClientName(''); }}
         onSave={handleSaveAppointment}
-        initialData={editingAppointment || (prefillDate ? { date: prefillDate } : null)}
+        initialData={editingAppointment || (quickClientName ? { client: quickClientName, date: prefillDate || new Date().toISOString().split('T')[0] } : (prefillDate ? { date: prefillDate } : null))}
         submitLabel={editingAppointment ? 'Update Appointment' : 'Save Appointment'}
       />
 

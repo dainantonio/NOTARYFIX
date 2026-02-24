@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal, UserPlus, CalendarClock, FileText, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
@@ -94,11 +94,72 @@ const ClientModal = ({ isOpen, onClose, onSave }) => {
   );
 };
 
+
+const ClientDetailModal = ({ client, details, onClose, onSchedule, onInvoice }) => {
+  if (!client) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+      <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/60">
+          <div>
+            <h3 className="font-semibold text-slate-900 dark:text-white">{client.name}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{client.type} · {client.status}</p>
+          </div>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+              <p className="text-[10px] uppercase tracking-wide text-slate-500">Signings</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">{details.appointments.length}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+              <p className="text-[10px] uppercase tracking-wide text-slate-500">Invoices</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">{details.invoices.length}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+              <p className="text-[10px] uppercase tracking-wide text-slate-500">Revenue</p>
+              <p className="text-lg font-bold text-emerald-600">${Number(details.totalRevenue || 0).toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Card>
+              <CardHeader><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Appointments</p></CardHeader>
+              <CardContent className="space-y-2">
+                {details.appointments.length === 0 ? <p className="text-xs text-slate-500">No signings yet.</p> : details.appointments.slice(0, 6).map((apt) => (
+                  <p key={apt.id} className="text-xs text-slate-600 dark:text-slate-300">{apt.date} {apt.time || ''} · {apt.type} · ${Number(apt.amount || 0).toLocaleString()}</p>
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Invoices</p></CardHeader>
+              <CardContent className="space-y-2">
+                {details.invoices.length === 0 ? <p className="text-xs text-slate-500">No invoices yet.</p> : details.invoices.slice(0, 6).map((inv) => (
+                  <p key={inv.id} className="text-xs text-slate-600 dark:text-slate-300">{inv.id} · {inv.status} · ${Number(inv.amount || 0).toLocaleString()}</p>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={onSchedule}><CalendarClock className="mr-1.5 h-4 w-4" /> Schedule</Button>
+            <Button variant="secondary" onClick={onInvoice}><FileText className="mr-1.5 h-4 w-4" /> New Invoice</Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Clients = () => {
   const { data, addClient } = useData();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [selectedClient, setSelectedClient] = useState(null);
 
   const filteredClients = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,9 +189,24 @@ const Clients = () => {
     }));
   }, [data.clients, data.appointments, data.invoices]);
 
+  const clientHistory = useMemo(() => Object.fromEntries((data.clients || []).map((client) => {
+    const appointments = (data.appointments || []).filter((a) => (a.client || '').toLowerCase() === (client.name || '').toLowerCase())
+      .sort((a, b) => (`${b.date} ${b.time || ''}`).localeCompare(`${a.date} ${a.time || ''}`));
+    const invoices = (data.invoices || []).filter((i) => (i.client || '').toLowerCase() === (client.name || '').toLowerCase());
+    const totalRevenue = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    return [client.id, { appointments, invoices, totalRevenue }];
+  })), [data.clients, data.appointments, data.invoices]);
+
   return (
     <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={addClient} />
+      <ClientDetailModal
+        client={selectedClient}
+        details={selectedClient ? (clientHistory[selectedClient.id] || { appointments: [], invoices: [], totalRevenue: 0 }) : { appointments: [], invoices: [], totalRevenue: 0 }}
+        onClose={() => setSelectedClient(null)}
+        onSchedule={() => navigate('/schedule', { state: { quickClientName: selectedClient?.name } })}
+        onInvoice={() => navigate('/invoices', { state: { prefillClientName: selectedClient?.name } })}
+      />
 
       <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
@@ -160,9 +236,14 @@ const Clients = () => {
         {/* ── Mobile card list ── */}
         <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
           {filteredClients.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">No clients found.</p>
+            <div className="px-4 py-10 text-center">
+              <UserPlus className="mx-auto h-9 w-9 text-slate-300 dark:text-slate-600" />
+              <p className="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">{(data.clients || []).length === 0 ? 'No clients yet' : 'No clients found'}</p>
+              <p className="mt-1 text-xs text-slate-500">{(data.clients || []).length === 0 ? 'Add your first client to start scheduling and invoicing.' : 'Try a different search query.'}</p>
+              {(data.clients || []).length === 0 ? <Button className="mt-3" onClick={() => setIsModalOpen(true)}>Add your first client</Button> : null}
+            </div>
           ) : filteredClients.map((client) => (
-            <div key={client.id} className="flex items-center gap-3 px-4 py-3.5">
+            <div key={client.id} onClick={() => setSelectedClient(client)} className="flex cursor-pointer items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{client.name.slice(0, 2).toUpperCase()}</div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -173,8 +254,8 @@ const Clients = () => {
                 <p className="text-xs text-slate-500 dark:text-slate-400">{client.phone}</p>
                 <p className="text-[11px] text-slate-500">Last signing: {clientInsights[client.id]?.latest ? `${clientInsights[client.id].latest.date} ${clientInsights[client.id].latest.time || ''}` : 'None'} · Outstanding: ${Number(clientInsights[client.id]?.outstanding || 0).toLocaleString()}</p>
                 <div className="mt-1.5 flex gap-1">
-                  <button onClick={() => navigate('/schedule', { state: { quickClientName: client.name } })} className="rounded-md bg-blue-50 text-blue-700 px-2 py-1 text-[11px] font-semibold">Schedule</button>
-                  <button onClick={() => navigate('/invoices', { state: { prefillClientName: client.name } })} className="rounded-md bg-emerald-50 text-emerald-700 px-2 py-1 text-[11px] font-semibold">Invoice</button>
+                  <button onClick={(e) => { e.stopPropagation(); navigate('/schedule', { state: { quickClientName: client.name } }); }} className="rounded-md bg-blue-50 text-blue-700 px-2 py-1 text-[11px] font-semibold">Schedule</button>
+                  <button onClick={(e) => { e.stopPropagation(); navigate('/invoices', { state: { prefillClientName: client.name } }); }} className="rounded-md bg-emerald-50 text-emerald-700 px-2 py-1 text-[11px] font-semibold">Invoice</button>
                 </div>
               </div>
               <Badge variant="blue" className="shrink-0 hidden xs:inline-flex">{client.type}</Badge>
@@ -188,39 +269,39 @@ const Clients = () => {
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400">
               <tr>
                 <th className="px-6 py-4">Client</th>
-                <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4">Contact</th>
-                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Last signing</th>
+                <th className="px-6 py-4">Outstanding</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {filteredClients.length === 0 ? (
-                <tr><td colSpan="5" className="py-8 text-center text-slate-500">No clients found.</td></tr>
+                <tr><td colSpan="5" className="py-8 text-center text-slate-500">{(data.clients || []).length === 0 ? 'No clients yet.' : 'No clients found.'}</td></tr>
               ) : filteredClients.map((client) => (
-                <tr key={client.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <tr key={client.id} onClick={() => setSelectedClient(client)} className="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{client.name.slice(0, 2).toUpperCase()}</div>
                       <div className="min-w-0">
                         <p className="font-semibold text-slate-900 dark:text-white truncate">{client.name}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{client.contact}</p>
+                        <div className="mt-1 flex items-center gap-1"><Badge variant="blue">{client.type}</Badge><Badge variant={client.status === 'Active' ? 'success' : 'default'}>{client.status}</Badge></div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4"><Badge variant="blue">{client.type}</Badge></td>
                   <td className="px-6 py-4">
                     <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300">
                       <p className="flex items-center gap-1"><Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" /> <span className="truncate">{client.email}</span></p>
                       <p className="flex items-center gap-1"><Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {client.phone}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4"><Badge variant={client.status === 'Active' ? 'success' : 'default'}>{client.status}</Badge></td>
+                  <td className="px-6 py-4 text-xs text-slate-600 dark:text-slate-300">{clientInsights[client.id]?.latest ? `${clientInsights[client.id].latest.date} ${clientInsights[client.id].latest.time || ''}` : 'None'}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-emerald-600">${Number(clientInsights[client.id]?.outstanding || 0).toLocaleString()}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-1">
+                    <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="sm" onClick={() => navigate('/schedule', { state: { quickClientName: client.name } })}>Schedule</Button>
                       <Button variant="ghost" size="sm" onClick={() => navigate('/invoices', { state: { prefillClientName: client.name } })}>Invoice</Button>
-                      <Button variant="ghost" size="icon" className="opacity-80"><MoreHorizontal className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="opacity-80" onClick={() => setSelectedClient(client)}><MoreHorizontal className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>

@@ -4,7 +4,7 @@ import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine,
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 
-const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
+const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
   const { data } = useData();
   const clientOptions = (data?.clients || []).map((c) => ({ label: c.name, value: c.name }));
   const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending' });
@@ -21,8 +21,8 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
       });
       return;
     }
-    setFormData({ client: clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending' });
-  }, [isOpen, initialInvoice, clientOptions]);
+    setFormData({ client: prefillClientName || clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending' });
+  }, [isOpen, initialInvoice, clientOptions, prefillClientName]);
 
   if (!isOpen) return null;
 
@@ -112,6 +112,7 @@ const Invoices = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [statusFilter, setStatusFilter] = useState([]);
+  const [prefillClientName, setPrefillClientName] = useState('');
   const { data, addInvoice, updateInvoice, deleteInvoice } = useData();
   const location = useLocation();
   const navigate = useNavigate();
@@ -119,9 +120,22 @@ const Invoices = () => {
 
   useEffect(() => {
     const incoming = location.state?.statusFilter;
-    if (!Array.isArray(incoming) || incoming.length === 0) return;
-    setStatusFilter(incoming.filter((x) => ['Pending', 'Overdue', 'Paid'].includes(x)));
-    navigate('/invoices', { replace: true, state: {} });
+    const prefillClient = location.state?.prefillClientName;
+    let shouldClearState = false;
+
+    if (Array.isArray(incoming) && incoming.length > 0) {
+      setStatusFilter(incoming.filter((x) => ['Pending', 'Overdue', 'Paid'].includes(x)));
+      shouldClearState = true;
+    }
+
+    if (prefillClient) {
+      setEditingInvoice(null);
+      setPrefillClientName(prefillClient);
+      setIsModalOpen(true);
+      shouldClearState = true;
+    }
+
+    if (shouldClearState) navigate('/invoices', { replace: true, state: {} });
   }, [location.state, navigate]);
 
   const visibleInvoices = useMemo(() => {
@@ -180,14 +194,16 @@ const Invoices = () => {
     if (editingInvoice) {
       updateInvoice(editingInvoice.id, payload);
       setEditingInvoice(null);
+      setPrefillClientName('');
       return;
     }
     addInvoice(payload);
+    setPrefillClientName('');
   };
 
   return (
     <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
-      <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} />
+      <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); setPrefillClientName(''); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} prefillClientName={prefillClientName} />
 
       <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
