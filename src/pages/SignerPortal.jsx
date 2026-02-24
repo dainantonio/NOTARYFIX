@@ -77,7 +77,7 @@ const SignerPortal = () => {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       {/* Header */}
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
         <CardContent className="p-6">
