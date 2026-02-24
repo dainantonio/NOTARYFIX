@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
+import { toast } from '../hooks/useLinker';
 
 const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
   const { data } = useData();
@@ -126,7 +127,6 @@ const Invoices = () => {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [statusFilter, setStatusFilter] = useState([]);
   const [prefillClientName, setPrefillClientName] = useState('');
-  const [toastMessage, setToastMessage] = useState('');
   const { data, addInvoice, updateInvoice, deleteInvoice } = useData();
   const location = useLocation();
   const navigate = useNavigate();
@@ -158,11 +158,6 @@ const Invoices = () => {
   }, [invoices, statusFilter]);
 
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 1800);
-  };
-
   const totals = useMemo(() => ({
     paid: invoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
     pending: invoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
@@ -191,21 +186,21 @@ const Invoices = () => {
       paymentLink: invoice.paymentLink || buildInvoiceLink(invoice),
       status: invoice.status === 'Paid' ? 'Paid' : 'Pending',
     });
-    showToast('Marked as sent');
+    toast.success('Marked as sent');
   };
 
   const copyInvoiceLink = async (invoice) => {
     const link = invoice.paymentLink || buildInvoiceLink(invoice);
     await navigator.clipboard?.writeText(link);
     updateInvoice(invoice.id, { paymentLink: link });
-    showToast('Link copied to clipboard');
+    toast.success('Link copied to clipboard');
   };
 
   const sendInvoiceSmsStub = async (invoice) => {
     const link = invoice.paymentLink || buildInvoiceLink(invoice);
     await navigator.clipboard?.writeText(`Invoice ${invoice.id} for ${invoice.client}: ${link}`);
     updateInvoice(invoice.id, { paymentLink: link, sentAt: new Date().toISOString() });
-    showToast('SMS message copied to clipboard');
+    toast.success('SMS message copied to clipboard');
   };
 
   const exportInvoicePdfStub = (invoice) => {
@@ -217,28 +212,25 @@ const Invoices = () => {
     a.download = `${invoice.id}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('PDF exported');
+    toast.success('PDF exported');
   };
 
   const handleSaveInvoice = (payload) => {
     if (editingInvoice) {
       updateInvoice(editingInvoice.id, payload);
+      toast.success('Invoice updated');
       setEditingInvoice(null);
       setPrefillClientName('');
       return;
     }
     addInvoice(payload);
+    toast.success('Invoice created');
     setPrefillClientName('');
   };
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
+    <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-24">
       <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); setPrefillClientName(''); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} prefillClientName={prefillClientName} />
-      {toastMessage ? (
-        <div className="fixed right-4 top-4 z-[60] rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white shadow-lg">
-          {toastMessage}
-        </div>
-      ) : null}
 
       <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
@@ -292,7 +284,7 @@ const Invoices = () => {
                   <button onClick={() => copyInvoiceLink(invoice)} className="p-1.5 rounded-lg text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Copy payment link"><Link2 className="h-3.5 w-3.5" /></button>
                   <button onClick={() => sendInvoiceSmsStub(invoice)} className="p-1.5 rounded-lg text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors" title="SMS stub"><MessageSquare className="h-3.5 w-3.5" /></button>
                   <button onClick={() => exportInvoicePdfStub(invoice)} className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="PDF stub"><FileText className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => deleteInvoice(invoice.id)} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                 </div>
               </div>
             </div>
@@ -343,7 +335,7 @@ const Invoices = () => {
                       <Button size="sm" variant="ghost" onClick={() => copyInvoiceLink(invoice)} title="Copy link"><Link2 className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => sendInvoiceSmsStub(invoice)} title="SMS stub"><MessageSquare className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => exportInvoicePdfStub(invoice)} title="PDF"><FileText className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="danger" onClick={() => deleteInvoice(invoice.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="danger" onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>

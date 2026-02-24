@@ -1222,7 +1222,7 @@ export default function Mileage() {
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#060d1b] p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060d1b] p-4 sm:p-6 pb-24 space-y-4 sm:space-y-6">
 
       {/* ── PAGE HEADER ─────────────────────────────────────────────────────── */}
       <div className="app-hero-card rounded-2xl p-4 sm:p-5">
@@ -1240,6 +1240,7 @@ export default function Mileage() {
               )}
             </div>
             <p className="text-sm text-slate-200">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
+            <p className="mt-1 text-xs text-slate-400">Mileage currently runs in dark-optimized mode for consistent field visibility.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             <button onClick={() => setExportModal(true)}

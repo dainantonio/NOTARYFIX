@@ -546,7 +546,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-24">
       <AppointmentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} />
 
       <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-5 sm:space-y-5 sm:px-6 sm:py-7 md:px-8 md:py-8">

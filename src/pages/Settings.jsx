@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '../hooks/useLinker';
 
 const US_STATE_CODES = [
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
@@ -46,6 +47,7 @@ const Settings = () => {
   const handleSave = () => {
     updateSettings(formData);
     setSavedFlash(true);
+    toast.success('Settings saved');
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => setSavedFlash(false), 2000);
   };
@@ -73,7 +75,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-6 pb-20">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-6 pb-24">
       <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>

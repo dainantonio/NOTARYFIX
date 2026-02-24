@@ -109,7 +109,7 @@ const FeaturePaywall = ({ badge = 'PRO FEATURE', title = 'Premium Feature', desc
   const requiredTier = teaser?.requiredTier || (badge.toLowerCase().includes('agency') ? 'agency' : 'pro');
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-24">
       {/* Hero */}
       <Card className="app-hero-card">
         <CardContent className="relative p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

@@ -34,7 +34,7 @@ import {
 } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { useLocation } from 'react-router-dom';
-import { useLinker } from '../hooks/useLinker';
+import { toast, useLinker } from '../hooks/useLinker';
 import { isJournalAtLimit } from '../utils/gates';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -1717,10 +1717,12 @@ const Journal = () => {
       const editLog = [...(editing.editLog || []), ...delta];
       const updated = { ...form, editLog, contentHash: hashEntry(form) };
       updateJournalEntry(editing.id, updated);
+      toast.success('Journal entry updated');
     } else {
       const entry = { ...form, createdAt: now, editLog: [], contentHash: hashEntry(form) };
       addJournalEntry(entry);
       afterJournalSave(form);
+      toast.success('Journal entry saved');
     }
     setEditing(null);
   };
@@ -1773,7 +1775,7 @@ const Journal = () => {
   }, []); // runs once on mount
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-10 mx-auto max-w-[1400px]">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-24 mx-auto max-w-[1400px]">
       <EntryModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditing(null); }}

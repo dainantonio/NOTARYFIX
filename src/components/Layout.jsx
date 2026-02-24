@@ -278,7 +278,7 @@ const LayoutInner = ({ children }) => {
           </div>
         )}
 
-        <main className="flex-1 min-h-screen bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 md:px-0 pb-20 md:pb-0 w-full max-w-[1400px] mx-auto">
+        <main className="flex-1 min-h-screen bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 md:px-0 pb-24 md:pb-0 w-full max-w-[1400px] mx-auto">
           {children}
         </main>
 
@@ -289,8 +289,8 @@ const LayoutInner = ({ children }) => {
             { Icon: LayoutDashboard, label: 'Home',     path: '/dashboard' },
             { Icon: Calendar,        label: 'Schedule', path: '/schedule'  },
             { Icon: ScrollText,      label: 'Journal',  path: '/journal'   },
+            { Icon: Scale,           label: 'Forms',    path: '/form-guide'  },
             { Icon: Wallet,          label: 'Finances', path: '/invoices'  },
-            { Icon: Settings,        label: 'Settings', path: '/settings'  },
           ].map(item => {
             const active = location.pathname === item.path;
             return (

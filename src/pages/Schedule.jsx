@@ -344,7 +344,7 @@ const Schedule = () => {
   };
 
   return (
-    <div className="animate-fade-in space-y-4 sm:space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-20">
+    <div className="animate-fade-in space-y-4 sm:space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-24">
       <AppointmentModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingAppointment(null); setPrefillDate(''); setQuickClientName(''); }}

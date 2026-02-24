@@ -834,7 +834,7 @@ const TeamDispatch = () => {
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-24">
       {/* Modals */}
       <JobModal isOpen={jobModalOpen} onClose={() => { setJobModalOpen(false); setEditingJob(null); }} onSave={jobSave} initial={editingJob} />
       <MemberModal isOpen={memberModalOpen} onClose={() => { setMemberModalOpen(false); setEditingMember(null); }} onSave={memberSave} initial={editingMember} />

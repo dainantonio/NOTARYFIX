@@ -13,6 +13,7 @@ import {
   ExternalLink, PenLine, X, CheckCircle2,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { toast } from '../hooks/useLinker';
 
 // ─── STATIC KNOWLEDGE BASE (fallback when no state rule is configured) ────────
 const FORM_KB = {
@@ -414,6 +415,7 @@ function ChatBubble({ msg, onLog }) {
   const copy = () => {
     navigator.clipboard.writeText(res.body || '');
     setCopied(true);
+    toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
