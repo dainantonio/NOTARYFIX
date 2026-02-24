@@ -1790,7 +1790,7 @@ const Journal = () => {
       />
 
       {/* ── HERO HEADER ──────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Records & Audit</p>

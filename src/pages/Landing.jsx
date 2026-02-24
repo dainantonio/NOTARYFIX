@@ -4,7 +4,7 @@ import {
   ShieldCheck, Sparkles, BadgeCheck, Bot, Clock3, AlertTriangle,
   XCircle, Wallet, CalendarCheck, FileCheck2, Car, Building2,
   Users, ArrowRight, Check, ChevronDown, Zap, TrendingUp,
-  Lock, Menu, X, MapPin,
+  Lock, Menu, X, MapPin, Stamp,
 } from 'lucide-react';
 
 // ─── DATA ──────────────────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ const NEW_WAY = [
   { title: 'Invoices Auto-Tracked',  desc: 'Generated invoices and real-time status keep your cash flow visible.',  icon: Check },
   { title: 'Compliance Confidence',  desc: 'State-aware prompts reduce mistakes and protect your commission.',       icon: Check },
   { title: 'Admin Time Back',        desc: 'Journal and workflow automation cut repetitive post-signing work.',      icon: Check },
+  { title: 'Consistent Interface',   desc: 'Unified hero cards, dark-mode contrast, and consistent spacing reduce visual friction.', icon: Check },
 ];
 
 const HOW_STEPS = [
@@ -60,12 +61,12 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup'],
+    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
     name: 'Agency', price: 79, yearly: 63, sub: 'For scaling operations.',
-    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Dedicated Manager'],
+    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Dedicated Manager', 'Standardized UI System'],
     cta: 'Contact Sales', highlight: false,
   },
 ];
@@ -76,6 +77,7 @@ const COMPARE_ROWS = [
   { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
   { feature: 'AI compliance coach',    starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
   { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
+  { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
   { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
 ];
 
@@ -85,6 +87,9 @@ const FAQ = [
   { q: 'Do you offer a free trial?',             a: 'Every paid plan starts with a 14-day full-feature trial. No credit card required.' },
   { q: 'Can agencies manage multiple notaries?', a: 'Yes. The Agency plan includes multi-user access, shared records, and full dispatch operations.' },
   { q: 'Is signer data private?',                a: 'Absolutely. Signer workflows are fully isolated. We never share or sell signer data.' },
+  { q: 'Why is dark mode the default experience?', a: 'We prioritize readability and contrast consistency across dense operational views like dispatch, finance tables, and audit logs.' },
+  { q: 'Are Admin and Team Dispatch visuals standardized?', a: 'Yes. Core hero/header styles and spacing are standardized so switching between modules feels consistent and predictable.' },
+  { q: 'Can AI answers be grounded in jurisdiction JSON data?', a: 'Yes. Admin can import state JSON policy data and NotaryOS uses that schema for grounded fee, ID, and red-flag guidance.' },
   { q: 'Does it work offline?',                  a: 'Yes. The mobile-first design works offline for field signings. Data syncs automatically when you reconnect.' },
 ];
 
@@ -122,16 +127,35 @@ const FOOTER_CONTENT = {
   },
 };
 
+const SAMPLE_NOTARY_JSON = {
+  AL: { state: 'Alabama', fees: { acknowledgment: '$5.00', jurat: '$5.00', oath: '$5.00' }, id_requirements: { credible_witnesses: 'Allowed', expired_id_rule: 'Not specified' }, red_flags: ['No Notarios'] },
+  CA: { state: 'California', fees: { acknowledgment: '$15.00', jurat: '$15.00', oath: '$15.00' }, id_requirements: { credible_witnesses: '1 known OR 2 with ID', expired_id_rule: '5 years' }, red_flags: ['Thumbprint mandatory for Deeds/POA'] },
+  OH: { state: 'Ohio', fees: { acknowledgment: '$5.00', jurat: '$5.00', oath: '$5.00' }, id_requirements: { credible_witnesses: 'Allowed', expired_id_rule: 'Not specified' }, red_flags: ['Conflict of Interest'] },
+  TX: { state: 'Texas', fees: { acknowledgment: '$6.00', jurat: '$6.00', oath: '$6.00' }, id_requirements: { credible_witnesses: 'Allowed', expired_id_rule: 'Current' }, red_flags: ['No Notarios'] },
+};
+
+const findStateRecord = (input) => {
+  const ql = input.toLowerCase();
+  return Object.values(SAMPLE_NOTARY_JSON).find((r) => ql.includes(r.state.toLowerCase())) || null;
+};
+
 const answerAI = (q) => {
   const ql = q.toLowerCase();
-  if (ql.includes('ohio'))                             return 'Ohio notary fee for acknowledgments is $1.00 per signature per Ohio Revised Code §147.08.';
-  if (ql.includes('texas'))                            return 'Texas notary fees: $6 for acknowledgments, $6 for jurats per signature.';
-  if (ql.includes('california') || ql.includes('jurat')) return 'California allows up to $15 per jurat signature, including the oath/affirmation step.';
-  if (ql.includes('ron'))                              return 'RON requires KBA or credential analysis identity proofing, plus state-approved audio-video technology.';
-  if (ql.includes('mileage') || ql.includes('mile'))  return 'IRS mileage rate 2025: 67¢/mile. Log start/end odometer and route purpose for each trip.';
-  if (ql.includes('id') || ql.includes('identification')) return "Most states accept driver's license, passport, or state ID. Verify type, expiration, and name match.";
-  if (ql.includes('fee') || ql.includes('charge'))    return 'NotaryOS surfaces your state fee caps inside every appointment workflow automatically.';
-  return 'NotaryOS AI can help with fee limits, ID checks, journal rules, and invoice workflows by state. Try a specific question.';
+  const state = findStateRecord(q);
+
+  if (state && (ql.includes('fee') || ql.includes('jurat') || ql.includes('acknowledg') || ql.includes('oath'))) {
+    return `${state.state} dataset: acknowledgment ${state.fees.acknowledgment}, jurat ${state.fees.jurat}, oath ${state.fees.oath}.`;
+  }
+  if (state && (ql.includes('id') || ql.includes('identification') || ql.includes('expired'))) {
+    return `${state.state} dataset: credible witnesses ${state.id_requirements.credible_witnesses}; expired ID rule ${state.id_requirements.expired_id_rule}.`;
+  }
+  if (state && (ql.includes('red flag') || ql.includes('warning') || ql.includes('risk'))) {
+    return `${state.state} red flags: ${state.red_flags.join('; ')}.`;
+  }
+  if (ql.includes('ron')) return 'RON requires KBA or credential analysis identity proofing, plus state-approved audio-video technology.';
+  if (ql.includes('mileage') || ql.includes('mile')) return 'IRS mileage rate 2025: 67¢/mile. Log start/end odometer and route purpose for each trip.';
+  if (ql.includes('json') || ql.includes('dataset')) return 'NotaryOS AI demo is grounded to sample jurisdiction JSON records and mirrors the same schema used by Admin imports.';
+  return 'Ask a state-specific question like “California jurat fee”, “Texas expired ID rule”, or “Ohio red flags” to see JSON-grounded answers.';
 };
 
 // ─── COMPONENT ─────────────────────────────────────────────────────────────────
@@ -362,7 +386,7 @@ export default function Landing() {
               Your personal compliance expert,{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">available 24/7.</span>
             </h2>
-            <p className="mt-4 text-lg text-slate-400">Get instant, state-specific answers on fees, ID requirements, journal rules, and more — without leaving your workflow.</p>
+            <p className="mt-4 text-lg text-slate-400">Get instant, state-specific answers on fees, ID requirements, red flags, and journal rules grounded in jurisdiction JSON policy records.</p>
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
@@ -371,7 +395,7 @@ export default function Landing() {
               <button onClick={submitAI} className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-white">Ask AI</button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {["Ohio fees?", "RON ID rules?", "Mileage tips?", "Texas fees?"].map(q => (
+              {["California jurat fee", "Texas expired ID rule", "Ohio red flags", "Dataset source?"].map(q => (
                 <button key={q} onClick={() => { setAiInput(q); setTimeout(submitAI, 50); }}
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-slate-400 transition-colors hover:border-cyan-400/30 hover:text-cyan-300">
                   {q}
@@ -382,13 +406,14 @@ export default function Landing() {
           <div className="rounded-2xl border border-white/10 bg-[#0d1a2e] p-6 shadow-2xl">
             <div className="flex items-center gap-3 border-b border-white/[0.06] pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400/15">
-                <Bot className="h-5 w-5 text-cyan-400" />
+                <Stamp className="h-5 w-5 text-cyan-400" />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">NotaryOS AI</p>
                 <p className="flex items-center gap-1.5 text-xs text-emerald-400">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />Online · Answering instantly
                 </p>
+                <p className="text-[11px] text-slate-400">Source: jurisdiction JSON policy dataset</p>
               </div>
             </div>
             <div className="mt-5 space-y-4">
@@ -399,7 +424,7 @@ export default function Landing() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-400/15">
-                  <Bot className="h-4 w-4 text-cyan-400" />
+                  <Stamp className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className={`rounded-2xl rounded-tl-sm border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-slate-200 transition-opacity duration-300 ${aiTyping ? 'opacity-40' : 'opacity-100'}`}>
                   {aiTyping
