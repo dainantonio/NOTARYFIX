@@ -95,11 +95,6 @@ const Schedule = () => {
     navigate('/schedule', { replace: true, state: {} });
   }, [location.state, data.appointments, navigate]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setViewMode(window.innerWidth < 640 ? 'agenda' : 'calendar');
-  }, []);
-
   const reminderSummary = useMemo(() => {
     const channels = [];
     if (alertPrefs.clientEmail) channels.push('Client Email');
@@ -362,124 +357,6 @@ const Schedule = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">This Month</p><p className="text-2xl font-bold text-slate-900 dark:text-white">{monthAppointments.length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Upcoming</p><p className="text-2xl font-bold text-blue-600">{data.appointments.filter((a) => a.status === 'upcoming').length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500 truncate">Revenue</p><p className="text-2xl font-bold text-emerald-600">${monthRevenue.toLocaleString()}</p></CardContent></Card>
-      </div>
-
-      <div className="flex justify-end">
-        <button onClick={() => setShowOpsTools((v) => !v)} className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:border-blue-400">
-          {showOpsTools ? 'Hide calendar connections & reminders' : 'Show calendar connections & reminders'}
-        </button>
-      </div>
-
-      {showOpsTools && (
-      <>
-      <Card>
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <Activity className="h-3.5 w-3.5" /> Operational Insights (Advanced)
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
-              <p className="text-[11px] text-slate-500">Upcoming</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">{operationalStats.upcomingCount}</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
-              <p className="text-[11px] text-slate-500">High-load days</p>
-              <p className="text-sm font-semibold text-amber-600">{operationalStats.highLoadDays}</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
-              <p className="text-[11px] text-slate-500">Conflict windows</p>
-              <p className="text-sm font-semibold text-rose-600">{operationalStats.conflictWindows}</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
-              <p className="text-[11px] text-slate-500">Avg / active day</p>
-              <p className="text-sm font-semibold text-blue-600">{operationalStats.avgPerDay.toFixed(1)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><CalendarPlus className="h-3.5 w-3.5" /> Calendar Connections</div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" size="sm" onClick={() => window.open('https://calendar.google.com', '_blank', 'noopener,noreferrer')}>Connect Google</Button>
-            <Button variant="secondary" size="sm" onClick={exportCalendarIcs}>Use Apple Calendar (.ics)</Button>
-            {smartPreview ? <Button size="sm" onClick={() => window.open(toGoogleCalendarUrl(smartPreview), '_blank', 'noopener,noreferrer')}>Send Preview to Google</Button> : null}
-          </div>
-          <p className="text-xs text-slate-500">Use existing calendars via import/export .ics, or push a preview event directly to Google Calendar.</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Bell className="h-3.5 w-3.5" /> Reminder Automation</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            {[['clientEmail','Client Email',Mail],['clientSms','Client SMS',MessageSquare],['notaryEmail','Notary Email',Mail],['notarySms','Notary SMS',MessageSquare]].map(([key,label,Icon]) => (
-              <label key={key} className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 p-2 cursor-pointer">
-                <input type="checkbox" checked={alertPrefs[key]} onChange={(e) => setAlertPrefs((p) => ({...p, [key]: e.target.checked}))} />
-                <Icon className="h-3.5 w-3.5 text-slate-500" />
-                <span>{label}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500">Lead time</span>
-            <select value={alertPrefs.leadHours} onChange={(e) => setAlertPrefs((p) => ({...p, leadHours: Number(e.target.value)}))} className="rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1">
-              {[1,2,4,12,24,48].map((h) => <option key={h} value={h}>{h}h</option>)}
-            </select>
-            <span className="text-slate-500">before appointment</span>
-          </div>
-          <p className="text-xs text-slate-500">Current reminder plan: {reminderSummary}</p>
-        </CardContent>
-      </Card>
-      </>
-
-      )}
-
-      <Card>
-        <CardContent className="space-y-3 p-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm" onClick={exportCalendarIcs}><Download className="mr-1.5 h-3.5 w-3.5" /> Export .ics</Button>
-              <input ref={calendarFileInputRef} type="file" accept=".ics,text/calendar" className="hidden" onChange={(e) => importCalendarIcs(e.target.files?.[0])} />
-              <Button variant="secondary" size="sm" onClick={() => calendarFileInputRef.current?.click()}><Upload className="mr-1.5 h-3.5 w-3.5" /> Import .ics</Button>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Loan signing for Sarah 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" style={{fontSize:16}} />
-            <Button onClick={applySmartCalendar}>Smart Add</Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { label: 'Loan signing · tomorrow', value: `Loan signing for Client on ${new Date(Date.now() + 86400000).toISOString().split('T')[0]} 2:30 PM $150` },
-              { label: 'I-9 · next week', value: `I-9 for Employer on ${new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]} 9:00 AM $45` },
-              { label: 'Apostille · afternoon', value: `Apostille for Client on ${new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0]} 1:00 PM $120` },
-            ].map((preset) => (
-              <button key={preset.label} onClick={() => setSmartCalendarInput(preset.value)} className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1 text-[11px] text-slate-600 dark:text-slate-300 hover:border-blue-400">
-                {preset.label}
-              </button>
-            ))}
-          </div>
-          {smartPreview && (
-            <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-slate-700 dark:text-slate-200 space-y-1.5">
-              <div className="flex items-center gap-1.5 font-semibold text-blue-700 dark:text-blue-300"><Link className="h-3.5 w-3.5" /> Parsed Preview</div>
-              <p>{smartPreview.client} · {smartPreview.type} · {smartPreview.date} {smartPreview.time} · ${smartPreview.amount.toFixed(2)}</p>
-              <p className="text-slate-600 dark:text-slate-300">Duration: {smartPreview.durationMinutes} min · Location: {smartPreview.location}</p>
-              {smartOperationalHint?.conflicts?.length > 0 ? (
-                <p className="flex items-center gap-1 text-amber-700 dark:text-amber-300"><AlertTriangle className="h-3.5 w-3.5" /> Potential conflict with {smartOperationalHint.conflicts.length} existing slot(s){smartOperationalHint.suggestedTime ? ` — suggested: ${smartOperationalHint.suggestedTime}` : ''}.</p>
-              ) : null}
-              {smartOperationalHint?.outsideBusinessHours ? <p className="text-rose-700 dark:text-rose-300">Outside working hours (8:00 AM - 7:00 PM). Consider moving this slot.</p> : null}
-              {smartOperationalHint?.shouldBuffer ? <p className="text-slate-600 dark:text-slate-300">Busy day detected: plan 15–30 minute travel/buffer windows.</p> : null}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {viewMode === 'calendar' && (
       <Card>
         <CardContent className="p-0">
@@ -628,6 +505,127 @@ const Schedule = () => {
         </CardContent>
         )}
       </Card>
+
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">This Month</p><p className="text-2xl font-bold text-slate-900 dark:text-white">{monthAppointments.length}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Upcoming</p><p className="text-2xl font-bold text-blue-600">{data.appointments.filter((a) => a.status === 'upcoming').length}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500 truncate">Revenue</p><p className="text-2xl font-bold text-emerald-600">${monthRevenue.toLocaleString()}</p></CardContent></Card>
+      </div>
+
+
+      <Card>
+        <CardContent className="space-y-3 p-4">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={exportCalendarIcs}><Download className="mr-1.5 h-3.5 w-3.5" /> Export .ics</Button>
+              <input ref={calendarFileInputRef} type="file" accept=".ics,text/calendar" className="hidden" onChange={(e) => importCalendarIcs(e.target.files?.[0])} />
+              <Button variant="secondary" size="sm" onClick={() => calendarFileInputRef.current?.click()}><Upload className="mr-1.5 h-3.5 w-3.5" /> Import .ics</Button>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Loan signing for Sarah 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" style={{fontSize:16}} />
+            <Button onClick={applySmartCalendar}>Smart Add</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: 'Loan signing · tomorrow', value: `Loan signing for Client on ${new Date(Date.now() + 86400000).toISOString().split('T')[0]} 2:30 PM $150` },
+              { label: 'I-9 · next week', value: `I-9 for Employer on ${new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]} 9:00 AM $45` },
+              { label: 'Apostille · afternoon', value: `Apostille for Client on ${new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0]} 1:00 PM $120` },
+            ].map((preset) => (
+              <button key={preset.label} onClick={() => setSmartCalendarInput(preset.value)} className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1 text-[11px] text-slate-600 dark:text-slate-300 hover:border-blue-400">
+                {preset.label}
+              </button>
+            ))}
+          </div>
+          {smartPreview && (
+            <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-slate-700 dark:text-slate-200 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-semibold text-blue-700 dark:text-blue-300"><Link className="h-3.5 w-3.5" /> Parsed Preview</div>
+              <p>{smartPreview.client} · {smartPreview.type} · {smartPreview.date} {smartPreview.time} · ${smartPreview.amount.toFixed(2)}</p>
+              <p className="text-slate-600 dark:text-slate-300">Duration: {smartPreview.durationMinutes} min · Location: {smartPreview.location}</p>
+              {smartOperationalHint?.conflicts?.length > 0 ? (
+                <p className="flex items-center gap-1 text-amber-700 dark:text-amber-300"><AlertTriangle className="h-3.5 w-3.5" /> Potential conflict with {smartOperationalHint.conflicts.length} existing slot(s){smartOperationalHint.suggestedTime ? ` — suggested: ${smartOperationalHint.suggestedTime}` : ''}.</p>
+              ) : null}
+              {smartOperationalHint?.outsideBusinessHours ? <p className="text-rose-700 dark:text-rose-300">Outside working hours (8:00 AM - 7:00 PM). Consider moving this slot.</p> : null}
+              {smartOperationalHint?.shouldBuffer ? <p className="text-slate-600 dark:text-slate-300">Busy day detected: plan 15–30 minute travel/buffer windows.</p> : null}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+      <div className="flex justify-end">
+        <button onClick={() => setShowOpsTools((v) => !v)} className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:border-blue-400">
+          {showOpsTools ? 'Hide calendar connections & reminders' : 'Show calendar connections & reminders'}
+        </button>
+      </div>
+
+      {showOpsTools && (
+      <>
+      <Card>
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <Activity className="h-3.5 w-3.5" /> Operational Insights (Advanced)
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Upcoming</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{operationalStats.upcomingCount}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">High-load days</p>
+              <p className="text-sm font-semibold text-amber-600">{operationalStats.highLoadDays}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Conflict windows</p>
+              <p className="text-sm font-semibold text-rose-600">{operationalStats.conflictWindows}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Avg / active day</p>
+              <p className="text-sm font-semibold text-blue-600">{operationalStats.avgPerDay.toFixed(1)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><CalendarPlus className="h-3.5 w-3.5" /> Calendar Connections</div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={() => window.open('https://calendar.google.com', '_blank', 'noopener,noreferrer')}>Connect Google</Button>
+            <Button variant="secondary" size="sm" onClick={exportCalendarIcs}>Use Apple Calendar (.ics)</Button>
+            {smartPreview ? <Button size="sm" onClick={() => window.open(toGoogleCalendarUrl(smartPreview), '_blank', 'noopener,noreferrer')}>Send Preview to Google</Button> : null}
+          </div>
+          <p className="text-xs text-slate-500">Use existing calendars via import/export .ics, or push a preview event directly to Google Calendar.</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Bell className="h-3.5 w-3.5" /> Reminder Automation</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            {[['clientEmail','Client Email',Mail],['clientSms','Client SMS',MessageSquare],['notaryEmail','Notary Email',Mail],['notarySms','Notary SMS',MessageSquare]].map(([key,label,Icon]) => (
+              <label key={key} className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 p-2 cursor-pointer">
+                <input type="checkbox" checked={alertPrefs[key]} onChange={(e) => setAlertPrefs((p) => ({...p, [key]: e.target.checked}))} />
+                <Icon className="h-3.5 w-3.5 text-slate-500" />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-500">Lead time</span>
+            <select value={alertPrefs.leadHours} onChange={(e) => setAlertPrefs((p) => ({...p, leadHours: Number(e.target.value)}))} className="rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1">
+              {[1,2,4,12,24,48].map((h) => <option key={h} value={h}>{h}h</option>)}
+            </select>
+            <span className="text-slate-500">before appointment</span>
+          </div>
+          <p className="text-xs text-slate-500">Current reminder plan: {reminderSummary}</p>
+        </CardContent>
+      </Card>
+      </>
+
+      )}
+
     </div>
   );
 };
