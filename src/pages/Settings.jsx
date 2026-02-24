@@ -112,7 +112,7 @@ const Settings = () => {
               <CardContent className="space-y-6">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
                   <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
-                  <textarea value={smartBusinessInput} onChange={(e) => setSmartBusinessInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste business details (mileage, tax rate, monthly goal)" />
+                  <textarea value={smartBusinessInput} onChange={(e) => setSmartBusinessInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" placeholder="Paste business details (mileage, tax rate, monthly goal)" />
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Button type="button" size="sm" variant="secondary" onClick={() => applySmartBusinessFill(smartBusinessInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
                     <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">

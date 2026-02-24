@@ -90,7 +90,7 @@ const Legal = () => {
           <CardContent className="space-y-4">
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
-              <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Example: task: E&O renewal, category: Insurance, due 2026-12-31" />
+              <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" placeholder="Example: task: E&O renewal, category: Insurance, due 2026-12-31" />
               <Button type="button" size="sm" variant="secondary" className="mt-2" onClick={applySmartFill}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
