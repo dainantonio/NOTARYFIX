@@ -17,19 +17,19 @@ export const Card = ({ children, className }) => (
 );
 
 export const CardHeader = ({ children, className }) => (
-  <div className={cn("px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between", className)}>
+  <div className={cn("px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between", className)}>
     {children}
   </div>
 );
 
 export const CardTitle = ({ children, className }) => (
-  <h3 className={cn("text-lg font-semibold text-slate-800 dark:text-slate-100 tracking-tight", className)}>
+  <h3 className={cn("text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100 tracking-tight", className)}>
     {children}
   </h3>
 );
 
 export const CardContent = ({ children, className }) => (
-  <div className={cn("p-6 text-slate-900 dark:text-slate-200", className)}>
+  <div className={cn("p-4 sm:p-6 text-slate-900 dark:text-slate-200", className)}>
     {children}
   </div>
 );
@@ -47,7 +47,7 @@ export const Button = ({ children, variant = 'primary', size = 'default', classN
   const sizes = {
     xs: "h-7 px-2 text-xs",
     sm: "h-8 px-3 text-xs",
-    default: "h-10 px-4 py-2 text-sm",
+    default: "h-11 sm:h-10 px-4 py-2 text-sm",
     lg: "h-12 px-6 text-base",
     icon: "h-10 w-10 p-2 flex items-center justify-center",
   };
