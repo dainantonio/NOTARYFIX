@@ -20,6 +20,9 @@ import AITrainer from './pages/AITrainer';
 import Admin from './pages/Admin';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
+import FormGuide from './pages/FormGuide';
+// in routes:
+<Route path="/form-guide" element={<FormGuide />} />
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
 const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
