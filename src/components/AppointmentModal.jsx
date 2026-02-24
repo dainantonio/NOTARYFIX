@@ -138,13 +138,13 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl overflow-hidden rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl animate-in zoom-in-95 duration-200 flex flex-col">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-6 py-4">
           <h3 className="font-semibold text-slate-900 dark:text-white">{initialData ? 'Edit Appointment' : 'New Appointment'}</h3>
           <button onClick={onClose} className="text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-200"><X className="h-5 w-5" /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-5 p-6">
           <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-4">
             <label className="mb-2 block text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Quick Add (type or speak)</label>
             <textarea
@@ -230,7 +230,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
             {receiptSaved && <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Saved: {formData.receiptName}</div>}
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-4">
+          <div className="sticky bottom-0 bg-white dark:bg-slate-800 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-4">
             <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
             <Button type="submit">{submitLabel}</Button>
           </div>

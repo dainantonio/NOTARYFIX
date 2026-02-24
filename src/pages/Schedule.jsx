@@ -67,6 +67,7 @@ const Schedule = () => {
   const [prefillDate, setPrefillDate] = useState('');
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
   const [alertPrefs, setAlertPrefs] = useState({ clientEmail: true, clientSms: false, notaryEmail: true, notarySms: true, leadHours: 24 });
+  const [showOpsTools, setShowOpsTools] = useState(false);
   const calendarFileInputRef = useRef(null);
   const { data, addAppointment, updateAppointment, deleteAppointment } = useData();
   const { completeAppointment } = useLinker();
@@ -353,6 +354,14 @@ const Schedule = () => {
         </CardContent>
       </Card>
 
+      <div className="flex justify-end">
+        <button onClick={() => setShowOpsTools((v) => !v)} className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:border-blue-400">
+          {showOpsTools ? 'Hide calendar connections & reminders' : 'Show calendar connections & reminders'}
+        </button>
+      </div>
+
+      {showOpsTools && (
+      <>
       <Card>
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><CalendarPlus className="h-3.5 w-3.5" /> Calendar Connections</div>
@@ -387,6 +396,9 @@ const Schedule = () => {
           <p className="text-xs text-slate-500">Current reminder plan: {reminderSummary}</p>
         </CardContent>
       </Card>
+      </>
+
+      )}
 
       <Card>
         <CardContent className="space-y-3 p-4">
