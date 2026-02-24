@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
@@ -66,6 +66,7 @@ const Schedule = () => {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [prefillDate, setPrefillDate] = useState('');
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
+  const [alertPrefs, setAlertPrefs] = useState({ clientEmail: true, clientSms: false, notaryEmail: true, notarySms: true, leadHours: 24 });
   const calendarFileInputRef = useRef(null);
   const { data, addAppointment, updateAppointment, deleteAppointment } = useData();
   const { completeAppointment } = useLinker();
@@ -101,7 +102,7 @@ const Schedule = () => {
         time: formData.time,
         amount: parseFloat(formData.fee) || 0,
         location: formData.location || 'TBD',
-        notes: formData.notes || '',
+        notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
         receiptName: formData.receiptName || '',
         receiptImage: formData.receiptImage || '',
       });
@@ -118,7 +119,7 @@ const Schedule = () => {
       status: 'upcoming',
       amount: parseFloat(formData.fee) || 0,
       location: formData.location || 'TBD',
-      notes: formData.notes || '',
+      notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
       receiptName: formData.receiptName || '',
       receiptImage: formData.receiptImage || '',
     });
@@ -160,7 +161,7 @@ const Schedule = () => {
     if (!smartPreview) return;
     addAppointment({
       id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
-      amount: smartPreview.amount, location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m)`, receiptName: '', receiptImage: '',
+      amount: smartPreview.amount, location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`, receiptName: '', receiptImage: '',
     });
     setSmartCalendarInput('');
   };
@@ -269,6 +270,33 @@ const Schedule = () => {
     };
   }, [data.appointments, smartPreview]);
 
+  const reminderSummary = useMemo(() => {
+    const channels = [];
+    if (alertPrefs.clientEmail) channels.push('Client Email');
+    if (alertPrefs.clientSms) channels.push('Client SMS');
+    if (alertPrefs.notaryEmail) channels.push('Notary Email');
+    if (alertPrefs.notarySms) channels.push('Notary SMS');
+    return channels.length ? `${channels.join(', ')} @ ${alertPrefs.leadHours}h` : 'No reminders configured';
+  }, [alertPrefs]);
+
+  const toGoogleCalendarUrl = (eventData) => {
+    if (!eventData) return '#';
+    const startMinutes = toMinutes(eventData.time);
+    const startHour = Math.floor(startMinutes / 60);
+    const startMinute = startMinutes % 60;
+    const start = new Date(`${eventData.date}T${String(startHour).padStart(2,'0')}:${String(startMinute).padStart(2,'0')}:00`);
+    const end = new Date(start.getTime() + (eventData.durationMinutes || 60) * 60000);
+    const fmt = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: `${eventData.type} - ${eventData.client}`,
+      dates: `${fmt(start)}/${fmt(end)}`,
+      details: `Smart entry from NotaryOS. ${reminderSummary}`,
+      location: eventData.location || 'TBD',
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
+
   return (
     <div className="animate-fade-in space-y-4 sm:space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-20">
       <AppointmentModal
@@ -322,6 +350,41 @@ const Schedule = () => {
               <p className="text-sm font-semibold text-blue-600">{operationalStats.avgPerDay.toFixed(1)}</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><CalendarPlus className="h-3.5 w-3.5" /> Calendar Connections</div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={() => window.open('https://calendar.google.com', '_blank', 'noopener,noreferrer')}>Connect Google</Button>
+            <Button variant="secondary" size="sm" onClick={exportCalendarIcs}>Use Apple Calendar (.ics)</Button>
+            {smartPreview ? <Button size="sm" onClick={() => window.open(toGoogleCalendarUrl(smartPreview), '_blank', 'noopener,noreferrer')}>Send Preview to Google</Button> : null}
+          </div>
+          <p className="text-xs text-slate-500">Use existing calendars via import/export .ics, or push a preview event directly to Google Calendar.</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Bell className="h-3.5 w-3.5" /> Reminder Automation</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            {[['clientEmail','Client Email',Mail],['clientSms','Client SMS',MessageSquare],['notaryEmail','Notary Email',Mail],['notarySms','Notary SMS',MessageSquare]].map(([key,label,Icon]) => (
+              <label key={key} className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 p-2 cursor-pointer">
+                <input type="checkbox" checked={alertPrefs[key]} onChange={(e) => setAlertPrefs((p) => ({...p, [key]: e.target.checked}))} />
+                <Icon className="h-3.5 w-3.5 text-slate-500" />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-500">Lead time</span>
+            <select value={alertPrefs.leadHours} onChange={(e) => setAlertPrefs((p) => ({...p, leadHours: Number(e.target.value)}))} className="rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1">
+              {[1,2,4,12,24,48].map((h) => <option key={h} value={h}>{h}h</option>)}
+            </select>
+            <span className="text-slate-500">before appointment</span>
+          </div>
+          <p className="text-xs text-slate-500">Current reminder plan: {reminderSummary}</p>
         </CardContent>
       </Card>
 
@@ -381,9 +444,11 @@ const Schedule = () => {
               const dayApts = data.appointments.filter((a) => inCurrentMonth(a.date) && Number(a.date.split('-')[2]) === day);
               const now = new Date();
               const isToday = day === now.getDate() && currentDate.getMonth() === now.getMonth() && currentDate.getFullYear() === now.getFullYear();
+              const loadClass = dayApts.length >= 4 ? 'bg-rose-50 dark:bg-rose-900/15' : dayApts.length >= 2 ? 'bg-amber-50 dark:bg-amber-900/10' : '';
               return (
-                <div key={day} className="group relative border-b border-r border-slate-200 p-1 sm:p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
+                <div key={day} className={`group relative border-b border-r border-slate-200 p-1 sm:p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50 ${loadClass}`}>
                   <span className={`text-xs sm:text-sm font-medium ${isToday ? 'flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'}`}>{day}</span>
+                  {dayApts.length >= 4 ? <span className="absolute top-1 right-1 rounded bg-rose-100 dark:bg-rose-900/40 px-1.5 py-0.5 text-[10px] text-rose-700 dark:text-rose-300">High load</span> : null}
                   <div className="mt-2 max-h-[78px] space-y-1 overflow-y-auto">
                     {dayApts.map((apt) => (
                       <button key={apt.id} onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="w-full truncate rounded border-l-2 border-blue-500 bg-blue-50 p-1.5 text-left text-xs text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50">
