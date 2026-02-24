@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
@@ -110,8 +111,23 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
 const Invoices = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
+  const [statusFilter, setStatusFilter] = useState([]);
   const { data, addInvoice, updateInvoice, deleteInvoice } = useData();
+  const location = useLocation();
+  const navigate = useNavigate();
   const invoices = data?.invoices || [];
+
+  useEffect(() => {
+    const incoming = location.state?.statusFilter;
+    if (!Array.isArray(incoming) || incoming.length === 0) return;
+    setStatusFilter(incoming.filter((x) => ['Pending', 'Overdue', 'Paid'].includes(x)));
+    navigate('/invoices', { replace: true, state: {} });
+  }, [location.state, navigate]);
+
+  const visibleInvoices = useMemo(() => {
+    if (!statusFilter.length) return invoices;
+    return invoices.filter((inv) => statusFilter.includes(inv.status));
+  }, [invoices, statusFilter]);
 
   const totals = useMemo(() => ({
     paid: invoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
@@ -184,6 +200,15 @@ const Invoices = () => {
         </CardContent>
       </Card>
 
+      {statusFilter.length > 0 && (
+        <Card>
+          <CardContent className="flex items-center justify-between gap-2 p-3 text-xs">
+            <p className="text-slate-600 dark:text-slate-300">Showing filtered invoices: {statusFilter.join(' + ')}</p>
+            <Button size="sm" variant="secondary" onClick={() => setStatusFilter([])}>Clear filter</Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Collected</p><p className="text-2xl font-bold text-emerald-600">${totals.paid.toLocaleString()}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Outstanding</p><p className="text-2xl font-bold text-amber-600">${totals.pending.toLocaleString()}</p></CardContent></Card>
@@ -195,9 +220,9 @@ const Invoices = () => {
 
         {/* ── Mobile card list ── */}
         <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
-          {invoices.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">No invoices yet.</p>
-          ) : invoices.map((invoice) => (
+          {visibleInvoices.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</p>
+          ) : visibleInvoices.map((invoice) => (
             <div key={invoice.id} className="flex items-center gap-3 px-4 py-3.5">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -238,9 +263,9 @@ const Invoices = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {invoices.length === 0 ? (
-                <tr><td colSpan="7" className="py-8 text-center text-slate-500">No invoices yet.</td></tr>
-              ) : invoices.map((invoice) => (
+              {visibleInvoices.length === 0 ? (
+                <tr><td colSpan="7" className="py-8 text-center text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</td></tr>
+              ) : visibleInvoices.map((invoice) => (
                 <tr key={invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{invoice.id}</td>
                   <td className="px-6 py-4 max-w-[160px] truncate">{invoice.client}</td>
