@@ -7,7 +7,7 @@ import { useData } from '../context/DataContext';
 const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
   const { data } = useData();
   const clientOptions = (data?.clients || []).map((c) => ({ label: c.name, value: c.name }));
-  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending' });
+  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending', notes: '' });
   const [smartInput, setSmartInput] = useState('');
 
   useEffect(() => {
@@ -18,10 +18,11 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
         amount: String(initialInvoice.amount || ''),
         due: /^\d{4}-\d{2}-\d{2}$/.test(initialInvoice.due || '') ? initialInvoice.due : '',
         status: initialInvoice.status || 'Pending',
+        notes: initialInvoice.notes || '',
       });
       return;
     }
-    setFormData({ client: prefillClientName || clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending' });
+    setFormData({ client: prefillClientName || clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending', notes: '' });
   }, [isOpen, initialInvoice, clientOptions, prefillClientName]);
 
   if (!isOpen) return null;
@@ -50,6 +51,7 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
       date: initialInvoice?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       due: formData.due,
       status: formData.status,
+      notes: formData.notes || '',
     });
     setSmartInput('');
     onClose();
@@ -98,6 +100,17 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
             </div>
           </div>
 
+
+
+          <div>
+            <Label>Notes / Breakdown (optional)</Label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="e.g. Signing fee $125, Travel $35, Printing $20"
+              className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+            />
+          </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button type="submit" className="flex-1" disabled={clientOptions.length === 0}>{initialInvoice ? 'Save Changes' : 'Generate'}</Button>
@@ -113,6 +126,7 @@ const Invoices = () => {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [statusFilter, setStatusFilter] = useState([]);
   const [prefillClientName, setPrefillClientName] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
   const { data, addInvoice, updateInvoice, deleteInvoice } = useData();
   const location = useLocation();
   const navigate = useNavigate();
@@ -143,11 +157,23 @@ const Invoices = () => {
     return invoices.filter((inv) => statusFilter.includes(inv.status));
   }, [invoices, statusFilter]);
 
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 1800);
+  };
+
   const totals = useMemo(() => ({
     paid: invoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
     pending: invoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
     overdue: invoices.filter((i) => i.status === 'Overdue').reduce((sum, i) => sum + Number(i.amount || 0), 0),
   }), [invoices]);
+
+  const visibleTotals = useMemo(() => ({
+    paid: visibleInvoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+    pending: visibleInvoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+    overdue: visibleInvoices.filter((i) => i.status === 'Overdue').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+  }), [visibleInvoices]);
 
   const getStatusBadge = (status) => {
     if (status === 'Paid') return <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Paid</Badge>;
@@ -165,18 +191,21 @@ const Invoices = () => {
       paymentLink: invoice.paymentLink || buildInvoiceLink(invoice),
       status: invoice.status === 'Paid' ? 'Paid' : 'Pending',
     });
+    showToast('Marked as sent');
   };
 
   const copyInvoiceLink = async (invoice) => {
     const link = invoice.paymentLink || buildInvoiceLink(invoice);
     await navigator.clipboard?.writeText(link);
     updateInvoice(invoice.id, { paymentLink: link });
+    showToast('Link copied to clipboard');
   };
 
   const sendInvoiceSmsStub = async (invoice) => {
     const link = invoice.paymentLink || buildInvoiceLink(invoice);
     await navigator.clipboard?.writeText(`Invoice ${invoice.id} for ${invoice.client}: ${link}`);
     updateInvoice(invoice.id, { paymentLink: link, sentAt: new Date().toISOString() });
+    showToast('SMS message copied to clipboard');
   };
 
   const exportInvoicePdfStub = (invoice) => {
@@ -188,6 +217,7 @@ const Invoices = () => {
     a.download = `${invoice.id}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast('PDF exported');
   };
 
   const handleSaveInvoice = (payload) => {
@@ -204,6 +234,11 @@ const Invoices = () => {
   return (
     <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); setPrefillClientName(''); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} prefillClientName={prefillClientName} />
+      {toastMessage ? (
+        <div className="fixed right-4 top-4 z-[60] rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white shadow-lg">
+          {toastMessage}
+        </div>
+      ) : null}
 
       <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
@@ -239,7 +274,7 @@ const Invoices = () => {
           {visibleInvoices.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</p>
           ) : visibleInvoices.map((invoice) => (
-            <div key={invoice.id} className="flex items-center gap-3 px-4 py-3.5">
+            <div key={invoice.id} className={`flex items-center gap-3 px-4 py-3.5 border-l-2 ${invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/50 dark:bg-rose-900/10' : 'border-transparent'}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
                   <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{invoice.id}</span>
@@ -247,7 +282,7 @@ const Invoices = () => {
                 </div>
                 <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{invoice.client}</p>
                 <p className="text-xs text-slate-500 mt-0.5">Due {invoice.due}</p>
-                {invoice.sentAt ? <p className="text-[11px] text-blue-600">Sent {new Date(invoice.sentAt).toLocaleDateString()}</p> : null}
+                {invoice.sentAt ? <p className="text-[11px] text-emerald-600">Sent {new Date(invoice.sentAt).toLocaleDateString()}</p> : null}
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-base font-black text-emerald-600 dark:text-emerald-400">${Number(invoice.amount).toLocaleString()}</p>
@@ -264,6 +299,16 @@ const Invoices = () => {
           ))}
         </div>
 
+          {visibleInvoices.length > 0 ? (
+            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 text-xs dark:border-slate-700 dark:bg-slate-800/40">
+              <div className="grid grid-cols-3 gap-2">
+                <p className="text-slate-600">Collected <span className="font-semibold text-emerald-600">${visibleTotals.paid.toLocaleString()}</span></p>
+                <p className="text-slate-600">Outstanding <span className="font-semibold text-amber-600">${visibleTotals.pending.toLocaleString()}</span></p>
+                <p className="text-slate-600">Overdue <span className="font-semibold text-rose-600">${visibleTotals.overdue.toLocaleString()}</span></p>
+              </div>
+            </div>
+          ) : null}
+
         {/* ── Desktop table ── */}
         <CardContent className="hidden sm:block overflow-x-auto p-0">
           <table className="w-full text-left text-sm">
@@ -275,20 +320,22 @@ const Invoices = () => {
                 <th className="px-6 py-4">Issued</th>
                 <th className="px-6 py-4">Due</th>
                 <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Sent</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {visibleInvoices.length === 0 ? (
-                <tr><td colSpan="7" className="py-8 text-center text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</td></tr>
+                <tr><td colSpan="8" className="py-8 text-center text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</td></tr>
               ) : visibleInvoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <tr key={invoice.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-2 ${invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/40 dark:bg-rose-900/10' : 'border-transparent'}`}>
                   <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{invoice.id}</td>
                   <td className="px-6 py-4 max-w-[160px] truncate">{invoice.client}</td>
                   <td className="px-6 py-4 font-semibold">${Number(invoice.amount).toLocaleString()}</td>
                   <td className="px-6 py-4">{invoice.date}</td>
                   <td className="px-6 py-4">{invoice.due}</td>
                   <td className="px-6 py-4">{getStatusBadge(invoice.status)}</td>
+                  <td className="px-6 py-4 text-xs text-emerald-600">{invoice.sentAt ? `Sent ${new Date(invoice.sentAt).toLocaleDateString()}` : '—'}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Button size="sm" variant="ghost" onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
@@ -304,6 +351,16 @@ const Invoices = () => {
             </tbody>
           </table>
         </CardContent>
+
+        {visibleInvoices.length > 0 ? (
+          <div className="hidden sm:block border-t border-slate-200 bg-slate-50 px-6 py-3 text-xs dark:border-slate-700 dark:bg-slate-800/40">
+            <div className="grid grid-cols-3 gap-2">
+              <p className="text-slate-600">Total collected <span className="font-semibold text-emerald-600">${visibleTotals.paid.toLocaleString()}</span></p>
+              <p className="text-slate-600">Total outstanding <span className="font-semibold text-amber-600">${visibleTotals.pending.toLocaleString()}</span></p>
+              <p className="text-slate-600">Total overdue <span className="font-semibold text-rose-600">${visibleTotals.overdue.toLocaleString()}</span></p>
+            </div>
+          </div>
+        ) : null}
       </Card>
     </div>
   );
