@@ -157,7 +157,7 @@ const DailyBrief = ({ data, navigate }) => {
       sub: todayApts.length > 0
         ? `$${todayEarnings} projected · First at ${todayApts[0].time}`
         : 'Schedule is clear',
-      path: '/schedule',
+      path: todayApts[0]?.id ? { pathname: '/schedule', state: { editAppointmentId: todayApts[0].id } } : '/schedule',
     },
     {
       Icon: DollarSign,
@@ -548,10 +548,7 @@ const Dashboard = () => {
       <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-5 sm:space-y-5 sm:px-6 sm:py-7 md:px-8 md:py-8">
 
         {/* ══ HERO ════════════════════════════════════════════════════════════ */}
-        <Card className="overflow-hidden border-0 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white shadow-2xl">
-          {/* grid overlay */}
-          <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+        <Card className="app-hero-card shadow-2xl">
           <CardContent className="relative px-5 py-5 sm:px-6 sm:py-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               {/* greeting */}
@@ -739,14 +736,14 @@ const Dashboard = () => {
                   )
                 }
                 <div className="mt-3 grid w-full grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">This month</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${currentMonthRevenue.toLocaleString()}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                  </button>
+                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Remaining</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${Math.max(0, monthlyGoal - currentMonthRevenue).toLocaleString()}</p>
-                  </div>
+                  </button>
                 </div>
               </CardContent>
             </Card>
