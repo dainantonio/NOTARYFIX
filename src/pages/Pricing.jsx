@@ -188,7 +188,7 @@ const Pricing = () => {
               <input className="rounded bg-[#12274b] px-3 py-2 text-sm" placeholder="Company" value={salesForm.company} onChange={(e) => updateField('company', e.target.value)} />
               <input className="rounded bg-[#12274b] px-3 py-2 text-sm" placeholder="Work email" value={salesForm.email} onChange={(e) => updateField('email', e.target.value)} />
               <input className="rounded bg-[#12274b] px-3 py-2 text-sm" placeholder="Team size" value={salesForm.teamSize} onChange={(e) => updateField('teamSize', e.target.value)} />
-              <textarea className="sm:col-span-2 rounded bg-[#12274b] px-3 py-2 text-sm" placeholder="Anything we should know?" value={salesForm.notes} onChange={(e) => updateField('notes', e.target.value)} />
+              <textarea className="sm:col-span-2 rounded bg-[#12274b] px-3 py-2 text-sm text-white placeholder:text-slate-300" placeholder="Anything we should know?" value={salesForm.notes} onChange={(e) => updateField('notes', e.target.value)} />
             </div>
             <a href={salesMailto} className="mt-5 inline-flex rounded-lg bg-gradient-to-r from-teal-400 to-cyan-500 px-5 py-2.5 text-sm font-bold text-[#03152d]">
               Generate Email to Sales
