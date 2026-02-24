@@ -215,7 +215,7 @@ const buildGroundedAnswer = ({ question, stateCode, data }) => {
       lastUpdated: confidence.lastUpdated,
     },
     confidence,
-    disclaimer: 'Verify with the official state source before acting. This tool summarizes only the published Admin dataset.',
+    disclaimer: 'Verify with the official state source before acting. This tool summarizes only the published Admin policy records.',
   };
 };
 
@@ -266,7 +266,7 @@ const TypingIndicator = () => (
           <span className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
           <span className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-        <span className="text-xs">Searching published dataset…</span>
+        <span className="text-xs">Searching published policy records…</span>
       </div>
     </div>
   </div>
@@ -338,14 +338,14 @@ const DatasetStatusPanel = ({ stateCode, data }) => {
               </div>
               <ul className="list-disc pl-5 space-y-1">
                 <li>No published policy → no answer (no hallucinations).</li>
-                <li>Missing sections marked "not provided in dataset".</li>
+                <li>Missing sections marked "not provided in policy records".</li>
                 <li>Every answer cites source record + last updated.</li>
                 <li>Knowledge articles are cited when matched.</li>
               </ul>
             </div>
           </div>
         ) : (
-          <div className="text-xs text-slate-500 dark:text-slate-400">Select a state to see dataset status.</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Select a state to see policy coverage status.</div>
         )}
       </CardContent>
     </Card>
@@ -407,7 +407,7 @@ const AnswerCard = ({ model }) => {
               )}
             </div>
           ) : (
-            <div className="text-xs text-slate-500 dark:text-slate-400 italic">No fee schedule entries found in the published dataset.</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 italic">No fee schedule entries found in the published policy records.</div>
           )}
         </div>
       </Section>
@@ -427,7 +427,7 @@ const AnswerCard = ({ model }) => {
             {model.idReq.notes && <div className="text-xs text-slate-500 dark:text-slate-400 italic">{model.idReq.notes}</div>}
           </div>
         ) : (
-          <div className="text-xs text-slate-500 dark:text-slate-400 italic">No ID requirements record found in the published dataset.</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 italic">No ID requirements record found in the published policy records.</div>
         )}
       </Section>
 
@@ -436,7 +436,7 @@ const AnswerCard = ({ model }) => {
         {model.witnessRequirements ? (
           <div className="whitespace-pre-wrap">{model.witnessRequirements}</div>
         ) : (
-          <div className="text-xs text-slate-500 dark:text-slate-400 italic">Not provided in the published dataset.</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 italic">Not provided in the published policy records.</div>
         )}
       </Section>
 
@@ -445,7 +445,7 @@ const AnswerCard = ({ model }) => {
         {model.specialActCaveats ? (
           <div className="whitespace-pre-wrap">{model.specialActCaveats}</div>
         ) : (
-          <div className="text-xs text-slate-500 dark:text-slate-400 italic">Not provided in the published dataset.</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 italic">Not provided in the published policy records.</div>
         )}
       </Section>
 
@@ -641,22 +641,22 @@ const AITrainer = () => {
       createdAt: new Date().toISOString(),
       model: {
         kind: 'info',
-        text: 'Chat cleared. Ask a new state-specific notary question — answers are grounded-only from the published Admin dataset.',
+        text: 'Chat cleared. Ask a new state-specific notary question — answers are grounded-only from the published Admin policy records.',
       },
     }]);
   };
 
   return (
-    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-24">
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Knowledge Copilot</p>
               <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">AI Trainer</h1>
               <p className="mt-1 text-sm text-slate-200">
-                On-the-fly, state-specific guidance for notaries — grounded only from the published Admin dataset.
+                On-the-fly, state-specific guidance for notaries — grounded only from the published Admin policy records.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -750,7 +750,7 @@ const AITrainer = () => {
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3 flex-wrap">
                             <div>
-                              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">No published dataset</div>
+                              <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">No published policy records</div>
                               <div className="mt-0.5 text-base font-bold text-slate-800 dark:text-slate-100">{m.model.stateName} ({m.model.stateCode})</div>
                               <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                                 Publish a state policy in <span className="font-semibold">Admin → State Policy Records</span> to enable answers.

@@ -34,7 +34,7 @@ import {
 } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { useLocation } from 'react-router-dom';
-import { useLinker } from '../hooks/useLinker';
+import { toast, useLinker } from '../hooks/useLinker';
 import { isJournalAtLimit } from '../utils/gates';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -916,7 +916,7 @@ const EntryModal = ({ isOpen, onClose, onSave, initial, appointments, invoices, 
           )}
 
           {/* Step tabs */}
-          <div className="flex overflow-x-auto border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4">
             {sections.map((s, i) => (
               <button
                 key={i} type="button" onClick={() => setSection(i)}
@@ -1444,7 +1444,7 @@ const ComplianceAdvisor = ({
         ? computeConfidence(policy.updatedAt, policy.publishedAt)
         : staticConfidence();
       const sourceNote = conf.fromDataset
-        ? `Admin dataset · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        ? `Admin policy records · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
         : 'Built-in rule — verify with your state authority';
       result.push({
         id: 'thumbprint',
@@ -1488,7 +1488,7 @@ const ComplianceAdvisor = ({
         }`,
         confidence: conf,
         sourceNote: conf.fromDataset
-          ? 'Admin dataset · Fee schedule'
+          ? 'Admin policy records · Fee schedule'
           : 'Built-in rule — verify with your state authority',
         debug: {
           stateCode,
@@ -1512,7 +1512,7 @@ const ComplianceAdvisor = ({
         body,
         confidence: conf,
         sourceNote: conf.fromDataset
-          ? `Admin dataset · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+          ? `Admin policy records · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
           : 'Built-in rule — verify with your state authority',
         debug: {
           stateCode,
@@ -1535,7 +1535,7 @@ const ComplianceAdvisor = ({
         title: 'Accepted ID Types',
         body: `${idReq.acceptedIdTypes.join(', ')}${extraStr}.`,
         confidence: conf,
-        sourceNote: 'Admin dataset · ID requirements',
+        sourceNote: 'Admin policy records · ID requirements',
         debug: {
           stateCode,
           actType,
@@ -1555,7 +1555,7 @@ const ComplianceAdvisor = ({
         title: 'Special Act Caveats',
         body,
         confidence: conf,
-        sourceNote: `Admin dataset · Policy v${policy.version || '\u2014'}`,
+        sourceNote: `Admin policy records · Policy v${policy.version || '\u2014'}`,
         debug: {
           stateCode,
           actType,
@@ -1575,7 +1575,7 @@ const ComplianceAdvisor = ({
         body: `RON is ${policy.ronPermitted ? 'permitted' : 'not permitted'} in ${stateName}. Statute: ${policy.ronStatute || '\u2014'}`,
         confidence: conf,
         sourceNote: conf.fromDataset
-          ? `Admin dataset · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+          ? `Admin policy records · Updated ${new Date(policy.updatedAt || policy.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
           : 'Built-in rule — verify with your state authority',
         debug: {
           stateCode,
@@ -1717,10 +1717,12 @@ const Journal = () => {
       const editLog = [...(editing.editLog || []), ...delta];
       const updated = { ...form, editLog, contentHash: hashEntry(form) };
       updateJournalEntry(editing.id, updated);
+      toast.success('Journal entry updated');
     } else {
       const entry = { ...form, createdAt: now, editLog: [], contentHash: hashEntry(form) };
       addJournalEntry(entry);
       afterJournalSave(form);
+      toast.success('Journal entry saved');
     }
     setEditing(null);
   };
@@ -1773,7 +1775,7 @@ const Journal = () => {
   }, []); // runs once on mount
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-24 mx-auto max-w-[1400px]">
       <EntryModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditing(null); }}
@@ -1790,7 +1792,7 @@ const Journal = () => {
       />
 
       {/* ── HERO HEADER ──────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Records & Audit</p>
@@ -1946,16 +1948,27 @@ const Journal = () => {
       <Card>
         <CardContent className="p-0 overflow-x-auto">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-700 mb-4">
-                <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-500" />
+            entries.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-700 mb-4">
+                  <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-500" />
+                </div>
+                <p className="font-semibold text-slate-700 dark:text-slate-200">Your digital notary journal.</p>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">Every entry is tamper-evident and timestamped. Required by law in most states.</p>
+                <div className="mt-3 max-w-xl rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left">
+                  <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">First-run tip</p>
+                  <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">Start with your first act now so your compliance trail begins immediately.</p>
+                </div>
+                <Button className="mt-5" onClick={() => openNew()}>
+                  <Plus className="mr-2 h-4 w-4" /> Add your first journal entry
+                </Button>
               </div>
-              <p className="font-semibold text-slate-600 dark:text-slate-300">No journal entries found.</p>
-              <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">Add your first entry to build an audit-ready record.</p>
-              <Button className="mt-5" onClick={() => openNew()}>
-                <Plus className="mr-2 h-4 w-4" /> Add First Entry
-              </Button>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="font-semibold text-slate-600 dark:text-slate-300">No journal entries match your filters.</p>
+                <button onClick={() => { setQuery(''); setFilterActType(''); setFilterMonth(''); }} className="mt-2 text-sm text-blue-600 hover:underline">Clear filters</button>
+              </div>
+            )
           ) : (
             <table className="w-full text-left text-sm min-w-[860px]">
               <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">

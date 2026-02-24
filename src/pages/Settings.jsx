@@ -1,20 +1,35 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '../hooks/useLinker';
+
+const US_STATE_CODES = [
+  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+  'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+  'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'
+];
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [smartBusinessInput, setSmartBusinessInput] = useState('');
   const { theme, toggleTheme } = useTheme();
   const { data, updateSettings } = useData();
+  const navigate = useNavigate();
+  const saveTimerRef = useRef(null);
 
   const [formData, setFormData] = useState(data.settings);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   useEffect(() => {
     setFormData(data.settings);
   }, [data.settings]);
+
+  useEffect(() => () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+  }, []);
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -31,6 +46,15 @@ const Settings = () => {
 
   const handleSave = () => {
     updateSettings(formData);
+    setSavedFlash(true);
+    toast.success('Settings saved');
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => setSavedFlash(false), 2000);
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('notaryfix_data');
+    navigate('/');
   };
 
   const applySmartBusinessFill = (text) => {
@@ -51,15 +75,15 @@ const Settings = () => {
   };
 
   return (
-    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-6 pb-20">
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-6 pb-24">
+      <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Configuration Center</p>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
             <p className="mt-1 text-sm text-slate-200">Manage profile, business defaults, and visual preferences.</p>
           </div>
-          <Button onClick={handleSave} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Save className="mr-2 h-4 w-4" /> Save All</Button>
+          <Button onClick={handleSave} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save All'}</Button>
         </CardContent>
       </Card>
 
@@ -71,7 +95,7 @@ const Settings = () => {
 
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="w-full flex-shrink-0 md:w-56 lg:w-64">
-          <nav className="flex flex-row gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible md:pb-0">
+          <nav className="flex flex-row gap-2 overflow-x-auto scrollbar-hide pb-2 md:flex-col md:overflow-visible md:pb-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -85,7 +109,7 @@ const Settings = () => {
               </button>
             ))}
             <div className="my-2 hidden border-t border-slate-200 dark:border-slate-700 md:block" />
-            <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"><LogOut className="h-4 w-4" /> Sign Out</button>
+            <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"><LogOut className="h-4 w-4" /> Sign Out</button>
           </nav>
         </div>
 
@@ -101,7 +125,7 @@ const Settings = () => {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div><Label>Full Name</Label><Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
                 </div>
-                <div className="flex justify-end"><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Changes</Button></div>
+                <div className="flex justify-end"><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Changes'}</Button></div>
               </CardContent>
             </Card>
           )}
@@ -112,7 +136,7 @@ const Settings = () => {
               <CardContent className="space-y-6">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
                   <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
-                  <textarea value={smartBusinessInput} onChange={(e) => setSmartBusinessInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste business details (mileage, tax rate, monthly goal)" />
+                  <textarea value={smartBusinessInput} onChange={(e) => setSmartBusinessInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" placeholder="Paste business details (mileage, tax rate, monthly goal)" />
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Button type="button" size="sm" variant="secondary" onClick={() => applySmartBusinessFill(smartBusinessInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
                     <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">
@@ -132,7 +156,7 @@ const Settings = () => {
 
                 <div className="flex justify-end gap-2">
                   <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
-                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Update Business</Button>
+                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Update Business'}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -151,6 +175,13 @@ const Settings = () => {
                     <Label>Weekly Compliance Review Day</Label>
                     <Input placeholder="Monday" value={formData.complianceReviewDay || ''} onChange={(e) => setFormData({ ...formData, complianceReviewDay: e.target.value })} />
                   </div>
+                  <div>
+                    <Label>Primary operating state</Label>
+                    <select value={formData.currentStateCode || ''} onChange={(e) => setFormData({ ...formData, currentStateCode: e.target.value })} className="h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select state</option>
+                      {US_STATE_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">Operations Guardrail</p>
@@ -158,7 +189,7 @@ const Settings = () => {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
-                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Compliance</Button>
+                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Compliance'}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -171,11 +202,11 @@ const Settings = () => {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-700">
                   <div>
                     <p className="font-medium text-slate-900 dark:text-white">Theme</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Customize how NotaryFix looks.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Dark mode is enforced to keep text and data contrast consistent.</p>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => theme === 'dark' && toggleTheme()} className={`flex w-24 flex-col items-center gap-2 rounded-lg border p-3 ${theme === 'light' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 dark:border-slate-700'}`}><Sun className="h-5 w-5" /><span className="text-xs font-medium">Light</span></button>
-                    <button onClick={() => theme === 'light' && toggleTheme()} className={`flex w-24 flex-col items-center gap-2 rounded-lg border p-3 ${theme === 'dark' ? 'border-blue-500 bg-blue-900/20 text-blue-400' : 'border-slate-200 text-slate-500 dark:border-slate-700'}`}><Moon className="h-5 w-5" /><span className="text-xs font-medium">Dark</span></button>
+                    <button type="button" disabled className="flex w-24 cursor-not-allowed flex-col items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/40 p-3 text-slate-500 opacity-60"><Sun className="h-5 w-5" /><span className="text-xs font-medium">Light</span></button>
+                    <button onClick={toggleTheme} className="flex w-24 flex-col items-center gap-2 rounded-lg border border-blue-500 bg-blue-900/20 p-3 text-blue-400"><Moon className="h-5 w-5" /><span className="text-xs font-medium">Dark</span></button>
                   </div>
                 </div>
               </CardContent>
