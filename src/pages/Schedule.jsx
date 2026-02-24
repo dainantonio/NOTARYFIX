@@ -68,7 +68,7 @@ const Schedule = () => {
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
   const [alertPrefs, setAlertPrefs] = useState({ clientEmail: true, clientSms: false, notaryEmail: true, notarySms: true, leadHours: 24 });
   const [showOpsTools, setShowOpsTools] = useState(false);
-  const [viewMode, setViewMode] = useState('calendar');
+  const [viewMode, setViewMode] = useState('agenda');
   const calendarFileInputRef = useRef(null);
   const { data, addAppointment, updateAppointment, deleteAppointment } = useData();
   const { completeAppointment } = useLinker();
@@ -96,7 +96,8 @@ const Schedule = () => {
   }, [location.state, data.appointments, navigate]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 640) setViewMode('agenda');
+    if (typeof window === 'undefined') return;
+    setViewMode(window.innerWidth < 640 ? 'agenda' : 'calendar');
   }, []);
 
   const handleSaveAppointment = (formData) => {
@@ -293,6 +294,8 @@ const Schedule = () => {
     return [...(data.appointments || [])].sort((a, b) => toStamp(a) - toStamp(b));
   }, [data.appointments]);
 
+  const todayIso = new Date().toISOString().split('T')[0];
+
   const agendaSections = useMemo(() => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
@@ -448,7 +451,7 @@ const Schedule = () => {
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Type: Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" style={{fontSize:16}} />
+            <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Loan signing for Sarah 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" style={{fontSize:16}} />
             <Button onClick={applySmartCalendar}>Smart Add</Button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -561,7 +564,7 @@ const Schedule = () => {
                   {apt.status === 'completed' && <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Done</span>}
                   {apt.status === 'upcoming' && <span className="rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-400">Upcoming</span>}
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">{apt.type} &middot; {apt.date} &middot; {apt.time}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{apt.type} &middot; {apt.date === todayIso ? 'Today' : apt.date} &middot; {apt.time}</p>
                 <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">${Number(apt.amount || 0).toLocaleString()}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -595,7 +598,7 @@ const Schedule = () => {
                       {apt.status === 'completed' && <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Done</span>}
                       {apt.status === 'upcoming' && <span className="rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-400">Upcoming</span>}
                     </div>
-                    <p className="text-xs text-slate-500">{apt.type} &middot; {apt.time}</p>
+                    <p className="text-xs text-slate-500">{apt.type} &middot; {apt.date === todayIso ? 'Today' : apt.date} &middot; {apt.time}</p>
                   </td>
                   <td className="px-5 py-3 text-sm text-slate-700 dark:text-slate-200">{apt.date}</td>
                   <td className="px-5 py-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">${Number(apt.amount || 0).toLocaleString()}</td>
