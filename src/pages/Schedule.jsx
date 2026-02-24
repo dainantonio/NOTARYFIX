@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
@@ -7,6 +7,34 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useLinker } from '../hooks/useLinker';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const toMinutes = (timeString = '') => {
+  const text = String(timeString || '').trim();
+  const match = text.match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!match) return 10 * 60;
+  let hour = Number(match[1]);
+  const minute = Number(match[2]) || 0;
+  const meridiem = match[3]?.toUpperCase();
+  if (meridiem) {
+    if (meridiem === 'PM' && hour < 12) hour += 12;
+    if (meridiem === 'AM' && hour === 12) hour = 0;
+  }
+  return (hour * 60) + minute;
+};
+
+const fromMinutes = (totalMinutes) => {
+  const safeMinutes = Math.max(0, Number(totalMinutes) || 0);
+  const hour24 = Math.floor(safeMinutes / 60);
+  const minute = safeMinutes % 60;
+  const period = hour24 >= 12 ? 'PM' : 'AM';
+  const hour12 = ((hour24 + 11) % 12) + 1;
+  return `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
+};
+
+const isTimeConflict = (a, b, buffer = 30) => {
+  if (!a?.date || !b?.date || a.date !== b.date) return false;
+  return Math.abs(toMinutes(a.time) - toMinutes(b.time)) < buffer;
+};
 
 const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -163,6 +191,57 @@ const Schedule = () => {
   const monthAppointments = useMemo(() => data.appointments.filter((a) => inCurrentMonth(a.date)), [data.appointments, currentDate]);
   const monthRevenue = monthAppointments.reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
+  const operationalStats = useMemo(() => {
+    const upcoming = monthAppointments.filter((a) => a.status !== 'completed');
+    const dailyLoad = upcoming.reduce((acc, apt) => {
+      const key = apt.date || 'unknown';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const highLoadDays = Object.values(dailyLoad).filter((count) => count >= 4).length;
+    let conflictWindows = 0;
+    upcoming.forEach((apt, idx) => {
+      upcoming.slice(idx + 1).forEach((other) => {
+        if (isTimeConflict(apt, other, 45)) conflictWindows += 1;
+      });
+    });
+    const workingDays = Math.max(1, Object.keys(dailyLoad).length);
+    const avgPerDay = upcoming.length / workingDays;
+    return { upcomingCount: upcoming.length, highLoadDays, conflictWindows, avgPerDay };
+  }, [monthAppointments]);
+
+  const smartOperationalHint = useMemo(() => {
+    if (!smartPreview) return null;
+    const sameDay = (data.appointments || []).filter((a) => a.date === smartPreview.date && a.status !== 'completed');
+    const previewApt = { date: smartPreview.date, time: smartPreview.time };
+    const conflicts = sameDay.filter((a) => isTimeConflict(a, previewApt, 45));
+
+    let suggestedTime = null;
+    if (conflicts.length > 0) {
+      const ordered = sameDay
+        .map((a) => toMinutes(a.time))
+        .filter((m) => Number.isFinite(m))
+        .sort((a, b) => a - b);
+      let candidate = Math.max(8 * 60, toMinutes(smartPreview.time));
+      const hardEnd = 19 * 60;
+      while (candidate <= hardEnd) {
+        const hasCollision = ordered.some((slot) => Math.abs(slot - candidate) < 45);
+        if (!hasCollision) {
+          suggestedTime = fromMinutes(candidate);
+          break;
+        }
+        candidate += 30;
+      }
+    }
+
+    return {
+      sameDayCount: sameDay.length,
+      conflicts,
+      suggestedTime,
+      shouldBuffer: sameDay.length >= 3,
+    };
+  }, [data.appointments, smartPreview]);
+
   return (
     <div className="animate-fade-in space-y-4 sm:space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-20">
       <AppointmentModal
@@ -194,6 +273,32 @@ const Schedule = () => {
       </div>
 
       <Card>
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <Activity className="h-3.5 w-3.5" /> Operational Insights
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Upcoming</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{operationalStats.upcomingCount}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">High-load days</p>
+              <p className="text-sm font-semibold text-amber-600">{operationalStats.highLoadDays}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Conflict windows</p>
+              <p className="text-sm font-semibold text-rose-600">{operationalStats.conflictWindows}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Avg / active day</p>
+              <p className="text-sm font-semibold text-blue-600">{operationalStats.avgPerDay.toFixed(1)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardContent className="space-y-3 p-4">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
@@ -215,9 +320,13 @@ const Schedule = () => {
             ))}
           </div>
           {smartPreview && (
-            <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-slate-700 dark:text-slate-200">
+            <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-slate-700 dark:text-slate-200 space-y-1.5">
               <div className="flex items-center gap-1.5 font-semibold text-blue-700 dark:text-blue-300"><Link className="h-3.5 w-3.5" /> Parsed Preview</div>
-              <p className="mt-1">{smartPreview.client} · {smartPreview.type} · {smartPreview.date} {smartPreview.time} · ${smartPreview.amount.toFixed(2)}</p>
+              <p>{smartPreview.client} · {smartPreview.type} · {smartPreview.date} {smartPreview.time} · ${smartPreview.amount.toFixed(2)}</p>
+              {smartOperationalHint?.conflicts?.length > 0 ? (
+                <p className="flex items-center gap-1 text-amber-700 dark:text-amber-300"><AlertTriangle className="h-3.5 w-3.5" /> Potential conflict with {smartOperationalHint.conflicts.length} existing slot(s){smartOperationalHint.suggestedTime ? ` — suggested: ${smartOperationalHint.suggestedTime}` : ''}.</p>
+              ) : null}
+              {smartOperationalHint?.shouldBuffer ? <p className="text-slate-600 dark:text-slate-300">Busy day detected: plan 15–30 minute travel/buffer windows.</p> : null}
             </div>
           )}
         </CardContent>
