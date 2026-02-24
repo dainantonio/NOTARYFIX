@@ -841,7 +841,7 @@ const Admin = () => {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
       {/* ── MODALS ──────────────────────────────────────────────────────────── */}
       {stateModal.open && (
         <StateRuleModal isOpen onClose={() => setStateModal({ open: false, item: null, requireSourceUrl: false })}
@@ -921,10 +921,10 @@ const Admin = () => {
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl overflow-hidden relative">
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
-        <CardContent className="relative flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+        <CardContent className="relative flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Control Center</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">Admin</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Admin</h1>
             <p className="mt-1 text-sm text-slate-300">Manage state policies, fee tables, ID datasets, and AI knowledge content.</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-200">
@@ -945,7 +945,7 @@ const Admin = () => {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4 lg:grid-cols-5">
             {[
               { label: 'Active Policies',  value: kpis.activeRules,       color: 'text-emerald-400' },
               { label: 'AI Articles',      value: kpis.publishedArticles,  color: 'text-violet-400'  },
@@ -980,7 +980,7 @@ const Admin = () => {
       <div className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-700">
         {TABS.map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab.key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
+            className={`flex items-center gap-1 sm:gap-1.5 whitespace-nowrap px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] ${activeTab === tab.key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
             {tab.icon}{tab.label}
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${tab.alert ? 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
               {tab.count}
