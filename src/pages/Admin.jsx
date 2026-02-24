@@ -134,6 +134,50 @@ const ModalShell = ({ title, icon, onClose, onSubmit, children, wide }) => (
   </div>
 );
 
+const DatasetImportModal = ({ isOpen, onClose, onImport }) => {
+  const [raw, setRaw] = useState('');
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setRaw('');
+      setError('');
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    try {
+      const normalized = raw.trim().replace(/\\n/g, '\n');
+      const parsed = JSON.parse(normalized);
+      onImport(parsed);
+      onClose();
+    } catch (err) {
+      setError(`Invalid JSON: ${err.message}`);
+    }
+  };
+
+  return (
+    <ModalShell title="Import Jurisdiction Dataset" icon={<Database className="h-4 w-4" />} onClose={onClose} onSubmit={handleSubmit} wide>
+      <p className="text-xs text-slate-500 dark:text-slate-400">Paste the 50-state + DC JSON payload. This will refresh state policies, fee schedules, ID requirements, and create compliance red-flag reminders for imported jurisdictions.</p>
+      <div>
+        <Label>Dataset JSON</Label>
+        <textarea
+          required
+          value={raw}
+          onChange={(e) => setRaw(e.target.value)}
+          placeholder='{"AL": { ... }}'
+          className="mt-1 min-h-[240px] w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y font-mono"
+        />
+      </div>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      <ModalFooter onClose={onClose} label="Import Dataset" disabled={!raw.trim()} />
+    </ModalShell>
+  );
+};
+
 const ModalFooter = ({ onClose, label = 'Save', disabled }) => (
   <div className="flex gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
     <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
@@ -712,6 +756,7 @@ const Admin = () => {
     addIdRequirement, updateIdRequirement, deleteIdRequirement,
     addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
     submitForReview, approveRecord, rejectReview,
+    importJurisdictionDataset,
   } = useData();
 
   const actor      = data.settings?.name || 'Admin';
@@ -742,6 +787,11 @@ const Admin = () => {
   const [stateFilter, setStateFilter]     = useState('');
   const [auditFilter, setAuditFilter]     = useState('');
   const [expandedArticle, setExpandedArticle] = useState(null);
+  const [datasetModalOpen, setDatasetModalOpen] = useState(false);
+
+  const handleDatasetImport = (payload) => {
+    importJurisdictionDataset(payload, actor);
+  };
 
   if (!isAdmin) {
     return (
@@ -841,7 +891,7 @@ const Admin = () => {
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-24">
       {/* ── MODALS ──────────────────────────────────────────────────────────── */}
       {stateModal.open && (
         <StateRuleModal isOpen onClose={() => setStateModal({ open: false, item: null, requireSourceUrl: false })}
@@ -910,6 +960,7 @@ const Admin = () => {
           onCancel={() => setRejectTarget(null)}
         />
       )}
+      <DatasetImportModal isOpen={datasetModalOpen} onClose={() => setDatasetModalOpen(false)} onImport={handleDatasetImport} />
       {historyTarget && (
         <VersionHistoryModal
           record={historyTarget.record}
@@ -919,8 +970,7 @@ const Admin = () => {
       )}
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl overflow-hidden relative">
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+      <Card className="app-hero-card">
         <CardContent className="relative flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Control Center</p>
@@ -977,7 +1027,7 @@ const Admin = () => {
       </div>
 
       {/* ── TABS ─────────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-700">
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-slate-700">
         {TABS.map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1 sm:gap-1.5 whitespace-nowrap px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] ${activeTab === tab.key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
@@ -992,7 +1042,12 @@ const Admin = () => {
       {/* ═══════════════════════ STATE POLICIES ══════════════════════════════ */}
       {activeTab === 'stateRules' && (
         <SectionCard icon={<Globe className="h-4 w-4 text-blue-500" />} title="State Policy Records" count={filteredRules.length}
-          action={canEdit && <Button size="sm" onClick={() => setStateModal({ open: true, item: null, requireSourceUrl: false })}><Plus className="mr-1.5 h-3.5 w-3.5" /> Add Policy</Button>}>
+          action={canEdit && (
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setDatasetModalOpen(true)}><Database className="mr-1.5 h-3.5 w-3.5" /> Import JSON</Button>
+              <Button size="sm" onClick={() => setStateModal({ open: true, item: null, requireSourceUrl: false })}><Plus className="mr-1.5 h-3.5 w-3.5" /> Add Policy</Button>
+            </div>
+          )}>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-sm min-w-[800px]">
               <thead className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
@@ -1029,7 +1084,7 @@ const Admin = () => {
                     </td>
                     <td className="px-5 py-3"><StatusPill status={rule.status} /></td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         {/* Version history */}
                         {(rule.versionHistory || []).length > 0 && (
                           <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: rule, label: `${rule.state} ${rule.version}` })}>
@@ -1118,7 +1173,7 @@ const Admin = () => {
                     <td className="px-5 py-3 text-xs text-slate-500 max-w-[180px] truncate">{fee.notes || '\u2014'}</td>
                     <td className="px-5 py-3">{fee.status === 'pending_review' && <StatusPill status="pending_review" />}</td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         {(fee.versionHistory || []).length > 0 && (
                           <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: fee, label: `${fee.stateCode} \u2014 ${fee.actType}` })}>
                             <History className="h-3.5 w-3.5 text-slate-500" />
@@ -1190,7 +1245,7 @@ const Admin = () => {
                   {req.notes && <p className="mt-2 text-xs text-slate-400 italic">{req.notes}</p>}
                   <p className="mt-1 text-[10px] text-slate-300 dark:text-slate-600">Updated {timeAgo(req.updatedAt)}</p>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                   {(req.versionHistory || []).length > 0 && (
                     <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: req, label: `${req.stateCode} ID Rules` })}>
                       <History className="h-3.5 w-3.5 text-slate-500" />
@@ -1280,7 +1335,7 @@ const Admin = () => {
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                       {(article.versionHistory || []).length > 0 && (
                         <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: article, label: article.title })}>
                           <History className="h-3.5 w-3.5 text-slate-500" />

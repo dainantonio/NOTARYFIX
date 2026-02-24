@@ -834,7 +834,7 @@ const TeamDispatch = () => {
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-24">
       {/* Modals */}
       <JobModal isOpen={jobModalOpen} onClose={() => { setJobModalOpen(false); setEditingJob(null); }} onSave={jobSave} initial={editingJob} />
       <MemberModal isOpen={memberModalOpen} onClose={() => { setMemberModalOpen(false); setEditingMember(null); }} onSave={memberSave} initial={editingMember} />
@@ -857,7 +857,7 @@ const TeamDispatch = () => {
       )}
 
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-indigo-200">Agency Operations</p>
@@ -884,7 +884,7 @@ const TeamDispatch = () => {
       </div>
 
       {/* ── TABS ──────────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto scrollbar-hide">
         {TABS.map(([key, label]) => (
           <button key={key} onClick={() => setActiveTab(key)}
             className={`whitespace-nowrap px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] flex items-center ${activeTab === key ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>
@@ -927,7 +927,7 @@ const TeamDispatch = () => {
               </div>
             </CardContent>
           </Card>
-          <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
             {STATUSES.map((status) => (
               <KanbanColumn key={status} status={status} jobs={jobsByStatus[status] || []} onJobClick={setSelectedJob} />
             ))}

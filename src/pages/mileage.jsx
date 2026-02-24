@@ -832,17 +832,17 @@ function LiveTripBanner({
         <div className="relative overflow-hidden rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/10 via-blue-500/8 to-transparent p-5">
           <div className="absolute top-5 right-5">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-400" />
+              {gpsStatus === 'active' ? <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" /> : null}
+              <span className={`relative inline-flex rounded-full h-3 w-3 ${gpsStatus === 'active' ? 'bg-cyan-400' : 'bg-slate-500'}`} />
             </span>
           </div>
           <div className="flex items-center gap-5">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cyan-400/15 ring-1 ring-cyan-400/30">
-              <Navigation className="h-7 w-7 text-cyan-400 animate-spin" style={{ animationDuration: '4s' }} />
+              <Navigation className={`h-7 w-7 text-cyan-400 ${gpsStatus === 'active' ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">Trip in progress</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">{gpsStatus === 'active' ? 'Live GPS tracking' : gpsStatus === 'acquiring' ? 'GPS acquiring' : 'Manual timer mode'}</span>
                 <GPSBadge status={gpsStatus} />
               </div>
               <p className="text-base font-black text-white">{trip.origin} → {trip.destination || 'Destination not set'}</p>
@@ -890,12 +890,12 @@ function LiveTripBanner({
           <div>
             <p className="font-bold text-white group-hover:text-cyan-100 transition-colors">Start a Trip</p>
             <p className="text-sm text-slate-500">
-              One tap · GPS auto-tracks miles · No more NG + MileIQ/Everlance split.
+              One tap · GPS auto-miles when permission is enabled, otherwise manual timer + end-of-trip miles entry.
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/8 px-2.5 py-1 text-[11px] font-bold text-cyan-400">
-              <Satellite className="h-3 w-3" /> GPS Auto-Miles
+              <Satellite className="h-3 w-3" /> GPS or Manual Mode
             </span>
             <div className="rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 group-hover:brightness-110 transition-all flex items-center gap-2">
               <Play className="h-4 w-4 fill-white" /> Start Trip
@@ -1048,6 +1048,7 @@ export default function Mileage() {
   const [search,            setSearch]             = useState('');
   const [filterPurpose,     setFilterPurpose]      = useState('All');
   const [filterMonth,       setFilterMonth]        = useState('All');
+  const [filterYear,        setFilterYear]         = useState('All');
   const [sortBy,            setSortBy]             = useState('date-desc');
   const [editModal,         setEditModal]          = useState(null);
   const [splitModal,        setSplitModal]         = useState(null);
@@ -1105,6 +1106,7 @@ export default function Mileage() {
       (t.linkedJobLabel || '').toLowerCase().includes(search.toLowerCase())
     );
     if (filterPurpose !== 'All') list = list.filter(t => t.purpose === filterPurpose);
+    if (filterYear !== 'All')    list = list.filter(t => t.date.startsWith(filterYear));
     if (filterMonth   !== 'All') list = list.filter(t => t.date.startsWith(filterMonth));
     list.sort((a, b) => {
       if (sortBy === 'date-desc')  return b.date.localeCompare(a.date);
@@ -1114,7 +1116,7 @@ export default function Mileage() {
       return 0;
     });
     return list;
-  }, [trips, search, filterPurpose, filterMonth, sortBy]);
+  }, [trips, search, filterPurpose, filterYear, filterMonth, sortBy]);
 
   // Group by date
   const grouped = useMemo(() => {
@@ -1126,6 +1128,11 @@ export default function Mileage() {
   // Unique months for filter dropdown
   const months = useMemo(() => {
     const set = new Set(trips.map(t => t.date.substring(0, 7)));
+    return Array.from(set).sort().reverse();
+  }, [trips]);
+
+  const years = useMemo(() => {
+    const set = new Set(trips.map((t) => t.date.substring(0, 4)));
     return Array.from(set).sort().reverse();
   }, [trips]);
 
@@ -1215,33 +1222,36 @@ export default function Mileage() {
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen p-4 sm:p-6 space-y-4 sm:space-y-6" style={{ background: '#060d1b' }}>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060d1b] p-4 sm:p-6 pb-24 space-y-4 sm:space-y-6">
 
       {/* ── PAGE HEADER ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400/15">
-              <Car className="h-4 w-4 text-cyan-400" />
+      <div className="app-hero-card rounded-2xl p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+                <Car className="h-4 w-4 text-blue-200" />
+              </div>
+              <h1 className="text-2xl font-black text-white">Mileage Tracker</h1>
+              {unverified > 0 && (
+                <span className="flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-200">
+                  <AlertCircle className="h-3 w-3" />{unverified} to review
+                </span>
+              )}
             </div>
-            <h1 className="text-2xl font-black text-white">Mileage Tracker</h1>
-            {unverified > 0 && (
-              <span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-400">
-                <AlertCircle className="h-3 w-3" />{unverified} to review
-              </span>
-            )}
+            <p className="text-sm text-slate-200">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
+            <p className="mt-1 text-xs text-slate-400">Mileage currently runs in dark-optimized mode for consistent field visibility.</p>
           </div>
-          <p className="text-sm text-slate-500">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-          <button onClick={() => setExportModal(true)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all flex-1 sm:flex-none">
-            <Download className="h-4 w-4" /> Export
-          </button>
-          <button onClick={() => setEditModal('new')}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all flex-1 sm:flex-none">
-            <Plus className="h-4 w-4" /> Log Trip
-          </button>
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            <button onClick={() => setExportModal(true)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-white/20 transition-all flex-1 sm:flex-none">
+              <Download className="h-4 w-4" /> Export
+            </button>
+            <button onClick={() => setEditModal('new')}
+              className="flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600 transition-all flex-1 sm:flex-none">
+              <Plus className="h-4 w-4" /> Log Trip
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1312,10 +1322,15 @@ export default function Mileage() {
               <option value="All">All purposes</option>
               {PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
+            <select value={filterYear} onChange={e => { setFilterYear(e.target.value); if (e.target.value !== 'All' && filterMonth !== 'All' && !filterMonth.startsWith(e.target.value)) setFilterMonth('All'); }}
+              className="rounded-xl border border-white/10 bg-[#0a1525] px-3 py-2.5 text-sm text-white focus:border-cyan-500/40 focus:outline-none transition-all">
+              <option value="All">All years</option>
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
             <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
               className="rounded-xl border border-white/10 bg-[#0a1525] px-3 py-2.5 text-sm text-white focus:border-cyan-500/40 focus:outline-none transition-all">
               <option value="All">All months</option>
-              {months.map(m => <option key={m} value={m}>{monthName(m + '-01')}</option>)}
+              {months.filter((m) => filterYear === 'All' || m.startsWith(filterYear)).map(m => <option key={m} value={m}>{monthName(m + '-01')}</option>)}
             </select>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
               className="rounded-xl border border-white/10 bg-[#0a1525] px-3 py-2.5 text-sm text-white focus:border-cyan-500/40 focus:outline-none transition-all">
