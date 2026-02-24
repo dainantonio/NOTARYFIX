@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
@@ -14,6 +14,7 @@ const Schedule = () => {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [prefillDate, setPrefillDate] = useState('');
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
+  const calendarFileInputRef = useRef(null);
   const { data, addAppointment, updateAppointment, deleteAppointment } = useData();
   const { completeAppointment } = useLinker();
   const location = useLocation();
@@ -86,21 +87,77 @@ const Schedule = () => {
     setIsModalOpen(true);
   };
 
-  const parseSmartCalendarInput = () => {
-    const source = smartCalendarInput.trim();
-    if (!source) return;
+  const parseSmartCalendarInput = (source = smartCalendarInput) => {
+    const input = source.trim();
+    if (!input) return null;
 
-    const date = source.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || new Date().toISOString().split('T')[0];
-    const time = source.match(/\b\d{1,2}:\d{2}\s?(?:AM|PM)?\b/i)?.[0] || '10:00 AM';
-    const amount = source.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
-    const type = /i-?9/i.test(source) ? 'I-9 Verification' : /loan/i.test(source) ? 'Loan Signing' : /apostille/i.test(source) ? 'Apostille' : 'General Notary';
-    const client = source.match(/(?:for|client)\s+([A-Za-z0-9 .'-]+)/i)?.[1]?.trim() || source.split(' on ')[0].slice(0, 40) || 'New Client';
+    const date = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || new Date().toISOString().split('T')[0];
+    const time = input.match(/\b\d{1,2}:\d{2}\s?(?:AM|PM)?\b/i)?.[0] || '10:00 AM';
+    const amount = input.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
+    const type = /i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : 'General Notary';
+    const client = input.match(/(?:for|client)\s+([A-Za-z0-9 .'-]+)/i)?.[1]?.replace(/\s+on$/i, '').trim() || input.split(' on ')[0].slice(0, 40) || 'New Client';
 
+    return { client, type, date, time, amount: parseFloat(amount) || 0, source: input };
+  };
+
+  const smartPreview = useMemo(() => parseSmartCalendarInput(smartCalendarInput), [smartCalendarInput]);
+
+  const applySmartCalendar = () => {
+    if (!smartPreview) return;
     addAppointment({
-      id: Date.now(), client, type, date, time, status: 'upcoming', amount: parseFloat(amount) || 0, location: 'TBD',
-      notes: `Smart calendar entry: ${source}`, receiptName: '', receiptImage: '',
+      id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
+      amount: smartPreview.amount, location: 'TBD', notes: `Smart calendar entry: ${smartPreview.source}`, receiptName: '', receiptImage: '',
     });
     setSmartCalendarInput('');
+  };
+
+  const exportCalendarIcs = () => {
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//NotaryOS//Schedule//EN'];
+    (data.appointments || []).forEach((a) => {
+      const dt = /^\d{4}-\d{2}-\d{2}$/.test(a.date || '') ? a.date : new Date().toISOString().split('T')[0];
+      const iso = new Date(`${dt}T09:00:00`).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      lines.push('BEGIN:VEVENT');
+      lines.push(`UID:notaryos-${a.id}@local`);
+      lines.push(`DTSTAMP:${iso}`);
+      lines.push(`DTSTART:${iso}`);
+      lines.push(`SUMMARY:${(a.client || 'Appointment').replace(/[,;\n]/g, ' ')}`);
+      lines.push(`DESCRIPTION:${(`${a.type || ''} | ${a.time || ''} | $${Number(a.amount || 0)}`).replace(/[,;\n]/g, ' ')}`);
+      lines.push(`LOCATION:${(a.location || 'TBD').replace(/[,;\n]/g, ' ')}`);
+      lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'notaryos-schedule.ics';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importCalendarIcs = async (file) => {
+    if (!file) return;
+    const text = await file.text();
+    const blocks = text.split('BEGIN:VEVENT').slice(1).map((x) => x.split('END:VEVENT')[0] || '');
+    blocks.forEach((b, i) => {
+      const summary = (b.match(/SUMMARY:(.*)/) || [])[1]?.trim() || 'Imported Event';
+      const location = (b.match(/LOCATION:(.*)/) || [])[1]?.trim() || 'TBD';
+      const dt = (b.match(/DTSTART:(\d{8})/) || [])[1];
+      const date = dt ? `${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}` : new Date().toISOString().split('T')[0];
+      addAppointment({
+        id: Date.now() + i,
+        client: summary,
+        type: 'Imported Calendar Event',
+        date,
+        time: '10:00 AM',
+        status: 'upcoming',
+        amount: 0,
+        location,
+        notes: 'Imported from calendar file',
+        receiptName: '',
+        receiptImage: '',
+      });
+    });
   };
 
   const monthAppointments = useMemo(() => data.appointments.filter((a) => inCurrentMonth(a.date)), [data.appointments, currentDate]);
@@ -116,7 +173,7 @@ const Schedule = () => {
         submitLabel={editingAppointment ? 'Update Appointment' : 'Save Appointment'}
       />
 
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Scheduling Command</p>
@@ -138,11 +195,31 @@ const Schedule = () => {
 
       <Card>
         <CardContent className="space-y-3 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={exportCalendarIcs}><Download className="mr-1.5 h-3.5 w-3.5" /> Export .ics</Button>
+              <input ref={calendarFileInputRef} type="file" accept=".ics,text/calendar" className="hidden" onChange={(e) => importCalendarIcs(e.target.files?.[0])} />
+              <Button variant="secondary" size="sm" onClick={() => calendarFileInputRef.current?.click()}><Upload className="mr-1.5 h-3.5 w-3.5" /> Import .ics</Button>
+            </div>
+          </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Type: Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" style={{fontSize:16}} />
-            <Button onClick={parseSmartCalendarInput}>Smart Add</Button>
+            <Button onClick={applySmartCalendar}>Smart Add</Button>
           </div>
+          <div className="flex flex-wrap gap-2">
+            {['Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150', 'I-9 for Acme Corp on 2026-02-24 9:00 AM $45', 'Apostille for Michael Reyes on 2026-02-28 1:00 PM $120'].map((preset) => (
+              <button key={preset} onClick={() => setSmartCalendarInput(preset)} className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1 text-[11px] text-slate-600 dark:text-slate-300 hover:border-blue-400">
+                {preset.split(' on ')[0]}
+              </button>
+            ))}
+          </div>
+          {smartPreview && (
+            <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-slate-700 dark:text-slate-200">
+              <div className="flex items-center gap-1.5 font-semibold text-blue-700 dark:text-blue-300"><Link className="h-3.5 w-3.5" /> Parsed Preview</div>
+              <p className="mt-1">{smartPreview.client} · {smartPreview.type} · {smartPreview.date} {smartPreview.time} · ${smartPreview.amount.toFixed(2)}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
