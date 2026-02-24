@@ -436,8 +436,13 @@ export const DataProvider = ({ children }) => {
 
   const updateStateRule = (id, u, actor, diff) => setData((p) => {
     const rule = (p.stateRules || []).find((r) => r.id === id);
+    const now = new Date().toISOString();
+    const snap = rule ? { ...rule, versionHistory: undefined } : null;
+    const versionHistory = snap
+      ? [...(rule.versionHistory || []).slice(-19), { ts: now, actor, action: 'updated', diff: diff || 'Record updated', snapshot: snap }]
+      : (rule?.versionHistory || []);
     return _appendAuditLog(
-      { ...p, stateRules: (p.stateRules || []).map((r) => r.id === id ? { ...r, ...u, updatedAt: new Date().toISOString() } : r) },
+      { ...p, stateRules: (p.stateRules || []).map((r) => r.id === id ? { ...r, ...u, updatedAt: now, versionHistory } : r) },
       { actor, actorRole: p.settings?.userRole || 'owner', action: 'updated', resourceType: 'stateRules', resourceId: id, resourceLabel: `${rule?.state} ${rule?.version || ''}`, diff: diff || 'Record updated' }
     );
   });
@@ -492,8 +497,13 @@ export const DataProvider = ({ children }) => {
 
   const updateFeeSchedule = (id, u, actor, diff) => setData((p) => {
     const fee = (p.feeSchedules || []).find((f) => f.id === id);
+    const now = new Date().toISOString();
+    const snap = fee ? { ...fee, versionHistory: undefined } : null;
+    const versionHistory = snap
+      ? [...(fee.versionHistory || []).slice(-19), { ts: now, actor, action: 'updated', diff: diff || 'Record updated', snapshot: snap }]
+      : (fee?.versionHistory || []);
     return _appendAuditLog(
-      { ...p, feeSchedules: (p.feeSchedules || []).map((f) => f.id === id ? { ...f, ...u, updatedAt: new Date().toISOString() } : f) },
+      { ...p, feeSchedules: (p.feeSchedules || []).map((f) => f.id === id ? { ...f, ...u, updatedAt: now, versionHistory } : f) },
       { actor, actorRole: p.settings?.userRole || 'owner', action: 'updated', resourceType: 'feeSchedules', resourceId: id, resourceLabel: `${fee?.stateCode} — ${fee?.actType}`, diff: diff || 'Record updated' }
     );
   });
@@ -517,8 +527,13 @@ export const DataProvider = ({ children }) => {
 
   const updateIdRequirement = (id, u, actor, diff) => setData((p) => {
     const req = (p.idRequirements || []).find((r) => r.id === id);
+    const now = new Date().toISOString();
+    const snap = req ? { ...req, versionHistory: undefined } : null;
+    const versionHistory = snap
+      ? [...(req.versionHistory || []).slice(-19), { ts: now, actor, action: 'updated', diff: diff || 'Record updated', snapshot: snap }]
+      : (req?.versionHistory || []);
     return _appendAuditLog(
-      { ...p, idRequirements: (p.idRequirements || []).map((r) => r.id === id ? { ...r, ...u, updatedAt: new Date().toISOString() } : r) },
+      { ...p, idRequirements: (p.idRequirements || []).map((r) => r.id === id ? { ...r, ...u, updatedAt: now, versionHistory } : r) },
       { actor, actorRole: p.settings?.userRole || 'owner', action: 'updated', resourceType: 'idRequirements', resourceId: id, resourceLabel: `${req?.stateCode} — ID Requirements`, diff: diff || 'Record updated' }
     );
   });
@@ -542,10 +557,14 @@ export const DataProvider = ({ children }) => {
 
   const updateKnowledgeArticle = (id, u, actor, diff) => setData((p) => {
     const article = (p.knowledgeArticles || []).find((a) => a.id === id);
-    const nextPublishedAt = u.status === 'published' && !article?.publishedAt ? new Date().toISOString() : article?.publishedAt ?? null;
-
+    const now = new Date().toISOString();
+    const nextPublishedAt = u.status === 'published' && !article?.publishedAt ? now : article?.publishedAt ?? null;
+    const snap = article ? { ...article, versionHistory: undefined } : null;
+    const versionHistory = snap
+      ? [...(article.versionHistory || []).slice(-19), { ts: now, actor, action: 'updated', diff: diff || 'Record updated', snapshot: snap }]
+      : (article?.versionHistory || []);
     return _appendAuditLog(
-      { ...p, knowledgeArticles: (p.knowledgeArticles || []).map((a) => a.id === id ? { ...a, ...u, updatedAt: new Date().toISOString(), publishedAt: nextPublishedAt } : a) },
+      { ...p, knowledgeArticles: (p.knowledgeArticles || []).map((a) => a.id === id ? { ...a, ...u, updatedAt: now, publishedAt: nextPublishedAt, versionHistory } : a) },
       { actor, actorRole: p.settings?.userRole || 'owner', action: u.status === 'published' ? 'published' : u.status === 'unpublished' ? 'unpublished' : 'updated', resourceType: 'knowledgeArticles', resourceId: id, resourceLabel: article?.title || '', diff: diff || 'Record updated' }
     );
   });
@@ -555,6 +574,53 @@ export const DataProvider = ({ children }) => {
     return _appendAuditLog(
       { ...p, knowledgeArticles: (p.knowledgeArticles || []).filter((a) => a.id !== id) },
       { actor, actorRole: p.settings?.userRole || 'owner', action: 'deleted', resourceType: 'knowledgeArticles', resourceId: id, resourceLabel: article?.title || '', diff: 'Record deleted' }
+    );
+  });
+
+  // ── Admin: Review Workflow ────────────────────────────────────────────────────
+  const _getRecordLabel = (records, id, type) => {
+    const r = (records || []).find((x) => x.id === id);
+    if (!r) return String(id);
+    if (type === 'knowledgeArticles') return r.title || '';
+    return `${r.state || r.stateCode || ''} ${r.version || ''}`.trim();
+  };
+
+  const submitForReview = (resourceType, id, actor) => setData((p) => {
+    const records = p[resourceType] || [];
+    const now = new Date().toISOString();
+    const label = _getRecordLabel(records, id, resourceType);
+    return _appendAuditLog(
+      { ...p, [resourceType]: records.map((r) => r.id === id ? { ...r, status: 'pending_review', submittedForReviewAt: now, submittedBy: actor, updatedAt: now } : r) },
+      { actor, actorRole: p.settings?.userRole || 'owner', action: 'submitted_for_review', resourceType, resourceId: id, resourceLabel: label, diff: 'Submitted for compliance review' }
+    );
+  });
+
+  const approveRecord = (resourceType, id, actor) => setData((p) => {
+    const records = p[resourceType] || [];
+    const record = records.find((r) => r.id === id);
+    if (!record) return p;
+    const now = new Date().toISOString();
+    const newStatus = resourceType === 'knowledgeArticles' ? 'published' : 'active';
+    const label = _getRecordLabel(records, id, resourceType);
+    const snap = { ...record, versionHistory: undefined };
+    const versionHistory = [...(record.versionHistory || []).slice(-19), { ts: now, actor, action: 'approved', diff: `Approved and set to ${newStatus}`, snapshot: snap }];
+    return _appendAuditLog(
+      { ...p, [resourceType]: records.map((r) => r.id === id ? { ...r, status: newStatus, publishedAt: now, approvedBy: actor, approvedAt: now, versionHistory, updatedAt: now } : r) },
+      { actor, actorRole: p.settings?.userRole || 'owner', action: 'published', resourceType, resourceId: id, resourceLabel: label, diff: `Approved and set to ${newStatus}` }
+    );
+  });
+
+  const rejectReview = (resourceType, id, actor, reason) => setData((p) => {
+    const records = p[resourceType] || [];
+    const record = records.find((r) => r.id === id);
+    if (!record) return p;
+    const now = new Date().toISOString();
+    const label = _getRecordLabel(records, id, resourceType);
+    const snap = { ...record, versionHistory: undefined };
+    const versionHistory = [...(record.versionHistory || []).slice(-19), { ts: now, actor, action: 'rejected', diff: `Review rejected: ${reason}`, snapshot: snap }];
+    return _appendAuditLog(
+      { ...p, [resourceType]: records.map((r) => r.id === id ? { ...r, status: 'draft', rejectedAt: now, rejectedBy: actor, rejectionReason: reason, versionHistory, updatedAt: now } : r) },
+      { actor, actorRole: p.settings?.userRole || 'owner', action: 'rejected', resourceType, resourceId: id, resourceLabel: label, diff: `Review rejected: ${reason}` }
     );
   });
 
@@ -581,6 +647,7 @@ export const DataProvider = ({ children }) => {
         addFeeSchedule, updateFeeSchedule, deleteFeeSchedule,
         addIdRequirement, updateIdRequirement, deleteIdRequirement,
         addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
+        submitForReview, approveRecord, rejectReview,
         appendAuditLog,
       }}
     >
