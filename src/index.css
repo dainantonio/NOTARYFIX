@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply antialiased text-slate-900 bg-slate-50;
+    @apply antialiased text-slate-900 bg-slate-50 dark:bg-slate-900 dark:text-slate-100;
   }
 }
 
@@ -104,4 +104,25 @@ textarea {
 }
 .animate-in.slide-in-from-right {
   animation: slide-in-from-right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-hero-card {
+  @apply relative overflow-hidden border-0 text-white shadow-xl;
+  background: linear-gradient(90deg, rgb(15 23 42) 0%, rgb(30 41 59) 50%, rgb(30 58 138) 100%);
+}
+
+
+.app-hero-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app-hero-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%);
+  background-size: 12px 12px;
 }

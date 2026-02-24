@@ -8,6 +8,7 @@ import {
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
+import { useTheme } from '../context/ThemeContext';
 
 // --- INLINED COMPONENTS FOR STABILITY ---
 const Button = ({ children, variant = 'primary', size = 'default', className = '', ...props }) => {
@@ -31,24 +32,6 @@ const Button = ({ children, variant = 'primary', size = 'default', className = '
   );
 };
 
-const useTheme = () => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('theme') || 'light';
-    return 'light';
-  });
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme);
-      if (newTheme === 'dark') document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
-    }
-  };
-
-  return { theme, toggleTheme };
-};
 
 const CommandPalette = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -187,10 +170,10 @@ const LayoutInner = ({ children }) => {
         </nav>
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-3 relative">
-          <button onClick={toggleTheme} className={`w-full flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <button onClick={toggleTheme} title="Dark mode is locked for consistent contrast" className={`w-full flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
-              {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-              {!isSidebarCollapsed && <span className="text-sm font-medium">Theme</span>}
+              <Moon className="w-5 h-5" />
+              {!isSidebarCollapsed && <span className="text-sm font-medium">Dark Mode</span>}
             </div>
           </button>
 
@@ -295,7 +278,7 @@ const LayoutInner = ({ children }) => {
           </div>
         )}
 
-        <main className="flex-1 p-0 pb-20 md:pb-0 w-full max-w-[1920px] mx-auto">
+        <main className="flex-1 min-h-screen bg-slate-50 dark:bg-slate-900 p-0 pb-20 md:pb-0 w-full max-w-[1400px] mx-auto">
           {children}
         </main>
 
