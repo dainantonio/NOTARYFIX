@@ -437,10 +437,42 @@ export default function ArriveMode() {
   const progressPct = checklistItems.length > 0 ? Math.round((allDone / checklistItems.length) * 100) : 0;
   const criticalAllDone = criticalDone === criticalItems.length;
 
-  // State-specific data
-  const feeInfo = STATE_FEE_CAPS[stateCode];
+  // State-specific data — prefer Admin-published records, fall back to hardcoded tables
+  const publishedFeeSchedule = useMemo(
+    () => (data.feeSchedules || []).find(
+      (f) => f.stateCode === stateCode && (f.status === 'active' || f.status === 'published')
+    ),
+    [data.feeSchedules, stateCode]
+  );
+  const feeInfo = publishedFeeSchedule
+    ? {
+        cap:      publishedFeeSchedule.maxFee,
+        act:      publishedFeeSchedule.actType || 'per notarial act',
+        citation: publishedFeeSchedule.officialSourceUrl || 'Admin-published record',
+        note:     publishedFeeSchedule.notes || '',
+      }
+    : STATE_FEE_CAPS[stateCode];
+
+  const publishedStatePolicy = useMemo(
+    () => (data.stateRules || []).find(
+      (r) => r.stateCode === stateCode && (r.status === 'active' || r.status === 'published')
+    ),
+    [data.stateRules, stateCode]
+  );
+  const dynamicRules = publishedStatePolicy
+    ? [
+        publishedStatePolicy.thumbprintRequired &&
+          `Thumbprint required for: ${(publishedStatePolicy.thumbActTypes || []).join(', ') || 'certain acts'}`,
+        publishedStatePolicy.witnessRequired &&
+          `Witness required (${publishedStatePolicy.witnessCount || 1})`,
+        publishedStatePolicy.journalRequired && 'Journal required by law',
+        publishedStatePolicy.venueRequired   && 'Venue required in acknowledgment',
+        publishedStatePolicy.specialCaveats,
+      ].filter(Boolean)
+    : null;
+
   const idReqs = ID_REQS[stateCode] || DEFAULT_ID_REQS;
-  const stateRules = STATE_RULES[stateCode] || [];
+  const stateRules = dynamicRules || STATE_RULES[stateCode] || [];
   const witnessInfo = WITNESS_BY_TYPE[appt?.type] || WITNESS_BY_TYPE['General Notary Work (GNW)'];
   const witnessWarning = witnessInfo.statesRequiring.includes(stateCode);
   const thumbprintActs = THUMBPRINT_STATES[stateCode] || [];
@@ -473,7 +505,7 @@ export default function ArriveMode() {
 
       {/* ── Sticky header ───────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-30 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-3">
+        <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/schedule')}
