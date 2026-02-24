@@ -525,7 +525,7 @@ function QuickRefPanel({ onAsk, stateRule }) {
             <span className="text-xs font-black text-blue-400">{stateRule.state}</span>
             <span className="text-[10px] text-blue-500/60">{stateRule.version}</span>
           </div>
-          <p className="text-[11px] text-slate-500">State policies loaded from Admin · answers are state-aware</p>
+          <p className="text-[11px] text-slate-300">State policies loaded from Admin · answers are state-aware</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-700 bg-white/[0.02] px-4 py-3">
@@ -757,23 +757,23 @@ export default function FormGuide() {
       <div className="flex flex-1 flex-col min-w-0">
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/60 px-5 py-3.5 shrink-0">
+        <div className="app-hero-card flex items-center justify-between px-5 py-3.5 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
               <Bot className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-black text-slate-900 dark:text-white text-sm">Notarial Act Advisor</h1>
+              <h1 className="font-black text-white text-sm">Notarial Act Advisor</h1>
               <div className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-slate-300">
                   {stateRule ? `${stateRule.state} policies active` : 'General guidance mode'}
                 </span>
               </div>
             </div>
           </div>
           <button onClick={clearChat}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white transition-colors">
+            className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-white/20 hover:text-white transition-colors">
             <RotateCcw className="h-3 w-3" />Clear
           </button>
         </div>
