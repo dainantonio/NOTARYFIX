@@ -51,32 +51,32 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-6xl space-y-6 pb-20">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-6 pb-20">
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Configuration Center</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">Settings</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
             <p className="mt-1 text-sm text-slate-200">Manage profile, business defaults, and visual preferences.</p>
           </div>
           <Button onClick={handleSave} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Save className="mr-2 h-4 w-4" /> Save All</Button>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Settings Completion</p><p className="text-2xl font-bold text-blue-600">{settingsHealth}%</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Mileage Rate</p><p className="text-2xl font-bold text-slate-900 dark:text-white">${Number(formData.costPerMile || 0).toFixed(2)}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Monthly Goal</p><p className="text-2xl font-bold text-emerald-600">${Number(formData.monthlyGoal || 0).toLocaleString()}</p></CardContent></Card>
       </div>
 
-      <div className="flex flex-col gap-8 md:flex-row">
-        <div className="w-full flex-shrink-0 md:w-64">
+      <div className="flex flex-col gap-6 md:flex-row">
+        <div className="w-full flex-shrink-0 md:w-56 lg:w-64">
           <nav className="flex flex-row gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible md:pb-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.id ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'
                 }`}
               >
@@ -89,7 +89,7 @@ const Settings = () => {
           </nav>
         </div>
 
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6">
           {activeTab === 'profile' && (
             <Card>
               <CardHeader><CardTitle>Public Profile</CardTitle></CardHeader>
@@ -123,7 +123,7 @@ const Settings = () => {
                 </div>
 
                 <div><Label>Business Legal Name</Label><Input value={formData.businessName || ''} onChange={(e) => setFormData({ ...formData, businessName: e.target.value })} /></div>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   <div><Label>Mileage Rate ($)</Label><Input type="number" step="0.01" value={formData.costPerMile ?? ''} onChange={(e) => setFormData({ ...formData, costPerMile: parseFloat(e.target.value) || 0 })} /></div>
                   <div><Label>Est. Tax Rate (%)</Label><Input type="number" value={formData.taxRate ?? ''} onChange={(e) => setFormData({ ...formData, taxRate: parseInt(e.target.value, 10) || 0 })} /></div>
                   <div><Label>Monthly Goal ($)</Label><Input type="number" value={formData.monthlyGoal ?? ''} onChange={(e) => setFormData({ ...formData, monthlyGoal: parseInt(e.target.value, 10) || 0 })} /></div>
