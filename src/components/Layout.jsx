@@ -141,7 +141,7 @@ const LayoutInner = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex transition-colors duration-300">
+    <div className="bg-slate-50 dark:bg-slate-900 flex transition-colors duration-300">
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
 
       {/* Sidebar - Desktop */}
@@ -245,7 +245,7 @@ const LayoutInner = ({ children }) => {
       </aside>
 
       {/* Mobile Wrapper */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} min-w-0`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} min-w-0`}>
         <header className="md:hidden bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-2">
              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">N</div>
@@ -294,7 +294,7 @@ const LayoutInner = ({ children }) => {
           </div>
         )}
 
-        <main className="flex-1 p-0 pb-20 md:pb-0 w-full max-w-[1920px] mx-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: "touch", overscrollBehaviorY: "contain" }}>
+        <main className="flex-1 p-0 pb-20 md:pb-0 w-full max-w-[1920px] mx-auto">
           {children}
         </main>
 
