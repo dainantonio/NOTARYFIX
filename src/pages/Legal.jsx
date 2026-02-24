@@ -113,7 +113,22 @@ const Legal = () => {
 
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-blue-500" /> Compliance Register</CardTitle></CardHeader>
-          <CardContent className="overflow-x-auto p-0">
+          <div className="divide-y divide-slate-100 dark:divide-slate-700 sm:hidden">
+            {items.length === 0 ? <p className="py-10 text-center text-sm text-slate-500">No compliance items yet.</p> : items.map((item) => (
+              <div key={item.id} className="px-4 py-3">
+                <p className="font-semibold text-slate-900 dark:text-white">{item.title}</p>
+                <p className="text-xs text-slate-500">{item.category} · Due {item.dueDate}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className={`rounded-full px-2 py-1 text-xs font-medium ${item.status === 'Compliant' ? 'bg-emerald-100 text-emerald-700' : item.status === 'Expired' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{item.status}</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => startEdit(item)}><Pencil className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="danger" onClick={() => deleteComplianceItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <CardContent className="overflow-x-auto p-0 hidden sm:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
                 <tr><th className="px-6 py-4">Item</th><th className="px-6 py-4">Due</th><th className="px-6 py-4">Status</th><th className="px-6 py-4 text-right">Actions</th></tr>

@@ -100,6 +100,15 @@ const Schedule = () => {
     setViewMode(window.innerWidth < 640 ? 'agenda' : 'calendar');
   }, []);
 
+  const reminderSummary = useMemo(() => {
+    const channels = [];
+    if (alertPrefs.clientEmail) channels.push('Client Email');
+    if (alertPrefs.clientSms) channels.push('Client SMS');
+    if (alertPrefs.notaryEmail) channels.push('Notary Email');
+    if (alertPrefs.notarySms) channels.push('Notary SMS');
+    return channels.length ? `${channels.join(', ')} @ ${alertPrefs.leadHours}h` : 'No reminders configured';
+  }, [alertPrefs]);
+
   const handleSaveAppointment = (formData) => {
     if (editingAppointment) {
       updateAppointment(editingAppointment.id, {
@@ -277,15 +286,6 @@ const Schedule = () => {
     };
   }, [data.appointments, smartPreview]);
 
-  const reminderSummary = useMemo(() => {
-    const channels = [];
-    if (alertPrefs.clientEmail) channels.push('Client Email');
-    if (alertPrefs.clientSms) channels.push('Client SMS');
-    if (alertPrefs.notaryEmail) channels.push('Notary Email');
-    if (alertPrefs.notarySms) channels.push('Notary SMS');
-    return channels.length ? `${channels.join(', ')} @ ${alertPrefs.leadHours}h` : 'No reminders configured';
-  }, [alertPrefs]);
-
   const sortedAppointments = useMemo(() => {
     const toStamp = (apt) => {
       const date = /^\d{4}-\d{2}-\d{2}$/.test(apt?.date || '') ? apt.date : new Date().toISOString().split('T')[0];
@@ -367,6 +367,80 @@ const Schedule = () => {
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Upcoming</p><p className="text-2xl font-bold text-blue-600">{data.appointments.filter((a) => a.status === 'upcoming').length}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500 truncate">Revenue</p><p className="text-2xl font-bold text-emerald-600">${monthRevenue.toLocaleString()}</p></CardContent></Card>
       </div>
+
+      {showOpsTools && (
+      <Card>
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <Activity className="h-3.5 w-3.5" /> Operational Insights (Advanced)
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Upcoming</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{operationalStats.upcomingCount}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">High-load days</p>
+              <p className="text-sm font-semibold text-amber-600">{operationalStats.highLoadDays}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Conflict windows</p>
+              <p className="text-sm font-semibold text-rose-600">{operationalStats.conflictWindows}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+              <p className="text-[11px] text-slate-500">Avg / active day</p>
+              <p className="text-sm font-semibold text-blue-600">{operationalStats.avgPerDay.toFixed(1)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      )}
+
+      <div className="flex justify-end">
+        <button onClick={() => setShowOpsTools((v) => !v)} className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:border-blue-400">
+          {showOpsTools ? 'Hide calendar connections & reminders' : 'Show calendar connections & reminders'}
+        </button>
+      </div>
+
+      {showOpsTools && (
+      <>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><CalendarPlus className="h-3.5 w-3.5" /> Calendar Connections</div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={() => window.open('https://calendar.google.com', '_blank', 'noopener,noreferrer')}>Connect Google</Button>
+            <Button variant="secondary" size="sm" onClick={exportCalendarIcs}>Use Apple Calendar (.ics)</Button>
+            {smartPreview ? <Button size="sm" onClick={() => window.open(toGoogleCalendarUrl(smartPreview), '_blank', 'noopener,noreferrer')}>Send Preview to Google</Button> : null}
+          </div>
+          <p className="text-xs text-slate-500">Use existing calendars via import/export .ics, or push a preview event directly to Google Calendar.</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Bell className="h-3.5 w-3.5" /> Reminder Automation</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            {[['clientEmail','Client Email',Mail],['clientSms','Client SMS',MessageSquare],['notaryEmail','Notary Email',Mail],['notarySms','Notary SMS',MessageSquare]].map(([key,label,Icon]) => (
+              <label key={key} className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 p-2 cursor-pointer">
+                <input type="checkbox" checked={alertPrefs[key]} onChange={(e) => setAlertPrefs((p) => ({...p, [key]: e.target.checked}))} />
+                <Icon className="h-3.5 w-3.5 text-slate-500" />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-500">Lead time</span>
+            <select value={alertPrefs.leadHours} onChange={(e) => setAlertPrefs((p) => ({...p, leadHours: Number(e.target.value)}))} className="rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1">
+              {[1,2,4,12,24,48].map((h) => <option key={h} value={h}>{h}h</option>)}
+            </select>
+            <span className="text-slate-500">before appointment</span>
+          </div>
+          <p className="text-xs text-slate-500">Current reminder plan: {reminderSummary}</p>
+        </CardContent>
+      </Card>
+      </>
+
+      )}
 
       <Card>
         <CardContent className="p-4">
@@ -455,9 +529,13 @@ const Schedule = () => {
             <Button onClick={applySmartCalendar}>Smart Add</Button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {['Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150', 'I-9 for Acme Corp on 2026-02-24 9:00 AM $45', 'Apostille for Michael Reyes on 2026-02-28 1:00 PM $120'].map((preset) => (
-              <button key={preset} onClick={() => setSmartCalendarInput(preset)} className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1 text-[11px] text-slate-600 dark:text-slate-300 hover:border-blue-400">
-                {preset.split(' on ')[0]}
+            {[
+              { label: 'Loan signing · tomorrow', value: `Loan signing for Client on ${new Date(Date.now() + 86400000).toISOString().split('T')[0]} 2:30 PM $150` },
+              { label: 'I-9 · next week', value: `I-9 for Employer on ${new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]} 9:00 AM $45` },
+              { label: 'Apostille · afternoon', value: `Apostille for Client on ${new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0]} 1:00 PM $120` },
+            ].map((preset) => (
+              <button key={preset.label} onClick={() => setSmartCalendarInput(preset.value)} className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1 text-[11px] text-slate-600 dark:text-slate-300 hover:border-blue-400">
+                {preset.label}
               </button>
             ))}
           </div>
@@ -521,7 +599,7 @@ const Schedule = () => {
       <Card>
         {/* ── Mobile agenda list ── */}
         {viewMode === 'agenda' && (
-        <div className="sm:hidden space-y-4 p-3">
+        <div className="space-y-4 p-3">
           {[
             ['Today', agendaSections.today],
             ['This Week', agendaSections.thisWeek],
@@ -582,6 +660,7 @@ const Schedule = () => {
         </div>
         )}
         {/* ── Desktop table (hidden on mobile) ── */}
+        {viewMode === 'calendar' && (
         <CardContent className="p-0 hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
@@ -621,6 +700,7 @@ const Schedule = () => {
             </tbody>
           </table>
         </CardContent>
+        )}
       </Card>
     </div>
   );

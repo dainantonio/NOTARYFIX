@@ -1084,7 +1084,7 @@ const Admin = () => {
                     </td>
                     <td className="px-5 py-3"><StatusPill status={rule.status} /></td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         {/* Version history */}
                         {(rule.versionHistory || []).length > 0 && (
                           <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: rule, label: `${rule.state} ${rule.version}` })}>
@@ -1173,7 +1173,7 @@ const Admin = () => {
                     <td className="px-5 py-3 text-xs text-slate-500 max-w-[180px] truncate">{fee.notes || '\u2014'}</td>
                     <td className="px-5 py-3">{fee.status === 'pending_review' && <StatusPill status="pending_review" />}</td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         {(fee.versionHistory || []).length > 0 && (
                           <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: fee, label: `${fee.stateCode} \u2014 ${fee.actType}` })}>
                             <History className="h-3.5 w-3.5 text-slate-500" />
@@ -1245,7 +1245,7 @@ const Admin = () => {
                   {req.notes && <p className="mt-2 text-xs text-slate-400 italic">{req.notes}</p>}
                   <p className="mt-1 text-[10px] text-slate-300 dark:text-slate-600">Updated {timeAgo(req.updatedAt)}</p>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                   {(req.versionHistory || []).length > 0 && (
                     <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: req, label: `${req.stateCode} ID Rules` })}>
                       <History className="h-3.5 w-3.5 text-slate-500" />
@@ -1335,7 +1335,7 @@ const Admin = () => {
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                       {(article.versionHistory || []).length > 0 && (
                         <Button variant="ghost" size="sm" title="Version history" onClick={() => setHistoryTarget({ record: article, label: article.title })}>
                           <History className="h-3.5 w-3.5 text-slate-500" />
