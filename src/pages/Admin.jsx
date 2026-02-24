@@ -919,8 +919,7 @@ const Admin = () => {
       )}
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl overflow-hidden relative">
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+      <Card className="app-hero-card">
         <CardContent className="relative flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Control Center</p>

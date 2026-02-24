@@ -295,7 +295,7 @@ const LayoutInner = ({ children }) => {
           </div>
         )}
 
-        <main className="flex-1 p-0 pb-20 md:pb-0 w-full max-w-[1920px] mx-auto">
+        <main className="flex-1 min-h-screen bg-slate-50 dark:bg-slate-900 p-0 pb-20 md:pb-0 w-full max-w-[1920px] mx-auto">
           {children}
         </main>
 

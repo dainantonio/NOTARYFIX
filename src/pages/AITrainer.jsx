@@ -649,7 +649,7 @@ const AITrainer = () => {
   return (
     <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
