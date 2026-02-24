@@ -1749,6 +1749,29 @@ const Journal = () => {
     window.history.replaceState({}, '');
   }, [location.state]);
 
+  // ── Form Guide prefill: picks up sessionStorage set by FormGuide "Log This Act" ──
+  React.useEffect(() => {
+    const raw = sessionStorage.getItem('journalPrefill');
+    if (!raw) return;
+    try {
+      const p = JSON.parse(raw);
+      if (p.source === 'formGuide') {
+        sessionStorage.removeItem('journalPrefill');
+        openNew({
+          actType:             p.actType             || 'Acknowledgment',
+          signerName:          p.signerName          || '',
+          documentDescription: p.documentDescription || '',
+          date:                p.date                || new Date().toISOString().split('T')[0],
+          time:                p.time                || '',
+          fee:                 p.fee != null ? String(p.fee) : '',
+          thumbprintTaken:     !!p.thumbprintRequired,
+        });
+      }
+    } catch (_) {
+      sessionStorage.removeItem('journalPrefill');
+    }
+  }, []); // runs once on mount
+
   return (
     <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
       <EntryModal
