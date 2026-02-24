@@ -1,20 +1,34 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
+import { useNavigate } from 'react-router-dom';
+
+const US_STATE_CODES = [
+  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+  'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+  'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'
+];
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [smartBusinessInput, setSmartBusinessInput] = useState('');
   const { theme, toggleTheme } = useTheme();
   const { data, updateSettings } = useData();
+  const navigate = useNavigate();
+  const saveTimerRef = useRef(null);
 
   const [formData, setFormData] = useState(data.settings);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   useEffect(() => {
     setFormData(data.settings);
   }, [data.settings]);
+
+  useEffect(() => () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+  }, []);
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -31,6 +45,14 @@ const Settings = () => {
 
   const handleSave = () => {
     updateSettings(formData);
+    setSavedFlash(true);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => setSavedFlash(false), 2000);
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('notaryfix_data');
+    navigate('/');
   };
 
   const applySmartBusinessFill = (text) => {
@@ -59,7 +81,7 @@ const Settings = () => {
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
             <p className="mt-1 text-sm text-slate-200">Manage profile, business defaults, and visual preferences.</p>
           </div>
-          <Button onClick={handleSave} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Save className="mr-2 h-4 w-4" /> Save All</Button>
+          <Button onClick={handleSave} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save All'}</Button>
         </CardContent>
       </Card>
 
@@ -85,7 +107,7 @@ const Settings = () => {
               </button>
             ))}
             <div className="my-2 hidden border-t border-slate-200 dark:border-slate-700 md:block" />
-            <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"><LogOut className="h-4 w-4" /> Sign Out</button>
+            <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"><LogOut className="h-4 w-4" /> Sign Out</button>
           </nav>
         </div>
 
@@ -101,7 +123,7 @@ const Settings = () => {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div><Label>Full Name</Label><Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
                 </div>
-                <div className="flex justify-end"><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Changes</Button></div>
+                <div className="flex justify-end"><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Changes'}</Button></div>
               </CardContent>
             </Card>
           )}
@@ -132,7 +154,7 @@ const Settings = () => {
 
                 <div className="flex justify-end gap-2">
                   <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
-                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Update Business</Button>
+                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Update Business'}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -151,6 +173,13 @@ const Settings = () => {
                     <Label>Weekly Compliance Review Day</Label>
                     <Input placeholder="Monday" value={formData.complianceReviewDay || ''} onChange={(e) => setFormData({ ...formData, complianceReviewDay: e.target.value })} />
                   </div>
+                  <div>
+                    <Label>Primary operating state</Label>
+                    <select value={formData.currentStateCode || ''} onChange={(e) => setFormData({ ...formData, currentStateCode: e.target.value })} className="h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select state</option>
+                      {US_STATE_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">Operations Guardrail</p>
@@ -158,7 +187,7 @@ const Settings = () => {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
-                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save Compliance</Button>
+                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Compliance'}</Button>
                 </div>
               </CardContent>
             </Card>
