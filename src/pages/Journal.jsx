@@ -1952,6 +1952,10 @@ const Journal = () => {
               </div>
               <p className="font-semibold text-slate-600 dark:text-slate-300">No journal entries found.</p>
               <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">Add your first entry to build an audit-ready record.</p>
+              <div className="mt-3 max-w-xl rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 p-3 text-left">
+                <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">Why this matters</p>
+                <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">A digital journal protects you in disputes, strengthens compliance audits, and signals professionalism to escrow/title partners.</p>
+              </div>
               <Button className="mt-5" onClick={() => openNew()}>
                 <Plus className="mr-2 h-4 w-4" /> Add First Entry
               </Button>

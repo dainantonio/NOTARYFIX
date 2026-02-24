@@ -157,7 +157,7 @@ const DailyBrief = ({ data, navigate }) => {
       sub: todayApts.length > 0
         ? `$${todayEarnings} projected · First at ${todayApts[0].time}`
         : 'Schedule is clear',
-      path: '/schedule',
+      path: todayApts[0]?.id ? { pathname: '/schedule', state: { editAppointmentId: todayApts[0].id } } : '/schedule',
     },
     {
       Icon: DollarSign,
@@ -736,14 +736,14 @@ const Dashboard = () => {
                   )
                 }
                 <div className="mt-3 grid w-full grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">This month</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${currentMonthRevenue.toLocaleString()}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                  </button>
+                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Remaining</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${Math.max(0, monthlyGoal - currentMonthRevenue).toLocaleString()}</p>
-                  </div>
+                  </button>
                 </div>
               </CardContent>
             </Card>

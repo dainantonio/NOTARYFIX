@@ -890,7 +890,7 @@ function LiveTripBanner({
           <div>
             <p className="font-bold text-white group-hover:text-cyan-100 transition-colors">Start a Trip</p>
             <p className="text-sm text-slate-500">
-              One tap · GPS auto-tracks miles · No more NG + MileIQ/Everlance split.
+              One tap · GPS miles when location permission is enabled.
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">

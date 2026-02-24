@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent, CardHeader, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
+import { useNavigate } from 'react-router-dom';
 
 const ClientModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({ name: '', contact: '', email: '', phone: '', type: 'Individual' });
@@ -95,6 +96,7 @@ const ClientModal = ({ isOpen, onClose, onSave }) => {
 
 const Clients = () => {
   const { data, addClient } = useData();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -112,6 +114,19 @@ const Clients = () => {
       active: allClients.filter((client) => client.status === 'Active').length,
     };
   }, [data.clients]);
+
+  const clientInsights = useMemo(() => {
+    const appointments = data.appointments || [];
+    const invoices = data.invoices || [];
+    return Object.fromEntries((data.clients || []).map((client) => {
+      const clientApts = appointments.filter((a) => (a.client || '').toLowerCase() === (client.name || '').toLowerCase());
+      const latest = [...clientApts].sort((a, b) => (`${b.date} ${b.time || ''}`).localeCompare(`${a.date} ${a.time || ''}`))[0];
+      const outstanding = invoices
+        .filter((i) => (i.client || '').toLowerCase() === (client.name || '').toLowerCase() && i.status !== 'Paid')
+        .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+      return [client.id, { latest, outstanding }];
+    }));
+  }, [data.clients, data.appointments, data.invoices]);
 
   return (
     <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
@@ -156,6 +171,11 @@ const Clients = () => {
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{client.email}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">{client.phone}</p>
+                <p className="text-[11px] text-slate-500">Last signing: {clientInsights[client.id]?.latest ? `${clientInsights[client.id].latest.date} ${clientInsights[client.id].latest.time || ''}` : 'None'} · Outstanding: ${Number(clientInsights[client.id]?.outstanding || 0).toLocaleString()}</p>
+                <div className="mt-1.5 flex gap-1">
+                  <button onClick={() => navigate('/schedule', { state: { quickClientName: client.name } })} className="rounded-md bg-blue-50 text-blue-700 px-2 py-1 text-[11px] font-semibold">Schedule</button>
+                  <button onClick={() => navigate('/invoices', { state: { prefillClientName: client.name } })} className="rounded-md bg-emerald-50 text-emerald-700 px-2 py-1 text-[11px] font-semibold">Invoice</button>
+                </div>
               </div>
               <Badge variant="blue" className="shrink-0 hidden xs:inline-flex">{client.type}</Badge>
             </div>
@@ -196,7 +216,13 @@ const Clients = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4"><Badge variant={client.status === 'Active' ? 'success' : 'default'}>{client.status}</Badge></td>
-                  <td className="px-6 py-4 text-right"><Button variant="ghost" size="icon" className="opacity-0 transition-opacity group-hover:opacity-100"><MoreHorizontal className="h-4 w-4" /></Button></td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => navigate('/schedule', { state: { quickClientName: client.name } })}>Schedule</Button>
+                      <Button variant="ghost" size="sm" onClick={() => navigate('/invoices', { state: { prefillClientName: client.name } })}>Invoice</Button>
+                      <Button variant="ghost" size="icon" className="opacity-80"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
