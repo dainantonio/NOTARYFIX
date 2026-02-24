@@ -114,21 +114,21 @@ const Clients = () => {
   }, [data.clients]);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={addClient} />
 
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Client Operations</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">Clients</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Clients</h1>
             <p className="mt-1 text-sm text-slate-200">Manage relationships with a clean enterprise workflow.</p>
           </div>
           <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> Add Client</Button>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Total Clients</p><p className="text-2xl font-bold text-slate-900 dark:text-white">{clientMetrics.total}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Enterprise Accounts</p><p className="text-2xl font-bold text-blue-600">{clientMetrics.corporate}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Active</p><p className="text-2xl font-bold text-emerald-600">{clientMetrics.active}</p></CardContent></Card>
@@ -138,10 +138,32 @@ const Clients = () => {
         <CardHeader>
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search clients..." className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-white" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search clients..." className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-white" style={{fontSize:16}} />
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto p-0">
+
+        {/* ── Mobile card list ── */}
+        <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
+          {filteredClients.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">No clients found.</p>
+          ) : filteredClients.map((client) => (
+            <div key={client.id} className="flex items-center gap-3 px-4 py-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{client.name.slice(0, 2).toUpperCase()}</div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{client.name}</p>
+                  <Badge variant={client.status === 'Active' ? 'success' : 'default'}>{client.status}</Badge>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{client.email}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{client.phone}</p>
+              </div>
+              <Badge variant="blue" className="shrink-0 hidden xs:inline-flex">{client.type}</Badge>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Desktop table ── */}
+        <CardContent className="hidden sm:block overflow-x-auto p-0">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400">
               <tr>
@@ -159,18 +181,18 @@ const Clients = () => {
                 <tr key={client.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{client.name.slice(0, 2).toUpperCase()}</div>
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{client.name}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{client.contact}</p>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{client.name.slice(0, 2).toUpperCase()}</div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 dark:text-white truncate">{client.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{client.contact}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4"><Badge variant="blue">{client.type}</Badge></td>
                   <td className="px-6 py-4">
                     <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300">
-                      <p className="flex items-center gap-1"><Mail className="h-3.5 w-3.5 text-slate-400" /> {client.email}</p>
-                      <p className="flex items-center gap-1"><Phone className="h-3.5 w-3.5 text-slate-400" /> {client.phone}</p>
+                      <p className="flex items-center gap-1"><Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" /> <span className="truncate">{client.email}</span></p>
+                      <p className="flex items-center gap-1"><Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {client.phone}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4"><Badge variant={client.status === 'Active' ? 'success' : 'default'}>{client.status}</Badge></td>
