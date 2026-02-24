@@ -52,16 +52,6 @@ const timeAgo = (iso) => {
   return `${Math.floor(hr / 24)}d ago`;
 };
 
-// ─── BASE REVENUE (YTD + live last point) ────────────────────────────────────
-const BASE_YTD = [
-  { name: 'Aug', amount: 6400  },
-  { name: 'Sep', amount: 8200  },
-  { name: 'Oct', amount: 11400 },
-  { name: 'Nov', amount: 9800  },
-  { name: 'Dec', amount: 7600  },
-  { name: 'Jan', amount: 10200 },
-];
-
 // ─── TYPE ACCENT MAP ─────────────────────────────────────────────────────────
 const APT_ACCENT = {
   'Loan Signing':                  { dot: 'bg-blue-500',    bar: 'border-l-2 border-blue-500' },
@@ -93,6 +83,7 @@ const KpiTile = ({ title, value, sub, Icon, accent = 'blue', loading, onClick })
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/20">
           <Icon className="h-4 w-4 text-white" />
         </span>
+        <ChevronRight className="h-4 w-4 text-white/80" />
       </div>
       <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/70">{title}</p>
       {loading
@@ -157,7 +148,7 @@ const DailyBrief = ({ data, navigate }) => {
       sub: todayApts.length > 0
         ? `$${todayEarnings} projected · First at ${todayApts[0].time}`
         : 'Schedule is clear',
-      path: '/schedule',
+      path: todayApts[0]?.id ? { pathname: '/schedule', state: { editAppointmentId: todayApts[0].id } } : '/schedule',
     },
     {
       Icon: DollarSign,
@@ -169,7 +160,7 @@ const DailyBrief = ({ data, navigate }) => {
       sub: pendingInvoices.length > 0
         ? `$${pendingInvoices.reduce((s,i) => s + Number(i.amount||0), 0).toLocaleString()} total`
         : 'Finances up to date',
-      path: '/invoices',
+      path: { pathname: '/invoices', state: { statusFilter: ['Pending', 'Overdue'] } },
     },
     ...(openDispatch > 0 ? [{
       Icon: Truck,
@@ -321,12 +312,12 @@ const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
   }).length;
 
   const modules = [
-    { Icon: ScrollText, label: 'Journal',     value: `${journalThisMonth} this mo`,              color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20', path: '/journal',        ok: true },
-    { Icon: Shield,     label: 'Compliance',  value: `${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length} OK`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', path: '/compliance', ok: true },
-    { Icon: Users,      label: 'Portal',      value: portalOK ? `${(data.signerSessions||[]).filter(s=>s.status==='active').length} active` : 'PRO', color: portalOK ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400', bg: portalOK ? 'bg-violet-50 dark:bg-violet-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/signer-portal', ok: portalOK },
-    { Icon: Truck,      label: 'Dispatch',    value: dispatchOK ? `${(data.dispatchJobs||[]).filter(j=>j.status!=='completed').length} open` : 'AGENCY', color: dispatchOK ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400', bg: dispatchOK ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/team-dispatch', ok: dispatchOK },
-    { Icon: Brain,      label: 'AI Trainer',  value: aiOK ? `${(data.knowledgeArticles||[]).filter(a=>a.status==='published').length} art.` : 'PRO', color: aiOK ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400', bg: aiOK ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/ai-trainer', ok: aiOK },
-    { Icon: Building2,  label: 'Admin',       value: adminOK ? `${(data.stateRules||[]).filter(r=>r.status==='active').length} rules` : 'ADMIN', color: adminOK ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400', bg: adminOK ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/admin', ok: adminOK },
+    { Icon: ScrollText, label: 'Journal',     hint: 'Notary Log', value: `${journalThisMonth} this mo`,              color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20', path: '/journal',        ok: true },
+    { Icon: Shield,     label: 'Compliance',  hint: 'Policy Check', value: `${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length} OK`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', path: '/compliance', ok: true },
+    { Icon: Users,      label: 'Portal',      hint: 'Client Docs', value: portalOK ? `${(data.signerSessions||[]).filter(s=>s.status==='active').length} active` : 'PRO', color: portalOK ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400', bg: portalOK ? 'bg-violet-50 dark:bg-violet-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/signer-portal', ok: portalOK },
+    { Icon: Truck,      label: 'Dispatch',    hint: 'Team Jobs', value: dispatchOK ? `${(data.dispatchJobs||[]).filter(j=>j.status!=='completed').length} open` : 'AGENCY', color: dispatchOK ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400', bg: dispatchOK ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/team-dispatch', ok: dispatchOK },
+    { Icon: Brain,      label: 'AI Trainer',  hint: 'Policy Q&A', value: aiOK ? `${(data.knowledgeArticles||[]).filter(a=>a.status==='published').length} art.` : 'PRO', color: aiOK ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400', bg: aiOK ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/ai-trainer', ok: aiOK },
+    { Icon: Building2,  label: 'Admin',       hint: 'Policy Records', value: adminOK ? `${(data.stateRules||[]).filter(r=>r.status==='active').length} rules` : 'ADMIN', color: adminOK ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400', bg: adminOK ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/admin', ok: adminOK },
   ];
 
   return (
@@ -338,6 +329,7 @@ const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
             <m.Icon className={`h-5 w-5 ${m.color}`} />
           </span>
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{m.label}</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500">{m.hint}</p>
           <p className={`text-xs font-semibold ${m.color}`}>{m.value}</p>
         </button>
       ))}
@@ -481,7 +473,7 @@ const Dashboard = () => {
   const miles    = data.mileageLogs  || [];
 
   const totalRevenue = useMemo(() =>
-    12450 + apts.reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
+    apts.reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
 
   const completedCount = apts.filter(a => a.status === 'completed').length;
   const upcomingCount  = apts.filter(a => a.status === 'upcoming').length;
@@ -497,13 +489,25 @@ const Dashboard = () => {
 
   const monthlyGoal        = data.settings?.monthlyGoal || 15000;
   const currentMonthRevenue = useMemo(() =>
-    9800 + apts.reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
+    apts.filter((a) => (a.date || '').slice(0,7) === new Date().toISOString().slice(0,7)).reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
   const goalPct = Math.min(100, Math.round((currentMonthRevenue / monthlyGoal) * 100));
 
-  const revenueData = useMemo(() => [
-    ...BASE_YTD,
-    { name: 'Feb', amount: currentMonthRevenue },
-  ], [currentMonthRevenue]);
+  const revenueData = useMemo(() => {
+    const now = new Date();
+    const key = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const buckets = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (6 - i), 1);
+      return { key: key(d), name: d.toLocaleDateString('en-US', { month: 'short' }), amount: 0 };
+    });
+    const map = new Map(buckets.map((b) => [b.key, b]));
+    (apts || []).forEach((a) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(a?.date || '')) return;
+      const k = (a.date || '').slice(0, 7);
+      if (!map.has(k)) return;
+      map.get(k).amount += Number(a.amount || 0);
+    });
+    return buckets;
+  }, [apts]);
 
   // ── chart theming ────────────────────────────────────────────────────────
   const chartStroke = theme === 'dark' ? '#60a5fa' : '#2563eb';
@@ -548,10 +552,7 @@ const Dashboard = () => {
       <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-5 sm:space-y-5 sm:px-6 sm:py-7 md:px-8 md:py-8">
 
         {/* ══ HERO ════════════════════════════════════════════════════════════ */}
-        <Card className="overflow-hidden border-0 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white shadow-2xl">
-          {/* grid overlay */}
-          <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+        <Card className="app-hero-card shadow-2xl">
           <CardContent className="relative px-5 py-5 sm:px-6 sm:py-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               {/* greeting */}
@@ -600,7 +601,7 @@ const Dashboard = () => {
               <KpiTile title="Total Revenue"   value={`$${totalRevenue.toLocaleString()}`}  sub="All-time"             Icon={DollarSign}    accent="blue"   onClick={() => navigate('/invoices')} />
               <KpiTile title="Net Profit"       value={`$${netProfit.toLocaleString()}`}     sub={`${margin}% margin`}  Icon={Wallet}        accent="purple" onClick={() => navigate('/invoices')} />
               <KpiTile title="Upcoming"         value={String(upcomingCount)}                sub={`${completedCount} completed`} Icon={CalendarClock} accent="orange" onClick={() => navigate('/schedule')} />
-              <KpiTile title="Outstanding"      value={`$${pendingAmt.toLocaleString()}`}    sub="Invoices pending"     Icon={FileText}      accent={pendingAmt > 0 ? 'rose' : 'green'} onClick={() => navigate('/invoices')} />
+              <KpiTile title="Outstanding"      value={`$${pendingAmt.toLocaleString()}`}    sub="Invoices pending"     Icon={FileText}      accent={pendingAmt > 0 ? 'rose' : 'green'} onClick={() => navigate('/invoices', { state: { statusFilter: ['Pending', 'Overdue'] } })} />
             </>
           )}
         </div>
@@ -654,7 +655,7 @@ const Dashboard = () => {
               <CardHeader className="px-5 py-3.5">
                 <div>
                   <CardTitle className="text-sm font-semibold">Revenue Velocity</CardTitle>
-                  <p className="text-xs text-slate-400">YTD · last 7 months</p>
+                  <p className="text-xs text-slate-400">Live appointments · last 7 months</p>
                 </div>
                 <Select
                   value={chartType}
@@ -739,14 +740,14 @@ const Dashboard = () => {
                   )
                 }
                 <div className="mt-3 grid w-full grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">This month</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${currentMonthRevenue.toLocaleString()}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
+                  </button>
+                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Remaining</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${Math.max(0, monthlyGoal - currentMonthRevenue).toLocaleString()}</p>
-                  </div>
+                  </button>
                 </div>
               </CardContent>
             </Card>
@@ -773,7 +774,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-1 px-4 pb-4 pt-0">
                 {[
-                  { Icon:MapPin,    label:'Miles logged',    val:`${totalMiles.toFixed(1)} mi`,  sub:`$${(totalMiles*cpm).toFixed(0)} deductible`, cls:'text-blue-500',    path:'/mileage' },
+                  { Icon:MapPin,    label:'Miles logged',    val:`${totalMiles.toFixed(1)} mi`,  sub:`$${(totalMiles*cpm).toFixed(0)} est. reimbursement value`, cls:'text-blue-500',    path:'/mileage' },
                   { Icon:Shield,    label:'Compliance',      val:`${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length}`, sub:'items compliant', cls:'text-emerald-500', path:'/compliance' },
                   { Icon:BookOpen,  label:'Journal entries', val:String((data.journalEntries||[]).length), sub:'all time',   cls:'text-indigo-500', path:'/journal' },
                   { Icon:TrendingUp,label:'Team members',    val:String((data.teamMembers||[]).length), sub:'on roster', cls:'text-amber-500',  path:'/team-dispatch' },

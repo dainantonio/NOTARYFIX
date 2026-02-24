@@ -890,7 +890,7 @@ function LiveTripBanner({
           <div>
             <p className="font-bold text-white group-hover:text-cyan-100 transition-colors">Start a Trip</p>
             <p className="text-sm text-slate-500">
-              One tap · GPS auto-tracks miles · No more NG + MileIQ/Everlance split.
+              One tap · GPS miles when location permission is enabled.
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -1215,33 +1215,35 @@ export default function Mileage() {
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen p-4 sm:p-6 space-y-4 sm:space-y-6" style={{ background: '#060d1b' }}>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#060d1b] p-4 sm:p-6 space-y-4 sm:space-y-6">
 
       {/* ── PAGE HEADER ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400/15">
-              <Car className="h-4 w-4 text-cyan-400" />
+      <div className="app-hero-card rounded-2xl p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+                <Car className="h-4 w-4 text-blue-200" />
+              </div>
+              <h1 className="text-2xl font-black text-white">Mileage Tracker</h1>
+              {unverified > 0 && (
+                <span className="flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-200">
+                  <AlertCircle className="h-3 w-3" />{unverified} to review
+                </span>
+              )}
             </div>
-            <h1 className="text-2xl font-black text-white">Mileage Tracker</h1>
-            {unverified > 0 && (
-              <span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-400">
-                <AlertCircle className="h-3 w-3" />{unverified} to review
-              </span>
-            )}
+            <p className="text-sm text-slate-200">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
           </div>
-          <p className="text-sm text-slate-500">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-          <button onClick={() => setExportModal(true)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10 transition-all flex-1 sm:flex-none">
-            <Download className="h-4 w-4" /> Export
-          </button>
-          <button onClick={() => setEditModal('new')}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all flex-1 sm:flex-none">
-            <Plus className="h-4 w-4" /> Log Trip
-          </button>
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            <button onClick={() => setExportModal(true)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-white/20 transition-all flex-1 sm:flex-none">
+              <Download className="h-4 w-4" /> Export
+            </button>
+            <button onClick={() => setEditModal('new')}
+              className="flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600 transition-all flex-1 sm:flex-none">
+              <Plus className="h-4 w-4" /> Log Trip
+            </button>
+          </div>
         </div>
       </div>
 

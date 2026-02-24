@@ -36,7 +36,7 @@ const PLANS = [
     tagline: 'For full-time professionals',
     accent: 'border-blue-500 bg-blue-600/10',
     badge: 'Most Popular',
-    features: ['Everything in Starter', 'Unlimited Journal', 'Signer Portal', 'AI Compliance Trainer', 'Invoice Automation', 'Priority Support'],
+    features: ['Everything in Starter', 'Unlimited Journal', 'Signer Portal', 'AI Compliance Trainer', 'Invoice Automation', 'Priority Support', 'Unified Dark Interface'],
     locked: ['Team Dispatch', 'Multi-notary'],
   },
   {
@@ -47,7 +47,7 @@ const PLANS = [
     tagline: 'Run a full operation',
     accent: 'border-violet-500 bg-violet-600/10',
     badge: 'Full Power',
-    features: ['Everything in Pro', 'Team Dispatch', 'Multi-notary', 'SLA Tracking', 'Admin Control Center', 'State Policy Database', 'Dedicated Manager'],
+    features: ['Everything in Pro', 'Team Dispatch', 'Multi-notary', 'SLA Tracking', 'Admin Control Center', 'State Policy Database', 'Dedicated Manager', 'Standardized Team UI'],
     locked: [],
   },
 ];
@@ -181,7 +181,7 @@ export default function Onboarding() {
 
   // ── LEFT PANEL CONTENT PER STEP ─────────────────────────────────────────
   const leftContent = {
-    0: { title: `Your business, one platform.`,    sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — built for how you actually work.', Illustration: IllustrationWelcome },
+    0: { title: `Your business, one platform.`,    sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — with a consistent interface across every core module.', Illustration: IllustrationWelcome },
     1: { title: `Let's get to know you.`,           sub: 'Your name and profile power your invoices, journal entries, and client-facing documents.', Illustration: IllustrationWelcome },
     2: { title: `Build your business identity.`,   sub: 'Your business name appears on every invoice and client-facing document you generate.', Illustration: IllustrationBusiness },
     3: { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
@@ -276,9 +276,10 @@ export default function Onboarding() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { Icon: Shield,   title: 'Compliance Built-in',   sub: 'State-specific rules, fee limits, and ID requirements' },
+                    { Icon: Shield,   title: 'Compliance Built-in',   sub: 'State-specific rules, fee limits, ID requirements, and red flags from jurisdiction policy records' },
                     { Icon: Zap,      title: 'Smart Workflows',        sub: 'Auto journal prompts, invoice generation, and linking' },
                     { Icon: Target,   title: 'Revenue Tracking',       sub: 'Goals, mileage deductions, and profit visibility' },
+                    { Icon: CheckCircle2, title: 'Consistent Workspace', sub: 'Unified dark-mode visuals and spacing across Admin, Dispatch, Invoices, and more' },
                     { Icon: Users,    title: 'Team Ready',             sub: 'Dispatch, signer portal, and multi-notary coordination' },
                   ].map(({ Icon, title, sub }) => (
                     <div key={title} className="flex gap-3 rounded-xl border border-white/8 bg-white/4 p-4">

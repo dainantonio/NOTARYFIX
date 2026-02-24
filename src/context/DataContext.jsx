@@ -13,6 +13,34 @@ const in6h = new Date(Date.now() + 6 * 3600000).toISOString();
 const in1d = new Date(Date.now() + 86400000).toISOString();
 const past4h = new Date(Date.now() - 4 * 3600000).toISOString();
 
+const US_STATES = [
+  { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' }, { code: 'AZ', name: 'Arizona' },
+  { code: 'AR', name: 'Arkansas' }, { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+  { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' }, { code: 'FL', name: 'Florida' },
+  { code: 'GA', name: 'Georgia' }, { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+  { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' }, { code: 'IA', name: 'Iowa' },
+  { code: 'KS', name: 'Kansas' }, { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+  { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' }, { code: 'MA', name: 'Massachusetts' },
+  { code: 'MI', name: 'Michigan' }, { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+  { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' }, { code: 'NE', name: 'Nebraska' },
+  { code: 'NV', name: 'Nevada' }, { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+  { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' }, { code: 'NC', name: 'North Carolina' },
+  { code: 'ND', name: 'North Dakota' }, { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+  { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' }, { code: 'RI', name: 'Rhode Island' },
+  { code: 'SC', name: 'South Carolina' }, { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+  { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' }, { code: 'VT', name: 'Vermont' },
+  { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+  { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }, { code: 'DC', name: 'District of Columbia' },
+];
+
+const parseMoneyLike = (value) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  const match = value.match(/-?\d+(?:\.\d+)?/);
+  return match ? parseFloat(match[0]) : null;
+};
+
+
 const defaultData = {
   appointments: [
     { id: 1, client: 'Sarah Johnson', type: 'Loan Signing', date: todayISO, time: '2:00 PM', status: 'upcoming', amount: 150, location: 'Downtown' },
@@ -675,6 +703,126 @@ export const DataProvider = ({ children }) => {
     );
   });
 
+
+  const importJurisdictionDataset = (dataset, actor = 'System Import') => setData((p) => {
+    if (!dataset || typeof dataset !== 'object') return p;
+
+    const now = new Date().toISOString();
+    const knownCodes = new Set(US_STATES.map((s) => s.code));
+    const jurisdictions = Object.entries(dataset).filter(([code, rec]) => knownCodes.has(code) && rec && typeof rec === 'object');
+    if (jurisdictions.length === 0) return p;
+
+    const importedCodes = new Set(jurisdictions.map(([code]) => code));
+
+    const keptRules = (p.stateRules || []).filter((r) => !importedCodes.has(r.stateCode));
+    const keptFees = (p.feeSchedules || []).filter((f) => !importedCodes.has(f.stateCode));
+    const keptIdReq = (p.idRequirements || []).filter((r) => !importedCodes.has(r.stateCode));
+
+    const newRules = [];
+    const newFees = [];
+    const newIdReqs = [];
+    const newCompliance = [];
+
+    jurisdictions.forEach(([code, rec], i) => {
+      const state = rec.state || US_STATES.find((s) => s.code === code)?.name || code;
+      const fees = rec.fees || {};
+      const idReq = rec.id_requirements || {};
+      const redFlags = Array.isArray(rec.red_flags) ? rec.red_flags : [];
+      const specialized = rec.specialized || {};
+
+      const ackFee = parseMoneyLike(fees.acknowledgment);
+      const juratFee = parseMoneyLike(fees.jurat);
+      const oathFee = parseMoneyLike(fees.oath);
+      const numericFees = [ackFee, juratFee, oathFee].filter((x) => x !== null);
+      const maxFeePerAct = numericFees.length ? Math.max(...numericFees) : 0;
+
+      const ruleId = Date.now() + i * 100 + 1;
+      newRules.push({
+        id: ruleId,
+        state,
+        stateCode: code,
+        version: 'DB-Import-v1',
+        effectiveDate: now.split('T')[0],
+        status: 'active',
+        publishedAt: now,
+        maxFeePerAct,
+        thumbprintRequired: redFlags.some((f) => /thumbprint/i.test(String(f))),
+        journalRequired: true,
+        ronPermitted: true,
+        ronStatute: '',
+        seal: '',
+        retentionYears: 0,
+        notarizationTypes: ['Acknowledgment', 'Jurat', 'Oath / Affirmation'],
+        witnessRequirements: idReq.credible_witnesses || '',
+        specialActCaveats: redFlags.join('; '),
+        officialSourceUrl: '',
+        notes: `Loan signing: ${specialized.loan_signing || 'n/a'} • Apostille: ${specialized.apostille || 'n/a'} • Marriage: ${specialized.marriage || 'n/a'}`,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      [
+        ['Acknowledgment', fees.acknowledgment],
+        ['Jurat', fees.jurat],
+        ['Oath / Affirmation', fees.oath],
+      ].forEach(([actType, value], j) => {
+        const parsed = parseMoneyLike(value);
+        newFees.push({
+          id: Date.now() + i * 100 + 10 + j,
+          stateCode: code,
+          actType,
+          maxFee: parsed ?? 0,
+          maxFeePerAct: parsed ?? 0,
+          notes: parsed === null ? `Source value: ${String(value || 'Not specified')}` : '',
+          effectiveDate: now.split('T')[0],
+          updatedAt: now,
+          status: 'draft',
+        });
+      });
+
+      newIdReqs.push({
+        id: Date.now() + i * 100 + 40,
+        stateCode: code,
+        acceptedIdTypes: ["Driver's License", 'Passport', 'State ID Card', 'Military ID'],
+        expirationRequired: true,
+        twoFormAllowed: /2/.test(String(idReq.credible_witnesses || '')),
+        credibleWitnessAllowed: !/not specified/i.test(String(idReq.credible_witnesses || '')),
+        notes: `Credible witnesses: ${idReq.credible_witnesses || 'Not specified'}. Expired ID rule: ${idReq.expired_id_rule || 'Not specified'}.`,
+        updatedAt: now,
+        status: 'draft',
+      });
+
+      if (redFlags.length > 0) {
+        newCompliance.push({
+          id: Date.now() + i * 100 + 70,
+          title: `${code} red flags review`,
+          category: 'State Policy',
+          dueDate: now.split('T')[0],
+          status: 'Needs Review',
+          notes: redFlags.join('; '),
+        });
+      }
+    });
+
+    const next = {
+      ...p,
+      stateRules: [...newRules, ...keptRules],
+      feeSchedules: [...newFees, ...keptFees],
+      idRequirements: [...newIdReqs, ...keptIdReq],
+      complianceItems: [...newCompliance, ...(p.complianceItems || [])],
+    };
+
+    return _appendAuditLog(next, {
+      actor,
+      actorRole: p.settings?.userRole || 'owner',
+      action: 'created',
+      resourceType: 'stateRules',
+      resourceId: Date.now(),
+      resourceLabel: `Bulk dataset import (${jurisdictions.length} jurisdictions)`,
+      diff: `Imported/updated ${jurisdictions.length} states + fee tables + ID requirements + compliance flags`,
+    });
+  });
+
   const rejectReview = (resourceType, id, actor, reason) => setData((p) => {
     const records = p[resourceType] || [];
     const record = records.find((r) => r.id === id);
@@ -715,6 +863,7 @@ export const DataProvider = ({ children }) => {
         addIdRequirement, updateIdRequirement, deleteIdRequirement,
         addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
         submitForReview, approveRecord, rejectReview,
+        importJurisdictionDataset,
         appendAuditLog,
       }}
     >
