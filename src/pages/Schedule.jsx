@@ -31,9 +31,33 @@ const fromMinutes = (totalMinutes) => {
   return `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
 };
 
-const isTimeConflict = (a, b, buffer = 30) => {
+const defaultDurationForType = (type = '') => {
+  if (/loan/i.test(type)) return 90;
+  if (/apostille/i.test(type)) return 75;
+  if (/i-?9/i.test(type)) return 45;
+  return 60;
+};
+
+const parseDurationMinutes = (input = '', type = '') => {
+  const text = String(input || '');
+  const hourMatch = text.match(/(\d+(?:\.\d+)?)\s*h(?:ours?)?/i);
+  const minuteMatch = text.match(/(\d{2,3})\s*m(?:in(?:ute)?s?)?/i);
+  if (hourMatch) return Math.max(15, Math.round(Number(hourMatch[1]) * 60));
+  if (minuteMatch) return Math.max(15, Number(minuteMatch[1]));
+  return defaultDurationForType(type);
+};
+
+const getAppointmentWindow = (appointment) => {
+  const start = toMinutes(appointment?.time);
+  const duration = parseDurationMinutes(appointment?.notes || '', appointment?.type);
+  return { start, end: start + duration, duration };
+};
+
+const isTimeConflict = (a, b, travelBuffer = 30) => {
   if (!a?.date || !b?.date || a.date !== b.date) return false;
-  return Math.abs(toMinutes(a.time) - toMinutes(b.time)) < buffer;
+  const winA = getAppointmentWindow(a);
+  const winB = getAppointmentWindow(b);
+  return (winA.start < (winB.end + travelBuffer)) && (winB.start < (winA.end + travelBuffer));
 };
 
 const Schedule = () => {
@@ -124,8 +148,10 @@ const Schedule = () => {
     const amount = input.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
     const type = /i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : 'General Notary';
     const client = input.match(/(?:for|client)\s+([A-Za-z0-9 .'-]+)/i)?.[1]?.replace(/\s+on$/i, '').trim() || input.split(' on ')[0].slice(0, 40) || 'New Client';
+    const parsedLocation = input.match(/(?:at|in)\s+([A-Za-z0-9 .,'#-]+)/i)?.[1]?.trim() || 'TBD';
+    const durationMinutes = parseDurationMinutes(input, type);
 
-    return { client, type, date, time, amount: parseFloat(amount) || 0, source: input };
+    return { client, type, date, time, amount: parseFloat(amount) || 0, location: parsedLocation, durationMinutes, source: input };
   };
 
   const smartPreview = useMemo(() => parseSmartCalendarInput(smartCalendarInput), [smartCalendarInput]);
@@ -134,7 +160,7 @@ const Schedule = () => {
     if (!smartPreview) return;
     addAppointment({
       id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
-      amount: smartPreview.amount, location: 'TBD', notes: `Smart calendar entry: ${smartPreview.source}`, receiptName: '', receiptImage: '',
+      amount: smartPreview.amount, location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m)`, receiptName: '', receiptImage: '',
     });
     setSmartCalendarInput('');
   };
@@ -213,31 +239,32 @@ const Schedule = () => {
   const smartOperationalHint = useMemo(() => {
     if (!smartPreview) return null;
     const sameDay = (data.appointments || []).filter((a) => a.date === smartPreview.date && a.status !== 'completed');
-    const previewApt = { date: smartPreview.date, time: smartPreview.time };
-    const conflicts = sameDay.filter((a) => isTimeConflict(a, previewApt, 45));
+    const previewApt = { ...smartPreview, notes: `${smartPreview.durationMinutes}m` };
+    const previewWindow = getAppointmentWindow(previewApt);
+    const conflicts = sameDay.filter((a) => isTimeConflict(a, previewApt, 30));
+
+    const openMinutes = 8 * 60;
+    const closeMinutes = 19 * 60;
+    const outsideBusinessHours = previewWindow.start < openMinutes || previewWindow.end > closeMinutes;
 
     let suggestedTime = null;
-    if (conflicts.length > 0) {
-      const ordered = sameDay
-        .map((a) => toMinutes(a.time))
-        .filter((m) => Number.isFinite(m))
-        .sort((a, b) => a - b);
-      let candidate = Math.max(8 * 60, toMinutes(smartPreview.time));
-      const hardEnd = 19 * 60;
-      while (candidate <= hardEnd) {
-        const hasCollision = ordered.some((slot) => Math.abs(slot - candidate) < 45);
-        if (!hasCollision) {
-          suggestedTime = fromMinutes(candidate);
-          break;
-        }
-        candidate += 30;
+    const sameDayWindows = sameDay.map((a) => ({ ...a, ...getAppointmentWindow(a) }));
+    let candidate = Math.max(openMinutes, previewWindow.start);
+    while (candidate + smartPreview.durationMinutes <= closeMinutes) {
+      const candidateApt = { ...previewApt, time: fromMinutes(candidate), notes: `${smartPreview.durationMinutes}m` };
+      const hasCollision = sameDayWindows.some((slot) => isTimeConflict(slot, candidateApt, 30));
+      if (!hasCollision) {
+        suggestedTime = fromMinutes(candidate);
+        break;
       }
+      candidate += 15;
     }
 
     return {
       sameDayCount: sameDay.length,
       conflicts,
       suggestedTime,
+      outsideBusinessHours,
       shouldBuffer: sameDay.length >= 3,
     };
   }, [data.appointments, smartPreview]);
@@ -323,9 +350,11 @@ const Schedule = () => {
             <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-xs text-slate-700 dark:text-slate-200 space-y-1.5">
               <div className="flex items-center gap-1.5 font-semibold text-blue-700 dark:text-blue-300"><Link className="h-3.5 w-3.5" /> Parsed Preview</div>
               <p>{smartPreview.client} · {smartPreview.type} · {smartPreview.date} {smartPreview.time} · ${smartPreview.amount.toFixed(2)}</p>
+              <p className="text-slate-600 dark:text-slate-300">Duration: {smartPreview.durationMinutes} min · Location: {smartPreview.location}</p>
               {smartOperationalHint?.conflicts?.length > 0 ? (
                 <p className="flex items-center gap-1 text-amber-700 dark:text-amber-300"><AlertTriangle className="h-3.5 w-3.5" /> Potential conflict with {smartOperationalHint.conflicts.length} existing slot(s){smartOperationalHint.suggestedTime ? ` — suggested: ${smartOperationalHint.suggestedTime}` : ''}.</p>
               ) : null}
+              {smartOperationalHint?.outsideBusinessHours ? <p className="text-rose-700 dark:text-rose-300">Outside working hours (8:00 AM - 7:00 PM). Consider moving this slot.</p> : null}
               {smartOperationalHint?.shouldBuffer ? <p className="text-slate-600 dark:text-slate-300">Busy day detected: plan 15–30 minute travel/buffer windows.</p> : null}
             </div>
           )}
