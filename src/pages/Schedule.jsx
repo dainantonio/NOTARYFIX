@@ -107,7 +107,7 @@ const Schedule = () => {
   const monthRevenue = monthAppointments.reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
   return (
-    <div className="animate-fade-in space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
+    <div className="animate-fade-in space-y-4 sm:space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-20">
       <AppointmentModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingAppointment(null); setPrefillDate(''); }}
@@ -130,17 +130,17 @@ const Schedule = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">This Month</p><p className="text-2xl font-bold text-slate-900 dark:text-white">{monthAppointments.length}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Upcoming</p><p className="text-2xl font-bold text-blue-600">{data.appointments.filter((a) => a.status === 'upcoming').length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Projected Revenue</p><p className="text-2xl font-bold text-emerald-600">${monthRevenue.toLocaleString()}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500 truncate">Revenue</p><p className="text-2xl font-bold text-emerald-600">${monthRevenue.toLocaleString()}</p></CardContent></Card>
       </div>
 
       <Card>
         <CardContent className="space-y-3 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Smart Calendar Add</p>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Type: Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+            <input value={smartCalendarInput} onChange={(e) => setSmartCalendarInput(e.target.value)} placeholder="Type: Loan signing for Sarah Johnson on 2026-02-22 2:30 PM $150" className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" style={{fontSize:16}} />
             <Button onClick={parseSmartCalendarInput}>Smart Add</Button>
           </div>
         </CardContent>
@@ -157,18 +157,18 @@ const Schedule = () => {
           </div>
 
           <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-700">
-            {weekDays.map((day) => <div key={day} className="py-3 text-center text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{day}</div>)}
+            {weekDays.map((day) => <div key={day} className="py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{day.slice(0,1)}<span className="hidden sm:inline">{day.slice(1)}</span></div>)}
           </div>
 
-          <div className="grid grid-cols-7 auto-rows-[128px] border-b border-slate-200 dark:border-slate-700">
+          <div className="grid grid-cols-7 auto-rows-[96px] sm:auto-rows-[128px] border-b border-slate-200 dark:border-slate-700">
             {new Array(startOffset).fill(null).map((_, idx) => <div key={`offset-${idx}`} className="bg-slate-50/50 dark:bg-slate-800/50" />)}
             {daysInMonth.map((day) => {
               const dayApts = data.appointments.filter((a) => inCurrentMonth(a.date) && Number(a.date.split('-')[2]) === day);
               const now = new Date();
               const isToday = day === now.getDate() && currentDate.getMonth() === now.getMonth() && currentDate.getFullYear() === now.getFullYear();
               return (
-                <div key={day} className="group relative border-b border-r border-slate-200 p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
-                  <span className={`text-sm font-medium ${isToday ? 'flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'}`}>{day}</span>
+                <div key={day} className="group relative border-b border-r border-slate-200 p-1 sm:p-2 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
+                  <span className={`text-xs sm:text-sm font-medium ${isToday ? 'flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'}`}>{day}</span>
                   <div className="mt-2 max-h-[78px] space-y-1 overflow-y-auto">
                     {dayApts.map((apt) => (
                       <button key={apt.id} onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="w-full truncate rounded border-l-2 border-blue-500 bg-blue-50 p-1.5 text-left text-xs text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50">
