@@ -13,6 +13,7 @@ import { useData } from '../context/DataContext';
 import { useLocation } from 'react-router-dom';
 import { useLinker } from '../hooks/useLinker';
 import { isJournalAtLimit } from '../utils/gates';
+import ComplianceAdvisor from '../components/ComplianceAdvisor';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ACT_TYPES = [
@@ -1016,6 +1017,17 @@ const EntryModal = ({ isOpen, onClose, onSave, initial, appointments, invoices, 
                       />
                     </div>
                   </div>
+
+                  {/* ── Inline Compliance Advisor ─────────────────────── */}
+                  {form.actType && form.idIssuingState && (
+                    <ComplianceAdvisor
+                      stateCode={form.idIssuingState}
+                      actType={form.actType}
+                      fee={form.fee}
+                      context="journal"
+                      className="mt-2"
+                    />
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
