@@ -384,7 +384,7 @@ const AnswerCard = ({ model }) => {
         <div className="mt-3">
           {Array.isArray(model.feeEntries) && model.feeEntries.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs min-w-0">
                 <thead className="text-slate-500 dark:text-slate-400">
                   <tr>
                     <th className="text-left py-1">Act</th>
@@ -395,7 +395,7 @@ const AnswerCard = ({ model }) => {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                   {model.feeEntries.slice(0, 12).map((f) => (
                     <tr key={f.id}>
-                      <td className="py-1 pr-3">{f.actType}</td>
+                      <td className="py-1 pr-3 truncate max-w-[100px]">{f.actType}</td>
                       <td className="py-1 pr-3 font-semibold">${Number(f.maxFee ?? 0).toFixed(2)}</td>
                       <td className="py-1">{fmtDate(f.effectiveDate)}</td>
                     </tr>
@@ -647,14 +647,14 @@ const AITrainer = () => {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
         <CardContent className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Knowledge Copilot</p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight">AI Trainer</h1>
+              <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">AI Trainer</h1>
               <p className="mt-1 text-sm text-slate-200">
                 On-the-fly, state-specific guidance for notaries — grounded only from the published Admin dataset.
               </p>
