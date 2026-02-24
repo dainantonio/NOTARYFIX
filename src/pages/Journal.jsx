@@ -1750,7 +1750,7 @@ const Journal = () => {
   }, [location.state]);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
       <EntryModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditing(null); }}
@@ -1768,10 +1768,10 @@ const Journal = () => {
 
       {/* ── HERO HEADER ──────────────────────────────────────────────────────── */}
       <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
-        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+        <CardContent className="flex flex-col gap-3 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Records & Audit</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">eJournal</h1>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">eJournal</h1>
             <p className="mt-1 text-sm text-slate-200">
               No more dual-app workflow — camera ID scan, OCR assist, and tamper-evident audit trail, all in one place.
             </p>
@@ -1792,7 +1792,7 @@ const Journal = () => {
       </Card>
 
       {/* ── KPI ROW ───────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
