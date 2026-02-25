@@ -4,7 +4,7 @@ import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useLinker } from '../hooks/useLinker';
+import { toast, useLinker } from '../hooks/useLinker';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -129,6 +129,7 @@ const Schedule = () => {
         receiptName: formData.receiptName || '',
         receiptImage: formData.receiptImage || '',
       });
+      toast.success('Appointment updated');
       setEditingAppointment(null);
       setQuickClientName('');
       return;
@@ -148,6 +149,7 @@ const Schedule = () => {
       receiptName: formData.receiptName || '',
       receiptImage: formData.receiptImage || '',
     });
+    toast.success('Appointment created');
   };
 
   const inCurrentMonth = (dateString) => {
@@ -188,6 +190,7 @@ const Schedule = () => {
       id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
       amount: smartPreview.amount, location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`, receiptName: '', receiptImage: '',
     });
+    toast.success('Smart appointment added');
     setSmartCalendarInput('');
   };
 
@@ -213,6 +216,7 @@ const Schedule = () => {
     link.download = 'notaryos-schedule.ics';
     link.click();
     URL.revokeObjectURL(url);
+    toast.success('Calendar exported (.ics)');
   };
 
   const importCalendarIcs = async (file) => {
@@ -238,6 +242,7 @@ const Schedule = () => {
         receiptImage: '',
       });
     });
+    toast.success(`Imported ${blocks.length} calendar event${blocks.length === 1 ? '' : 's'}`);
   };
 
   const monthAppointments = useMemo(() => data.appointments.filter((a) => inCurrentMonth(a.date)), [data.appointments, currentDate]);
@@ -471,7 +476,7 @@ const Schedule = () => {
                   <button onClick={() => navigate(`/arrive/${apt.id}`)} className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Arrive Mode"><MapPin className="h-4 w-4" /></button>
                 )}
                 <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-4 w-4" /></button>
-                <button onClick={() => deleteAppointment(apt.id)} className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => { deleteAppointment(apt.id); toast.success('Appointment deleted'); }} className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="h-4 w-4" /></button>
               </div>
             </div>
           ))}
@@ -510,7 +515,7 @@ const Schedule = () => {
                         <Button size="sm" variant="ghost" title="Arrive Mode" onClick={() => navigate(`/arrive/${apt.id}`)} className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"><MapPin className="h-4 w-4" /></Button>
                       )}
                       <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="danger" onClick={() => deleteAppointment(apt.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="danger" onClick={() => { deleteAppointment(apt.id); toast.success('Appointment deleted'); }}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>

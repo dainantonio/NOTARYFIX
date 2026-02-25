@@ -65,7 +65,7 @@ const Legal = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-24">
+    <div className="space-y-6 pb-24">
       <Link to="/dashboard">
         <Button variant="ghost" className="pl-0 hover:bg-transparent hover:text-blue-600"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Button>
       </Link>

@@ -3,6 +3,7 @@ import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal, UserPlus
 import { Card, CardContent, CardHeader, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '../hooks/useLinker';
 
 const ClientModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({ name: '', contact: '', email: '', phone: '', type: 'Individual' });
@@ -199,7 +200,7 @@ const Clients = () => {
 
   return (
     <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-24">
-      <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={addClient} />
+      <ClientModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={(payload) => { addClient(payload); toast.success('Client saved'); }} />
       <ClientDetailModal
         client={selectedClient}
         details={selectedClient ? (clientHistory[selectedClient.id] || { appointments: [], invoices: [], totalRevenue: 0 }) : { appointments: [], invoices: [], totalRevenue: 0 }}

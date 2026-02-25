@@ -12,6 +12,7 @@ import {
 } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
+import { toast } from '../hooks/useLinker';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const STALE_DAYS = 90;
@@ -155,7 +156,9 @@ const DatasetImportModal = ({ isOpen, onClose, onImport }) => {
       onImport(parsed);
       onClose();
     } catch (err) {
-      setError(`Invalid JSON: ${err.message}`);
+      setError(err?.message?.startsWith('No recognized') || err?.message?.startsWith('Dataset import expects')
+        ? err.message
+        : `Invalid JSON: ${err.message}`);
     }
   };
 
@@ -790,7 +793,14 @@ const Admin = () => {
   const [datasetModalOpen, setDatasetModalOpen] = useState(false);
 
   const handleDatasetImport = (payload) => {
-    importJurisdictionDataset(payload, actor);
+    try {
+      importJurisdictionDataset(payload, actor);
+      const count = Object.keys(payload || {}).length;
+      toast.success(`Dataset import completed (${count} entries processed).`);
+    } catch (error) {
+      toast.error(error?.message || 'Dataset import failed. Check payload format and try again.');
+      throw error;
+    }
   };
 
   if (!isAdmin) {

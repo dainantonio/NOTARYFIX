@@ -62,7 +62,7 @@ const PRICING = [
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
     features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
-    cta: 'Join Waitlist', highlight: true, badge: 'Most Popular',
+    cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
     name: 'Agency', price: 79, yearly: 63, sub: 'For scaling operations.',

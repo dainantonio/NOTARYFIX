@@ -11,6 +11,7 @@ import {
   Bell, Printer, Satellite, WifiOff, Loader2,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { toast } from '../hooks/useLinker';
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 const IRS_RATE_2025   = 0.67; // per mile
@@ -1141,14 +1142,19 @@ export default function Mileage() {
     const normalized = { ...form, miles: parseFloat(form.miles || 0) || 0 };
     if (id) {
       updateMileageLog(id, { ...normalized, verified: true });
+      toast.success('Trip updated');
     } else {
       addMileageLog({ ...normalized, id: `t${Date.now()}`, verified: true });
+      toast.success('Trip logged');
     }
     setEditModal(null);
   }, [addMileageLog, updateMileageLog]);
 
   const deleteTrip = useCallback((id) => {
-    if (confirm('Delete this trip?')) deleteMileageLog(id);
+    if (confirm('Delete this trip?')) {
+      deleteMileageLog(id);
+      toast.success('Trip deleted');
+    }
   }, [deleteMileageLog]);
 
   const duplicateTrip = useCallback((trip) => {
@@ -1159,6 +1165,7 @@ export default function Mileage() {
       verified: false,
       notes:    `${trip.notes ? trip.notes + ' ' : ''}(duplicate)`,
     });
+    toast.success('Trip duplicated');
   }, [addMileageLog]);
 
   const splitTrip = useCallback((original, { miles1, purpose1, miles2, purpose2 }) => {
@@ -1167,6 +1174,7 @@ export default function Mileage() {
     addMileageLog({ ...base, id: `t${Date.now()}b`, miles: miles2, purpose: purpose2, notes: `${original.notes || ''} (split B)`.trim() });
     addMileageLog({ ...base, id: `t${Date.now()}a`, miles: miles1, purpose: purpose1, notes: `${original.notes || ''} (split A)`.trim() });
     setSplitModal(null);
+    toast.success('Trip split into two entries');
   }, [addMileageLog, deleteMileageLog]);
 
   const toggleVerify = useCallback((trip) => {
@@ -1177,6 +1185,7 @@ export default function Mileage() {
     const appt = appointmentOptions.find(a => String(a.id) === String(apptId));
     updateMileageLog(tripId, { linkedJobId: apptId || null, linkedJobLabel: appt?.label ?? '' });
     setLinkModal(null);
+    toast.success(apptId ? 'Trip linked to appointment' : 'Trip unlinked from appointment');
   }, [appointmentOptions, updateMileageLog]);
 
   // ── Live trip ──────────────────────────────────────────────────────────────────
@@ -1218,6 +1227,7 @@ export default function Mileage() {
     setStopModalOpen(false);
     setStopGPSMiles(0);
     setReminderDismissed(false);
+    toast.success('Live trip saved');
   }, [addMileageLog, liveTrip]);
 
   // ─────────────────────────────────────────────────────────────────────────────

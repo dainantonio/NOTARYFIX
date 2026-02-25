@@ -705,12 +705,16 @@ export const DataProvider = ({ children }) => {
 
 
   const importJurisdictionDataset = (dataset, actor = 'System Import') => setData((p) => {
-    if (!dataset || typeof dataset !== 'object') return p;
+    if (!dataset || typeof dataset !== 'object' || Array.isArray(dataset)) {
+      throw new Error('Dataset import expects a JSON object keyed by state code (e.g., {"CA": {...}}).');
+    }
 
     const now = new Date().toISOString();
     const knownCodes = new Set(US_STATES.map((s) => s.code));
     const jurisdictions = Object.entries(dataset).filter(([code, rec]) => knownCodes.has(code) && rec && typeof rec === 'object');
-    if (jurisdictions.length === 0) return p;
+    if (jurisdictions.length === 0) {
+      throw new Error('No recognized jurisdiction entries found. Include US state/DC codes as top-level keys.');
+    }
 
     const importedCodes = new Set(jurisdictions.map(([code]) => code));
 
