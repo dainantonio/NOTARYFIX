@@ -10,7 +10,7 @@ import Mileage from './pages/mileage';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding';
-import Legal from './pages/Legal';
+import Compliance from './pages/Legal';
 import Pricing from './pages/Pricing';
 import SignerPortal from './pages/SignerPortal';
 import Journal from './pages/Journal';
@@ -57,8 +57,8 @@ function App() {
             <Route path="/"            element={<Landing />} />
             <Route path="/auth"        element={<Auth />} />
             <Route path="/onboarding"  element={<Onboarding />} />
-            <Route path="/legal"       element={<Legal />} />
-            <Route path="/compliance"  element={<Legal />} />
+            <Route path="/legal"       element={<Compliance />} />
+            <Route path="/compliance"  element={<Compliance />} />
             <Route path="/pricing"     element={<Pricing />} />
 
             {/* App */}
