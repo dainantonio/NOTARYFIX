@@ -59,8 +59,8 @@ const defaultData = {
     { id: 2, date: '2025-10-22', destination: 'TechCorp HQ', purpose: 'I-9 Verifications', miles: 8.2 },
   ],
   settings: {
-    name: 'Dain Antonio',
-    businessName: 'Antonio Mobile Notary',
+    name: 'Alex Rivera',
+    businessName: 'Rivera Mobile Notary',
     planTier: 'free',
     userRole: 'owner',
     currentStateCode: 'WA',
@@ -112,7 +112,7 @@ const defaultData = {
     retentionYears: 10,
   },
   teamMembers: [
-    { id: 1, name: 'Dain Antonio', role: 'owner', status: 'active', email: 'dain@antonionotary.com', phone: '(555) 333-2211', createdAt: d4 },
+    { id: 1, name: 'Alex Rivera', role: 'owner', status: 'active', email: 'alex@riveranotary.com', phone: '(555) 333-2211', createdAt: d4 },
     { id: 2, name: 'Alex Carter', role: 'dispatcher', status: 'active', email: 'alex@antonionotary.com', phone: '(555) 222-1144', createdAt: d3 },
   ],
   dispatchJobs: [
@@ -126,10 +126,10 @@ const defaultData = {
   payouts: [],
   dispatchAuditLog: [],
   adminAuditLog: [
-    { id: 1, actor: 'Dain Antonio', actorRole: 'owner', action: 'created', resourceType: 'stateRules', resourceId: 1, resourceLabel: 'Washington 2024-v2', diff: 'New record', timestamp: new Date(Date.now() - 7.5 * 3600000).toISOString() },
-    { id: 2, actor: 'Dain Antonio', actorRole: 'owner', action: 'updated', resourceType: 'knowledgeArticles', resourceId: 2, resourceLabel: 'California Thumbprint Journal Requirements', diff: 'content updated', timestamp: new Date(Date.now() - 6.5 * 3600000).toISOString() },
+    { id: 1, actor: 'Alex Rivera', actorRole: 'owner', action: 'created', resourceType: 'stateRules', resourceId: 1, resourceLabel: 'Washington 2024-v2', diff: 'New record', timestamp: new Date(Date.now() - 7.5 * 3600000).toISOString() },
+    { id: 2, actor: 'Alex Rivera', actorRole: 'owner', action: 'updated', resourceType: 'knowledgeArticles', resourceId: 2, resourceLabel: 'California Thumbprint Journal Requirements', diff: 'content updated', timestamp: new Date(Date.now() - 6.5 * 3600000).toISOString() },
     { id: 3, actor: 'Alex Carter', actorRole: 'dispatcher', action: 'deleted', resourceType: 'feeSchedules', resourceId: 88, resourceLabel: 'OH — Acknowledgment', diff: 'Record deleted', timestamp: new Date(Date.now() - 5.5 * 3600000).toISOString() },
-    { id: 4, actor: 'Dain Antonio', actorRole: 'owner', action: 'published', resourceType: 'knowledgeArticles', resourceId: 1, resourceLabel: 'Washington RON Requirements & Platform Setup', diff: 'status: draft → published', timestamp: new Date(Date.now() - 4.5 * 3600000).toISOString() },
+    { id: 4, actor: 'Alex Rivera', actorRole: 'owner', action: 'published', resourceType: 'knowledgeArticles', resourceId: 1, resourceLabel: 'Washington RON Requirements & Platform Setup', diff: 'status: draft → published', timestamp: new Date(Date.now() - 4.5 * 3600000).toISOString() },
   ],
 
   // ─── ADMIN DATA ─────────────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ const defaultData = {
       content: 'Washington permits Remote Online Notarization under RCW 42.44.265. Notaries must use an approved platform, maintain audio-video records for 10 years, and obtain a $5,000 E&O endorsement. Signers must present ID via credential analysis technology.',
       tags: ['RON', 'Washington', 'Technology', 'Compliance'],
       status: 'published',
-      authorName: 'Dain Antonio',
+      authorName: 'Alex Rivera',
       publishedAt: new Date(Date.now() - 45 * 86400000).toISOString(),
       updatedAt: new Date(Date.now() - 20 * 86400000).toISOString(),
     },
@@ -304,7 +304,7 @@ const defaultData = {
       content: 'California requires a thumbprint in the notary journal for certain real-property related documents (e.g., deeds, deeds of trust, powers of attorney). Ensure the thumbprint is placed in the journal line item and the signer’s ID information is complete.',
       tags: ['California', 'Journal', 'Thumbprint'],
       status: 'draft',
-      authorName: 'Dain Antonio',
+      authorName: 'Alex Rivera',
       publishedAt: null,
       updatedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
     },
