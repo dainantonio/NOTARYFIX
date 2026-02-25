@@ -10,17 +10,17 @@ import {
 // ─── DATA ──────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
-  { label: 'Features',     id: 'features'     },
-  { label: 'How it works', id: 'how-it-works'  },
-  { label: 'Pricing',      id: 'pricing'       },
-  { label: 'FAQ',          id: 'faq'           },
+  { label: 'Features',      id: 'features'     },
+  { label: 'How it works',  id: 'how-it-works'  },
+  { label: 'Pricing',       id: 'pricing'       },
+  { label: 'Early Access',  id: 'waitlist'      },
 ];
 
 const STATS = [
-  { val: '4,200+', label: 'Active Notaries'    },
+  { val: 'Beta',   label: 'Early Access Open'  },
   { val: '50',     label: 'States Supported'   },
-  { val: '99.9%',  label: 'Uptime'             },
-  { val: '$2.4M',  label: 'Invoices Processed' },
+  { val: 'Free',   label: 'No Credit Card'     },
+  { val: '14-day', label: 'Full Feature Trial' },
 ];
 
 const ROLE_PROFILES = {
@@ -57,7 +57,7 @@ const PRICING = [
   {
     name: 'Starter', price: 0,  yearly: 0,  sub: 'For the part-time notary.',
     features: ['5 Appointments/mo', 'Basic Journal', 'Client Management', 'Local Storage'],
-    cta: 'Get Started Free', highlight: false,
+    cta: 'Try Demo Free', highlight: false,
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
@@ -95,9 +95,9 @@ const FAQ = [
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'Advanced AI Engine'   },
-  { icon: BadgeCheck,  label: '50-State Compliant'   },
-  { icon: ShieldCheck, label: 'SOC 2 Certified'      },
+  { icon: Sparkles,    label: 'AI Compliance Coach'  },
+  { icon: BadgeCheck,  label: '50-State Workflows'   },
+  { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
 
 const FOOTER_CONTENT = {
@@ -179,6 +179,10 @@ export default function Landing() {
   const [activeNav,      setActiveNav]      = useState('');
   const [focusedPhone,   setFocusedPhone]   = useState('route');
   const [hlInvoice,      setHlInvoice]      = useState(null);
+  const [waitlistEmail,  setWaitlistEmail]  = useState('');
+  const [waitlistRole,   setWaitlistRole]   = useState('mobile');
+  const [waitlistDone,   setWaitlistDone]   = useState(false);
+  const [waitlistLoading,setWaitlistLoading]= useState(false);
 
   const activeProfile = ROLE_PROFILES[profile];
   const painPoints    = beforeAfter === 'old' ? OLD_WAY : NEW_WAY;
@@ -213,7 +217,7 @@ export default function Landing() {
 
   // Nav highlight on scroll
   useEffect(() => {
-    const sections = ['features', 'how-it-works', 'pricing', 'faq'];
+    const sections = ['features', 'how-it-works', 'pricing', 'faq', 'waitlist'];
     const handler = () => {
       let current = '';
       sections.forEach(id => {
@@ -230,6 +234,18 @@ export default function Landing() {
   const handleInvoiceClick = (id, amt) => {
     setHlInvoice(id);
     setTimeout(() => setHlInvoice(null), 1600);
+  };
+
+  // Waitlist submit — stores locally + could POST to a backend
+  const handleWaitlist = (e) => {
+    e.preventDefault();
+    if (!waitlistEmail.trim()) return;
+    setWaitlistLoading(true);
+    // Store in localStorage so entries survive page refresh during demo
+    const existing = JSON.parse(localStorage.getItem('notaryos_waitlist') || '[]');
+    existing.push({ email: waitlistEmail.trim(), role: waitlistRole, ts: new Date().toISOString() });
+    localStorage.setItem('notaryos_waitlist', JSON.stringify(existing));
+    setTimeout(() => { setWaitlistLoading(false); setWaitlistDone(true); }, 800);
   };
 
   return (
@@ -261,9 +277,13 @@ export default function Landing() {
           {/* CTAs */}
           <div className="hidden items-center gap-3 md:flex">
             <Link to="/auth" className="text-sm font-medium text-slate-300 transition-colors hover:text-white">Log in</Link>
+            <button onClick={() => scrollTo('waitlist')}
+              className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-400/20">
+              Join Waitlist
+            </button>
             <Link to="/auth"
               className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
-              Start Free Trial
+              Live Demo
             </Link>
           </div>
 
@@ -285,8 +305,12 @@ export default function Landing() {
               ))}
               <Link to="/auth" onClick={() => setMobileMenuOpen(false)}
                 className="mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-bold text-white">
-                Start Free Trial
+                Open Live Demo
               </Link>
+              <button onClick={() => { setMobileMenuOpen(false); scrollTo('waitlist'); }}
+                className="rounded-lg border border-cyan-400/30 bg-cyan-400/8 px-4 py-3 text-center text-sm font-bold text-cyan-300">
+                Join Waitlist
+              </button>
             </div>
           </div>
         )}
@@ -319,12 +343,12 @@ export default function Landing() {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button onClick={() => navigate('/auth')}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
-              Start Free Trial
+              Open Live Demo
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <button onClick={() => scrollTo('how-it-works')}
+            <button onClick={() => scrollTo('waitlist')}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
-              See how it works
+              Join Waitlist
             </button>
           </div>
           <div className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-3">
@@ -752,7 +776,7 @@ export default function Landing() {
                       </li>
                     ))}
                   </ul>
-                  <button onClick={() => navigate('/auth')}
+                  <button onClick={() => tier.highlight || tier.cta === 'Contact Sales' ? scrollTo('waitlist') : navigate('/auth')}
                     className={`w-full rounded-xl py-3 text-sm font-black transition-all ${tier.highlight ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:brightness-110' : 'border border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'}`}>
                     {tier.cta}
                   </button>
@@ -842,26 +866,111 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══ FINAL CTA ═════════════════════════════════════════════════════════ */}
-      <section className="bg-[#0a1525] py-24">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-2xl shadow-cyan-500/30">
-            <Zap className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="text-4xl font-black tracking-tight md:text-6xl">
-            Ready to run your<br />business like a pro?
+      {/* ══ WAITLIST / EARLY ACCESS ═══════════════════════════════════════ */}
+      <section id="waitlist" className="bg-[#0a1525] py-24">
+        <div className="mx-auto max-w-2xl px-6 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
+            Early Access — Limited Spots
+          </span>
+          <h2 className="mt-6 text-4xl font-black tracking-tight md:text-5xl">
+            Be first in line.<br />
+            <span className="bg-gradient-to-r from-cyan-300 to-blue-500 bg-clip-text text-transparent">
+              Shape the product.
+            </span>
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-slate-400">
-            Join thousands of notaries who&apos;ve replaced their patchwork of tools with one clean, powerful platform.
+          <p className="mx-auto mt-5 max-w-xl text-lg text-slate-400">
+            NotaryOS is in active development. Early access members get free Pro access, direct input on features, and priority onboarding.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+
+          {waitlistDone ? (
+            <div className="mx-auto mt-10 max-w-md rounded-2xl border border-emerald-400/30 bg-emerald-400/8 p-8">
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/15">
+                  <BadgeCheck className="h-7 w-7 text-emerald-400" />
+                </div>
+              </div>
+              <p className="text-lg font-black text-white">You&apos;re on the list.</p>
+              <p className="mt-2 text-sm text-slate-400">
+                We&apos;ll reach out personally with your early access link. Expect to hear from us within 48 hours.
+              </p>
+              <button onClick={() => navigate('/auth')}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
+                Try the demo now <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleWaitlist} className="mx-auto mt-10 max-w-md space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="email"
+                  required
+                  value={waitlistEmail}
+                  onChange={e => setWaitlistEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={waitlistLoading}
+                  className="shrink-0 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 disabled:opacity-60"
+                >
+                  {waitlistLoading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white inline-block" /> : 'Join Waitlist'}
+                </button>
+              </div>
+              <div className="flex justify-center gap-2 rounded-xl border border-white/8 bg-white/4 p-1">
+                {[
+                  { key: 'mobile', label: 'Mobile Notary' },
+                  { key: 'loan',   label: 'Loan Signing'  },
+                  { key: 'agency', label: 'Agency'        },
+                ].map(r => (
+                  <button key={r.key} type="button"
+                    onClick={() => setWaitlistRole(r.key)}
+                    className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${waitlistRole === r.key ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-600">No credit card. No spam. Unsubscribe anytime.</p>
+            </form>
+          )}
+
+          <div className="mt-14 grid grid-cols-3 gap-4 text-center">
+            {[
+              { val: 'Free Pro',  sub: 'for early members'     },
+              { val: 'Direct',    sub: 'feature input channel'  },
+              { val: '48hr',      sub: 'personal onboarding'    },
+            ].map(item => (
+              <div key={item.val} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                <p className="text-xl font-black text-white">{item.val}</p>
+                <p className="mt-1 text-xs text-slate-500">{item.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ FINAL CTA ═════════════════════════════════════════════════════════ */}
+      <section className="bg-[#060d1b] py-16">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <h2 className="text-3xl font-black tracking-tight md:text-4xl">
+            Ready to explore the demo?
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-slate-400">
+            No signup required. Click in and see the full platform — schedule, journal, invoices, compliance, mileage, and more.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <button onClick={() => navigate('/auth')}
-              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-lg font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
-              Start Free — No Credit Card
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 active:scale-[.98]">
+              Open Live Demo
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <button onClick={() => scrollTo('waitlist')}
+              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
+              Join Waitlist
             </button>
           </div>
-          <p className="mt-5 text-sm text-slate-500">14-day trial · Cancel anytime · All 50 states</p>
+          <p className="mt-4 text-xs text-slate-600">Demo uses sample data · Nothing is saved to a server</p>
         </div>
       </section>
 

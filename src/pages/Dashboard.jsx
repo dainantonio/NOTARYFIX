@@ -673,6 +673,15 @@ const Dashboard = () => {
               <CardContent className="px-5 pb-5 pt-0">
                 {loading
                   ? <div className="h-52 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  : revenueData.every(d => d.amount === 0)
+                  ? (
+                    <div className="flex h-52 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                      <TrendingUp className="h-8 w-8 text-slate-200 dark:text-slate-700" />
+                      <p className="text-sm font-medium text-slate-400 dark:text-slate-500">No revenue data yet</p>
+                      <p className="text-xs text-slate-300 dark:text-slate-600">Add appointments with fees to see your chart</p>
+                      <Button size="sm" variant="secondary" onClick={() => navigate('/schedule')} className="mt-1">Add appointment</Button>
+                    </div>
+                  )
                   : (
                     <div className="h-52 w-full">
                       <ResponsiveContainer width="100%" height="100%">
@@ -704,6 +713,7 @@ const Dashboard = () => {
                   )
                 }
               </CardContent>
+
             </Card>
 
             {/* Activity Feed */}
