@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
+import { toast } from '../hooks/useLinker';
 
-const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
+const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
   const { data } = useData();
   const clientOptions = (data?.clients || []).map((c) => ({ label: c.name, value: c.name }));
-  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending' });
+  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending', notes: '' });
   const [smartInput, setSmartInput] = useState('');
 
   useEffect(() => {
@@ -17,11 +19,12 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
         amount: String(initialInvoice.amount || ''),
         due: /^\d{4}-\d{2}-\d{2}$/.test(initialInvoice.due || '') ? initialInvoice.due : '',
         status: initialInvoice.status || 'Pending',
+        notes: initialInvoice.notes || '',
       });
       return;
     }
-    setFormData({ client: clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending' });
-  }, [isOpen, initialInvoice, clientOptions]);
+    setFormData({ client: prefillClientName || clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending', notes: '' });
+  }, [isOpen, initialInvoice, clientOptions, prefillClientName]);
 
   if (!isOpen) return null;
 
@@ -49,6 +52,7 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
       date: initialInvoice?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       due: formData.due,
       status: formData.status,
+      notes: formData.notes || '',
     });
     setSmartInput('');
     onClose();
@@ -64,7 +68,7 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
             <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><Wand2 className="h-3.5 w-3.5" /> Smart Fill</div>
-            <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" placeholder="Paste invoice details (client, amount, due date, status)" />
+            <textarea value={smartInput} onChange={(e) => setSmartInput(e.target.value)} className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" placeholder="Paste invoice details (client, amount, due date, status)" />
             <div className="mt-2 flex flex-wrap gap-2">
               <Button type="button" size="sm" variant="secondary" onClick={() => applySmartFill(smartInput)}><Wand2 className="mr-1 h-3.5 w-3.5" /> Apply Smart Fill</Button>
               <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300">
@@ -97,6 +101,17 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
             </div>
           </div>
 
+
+
+          <div>
+            <Label>Notes / Breakdown (optional)</Label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="e.g. Signing fee $125, Travel $35, Printing $20"
+              className="min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+            />
+          </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button type="submit" className="flex-1" disabled={clientOptions.length === 0}>{initialInvoice ? 'Save Changes' : 'Generate'}</Button>
@@ -110,14 +125,50 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice }) => {
 const Invoices = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
+  const [statusFilter, setStatusFilter] = useState([]);
+  const [prefillClientName, setPrefillClientName] = useState('');
   const { data, addInvoice, updateInvoice, deleteInvoice } = useData();
+  const location = useLocation();
+  const navigate = useNavigate();
   const invoices = data?.invoices || [];
+
+  useEffect(() => {
+    const incoming = location.state?.statusFilter;
+    const prefillClient = location.state?.prefillClientName;
+    let shouldClearState = false;
+
+    if (Array.isArray(incoming) && incoming.length > 0) {
+      setStatusFilter(incoming.filter((x) => ['Pending', 'Overdue', 'Paid'].includes(x)));
+      shouldClearState = true;
+    }
+
+    if (prefillClient) {
+      setEditingInvoice(null);
+      setPrefillClientName(prefillClient);
+      setIsModalOpen(true);
+      shouldClearState = true;
+    }
+
+    if (shouldClearState) navigate('/invoices', { replace: true, state: {} });
+  }, [location.state, navigate]);
+
+  const visibleInvoices = useMemo(() => {
+    if (!statusFilter.length) return invoices;
+    return invoices.filter((inv) => statusFilter.includes(inv.status));
+  }, [invoices, statusFilter]);
+
 
   const totals = useMemo(() => ({
     paid: invoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
     pending: invoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
     overdue: invoices.filter((i) => i.status === 'Overdue').reduce((sum, i) => sum + Number(i.amount || 0), 0),
   }), [invoices]);
+
+  const visibleTotals = useMemo(() => ({
+    paid: visibleInvoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+    pending: visibleInvoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+    overdue: visibleInvoices.filter((i) => i.status === 'Overdue').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+  }), [visibleInvoices]);
 
   const getStatusBadge = (status) => {
     if (status === 'Paid') return <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Paid</Badge>;
@@ -126,20 +177,62 @@ const Invoices = () => {
     return <Badge>{status}</Badge>;
   };
 
+
+  const buildInvoiceLink = (invoice) => `${window.location.origin}/pay/${encodeURIComponent(invoice.id)}`;
+
+  const markSent = (invoice) => {
+    updateInvoice(invoice.id, {
+      sentAt: new Date().toISOString(),
+      paymentLink: invoice.paymentLink || buildInvoiceLink(invoice),
+      status: invoice.status === 'Paid' ? 'Paid' : 'Pending',
+    });
+    toast.success('Marked as sent');
+  };
+
+  const copyInvoiceLink = async (invoice) => {
+    const link = invoice.paymentLink || buildInvoiceLink(invoice);
+    await navigator.clipboard?.writeText(link);
+    updateInvoice(invoice.id, { paymentLink: link });
+    toast.success('Link copied to clipboard');
+  };
+
+  const sendInvoiceSmsStub = async (invoice) => {
+    const link = invoice.paymentLink || buildInvoiceLink(invoice);
+    await navigator.clipboard?.writeText(`Invoice ${invoice.id} for ${invoice.client}: ${link}`);
+    updateInvoice(invoice.id, { paymentLink: link, sentAt: new Date().toISOString() });
+    toast.success('SMS message copied to clipboard');
+  };
+
+  const exportInvoicePdfStub = (invoice) => {
+    const content = `Invoice ${invoice.id}\nClient: ${invoice.client}\nAmount: $${Number(invoice.amount).toFixed(2)}\nDue: ${invoice.due}\nStatus: ${invoice.status}`;
+    const blob = new Blob([content], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${invoice.id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('PDF exported');
+  };
+
   const handleSaveInvoice = (payload) => {
     if (editingInvoice) {
       updateInvoice(editingInvoice.id, payload);
+      toast.success('Invoice updated');
       setEditingInvoice(null);
+      setPrefillClientName('');
       return;
     }
     addInvoice(payload);
+    toast.success('Invoice created');
+    setPrefillClientName('');
   };
 
   return (
-    <div className="px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-20">
-      <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} />
+    <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-24">
+      <InvoiceModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvoice(null); setPrefillClientName(''); }} onSave={handleSaveInvoice} initialInvoice={editingInvoice} prefillClientName={prefillClientName} />
 
-      <Card className="border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white shadow-xl">
+      <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-blue-200">Billing Pipeline</p>
@@ -149,6 +242,15 @@ const Invoices = () => {
           <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> Create Invoice</Button>
         </CardContent>
       </Card>
+
+      {statusFilter.length > 0 && (
+        <Card>
+          <CardContent className="flex items-center justify-between gap-2 p-3 text-xs">
+            <p className="text-slate-600 dark:text-slate-300">Showing filtered invoices: {statusFilter.join(' + ')}</p>
+            <Button size="sm" variant="secondary" onClick={() => setStatusFilter([])}>Clear filter</Button>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card><CardContent className="p-4"><p className="text-xs uppercase text-slate-500">Collected</p><p className="text-2xl font-bold text-emerald-600">${totals.paid.toLocaleString()}</p></CardContent></Card>
@@ -161,10 +263,10 @@ const Invoices = () => {
 
         {/* ── Mobile card list ── */}
         <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
-          {invoices.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">No invoices yet.</p>
-          ) : invoices.map((invoice) => (
-            <div key={invoice.id} className="flex items-center gap-3 px-4 py-3.5">
+          {visibleInvoices.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</p>
+          ) : visibleInvoices.map((invoice) => (
+            <div key={invoice.id} className={`flex items-center gap-3 px-4 py-3.5 border-l-2 ${invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/50 dark:bg-rose-900/10' : 'border-transparent'}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
                   <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{invoice.id}</span>
@@ -172,17 +274,32 @@ const Invoices = () => {
                 </div>
                 <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{invoice.client}</p>
                 <p className="text-xs text-slate-500 mt-0.5">Due {invoice.due}</p>
+                {invoice.sentAt ? <p className="text-[11px] text-emerald-600">Sent {new Date(invoice.sentAt).toLocaleDateString()}</p> : null}
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-base font-black text-emerald-600 dark:text-emerald-400">${Number(invoice.amount).toLocaleString()}</p>
                 <div className="flex gap-1 mt-1 justify-end">
                   <button onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => deleteInvoice(invoice.id)} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => markSent(invoice)} className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Send to client"><Send className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => copyInvoiceLink(invoice)} className="p-1.5 rounded-lg text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Copy payment link"><Link2 className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => sendInvoiceSmsStub(invoice)} className="p-1.5 rounded-lg text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors" title="SMS stub"><MessageSquare className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => exportInvoicePdfStub(invoice)} className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="PDF stub"><FileText className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
+          {visibleInvoices.length > 0 ? (
+            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 text-xs dark:border-slate-700 dark:bg-slate-800/40">
+              <div className="grid grid-cols-3 gap-2">
+                <p className="text-slate-600">Collected <span className="font-semibold text-emerald-600">${visibleTotals.paid.toLocaleString()}</span></p>
+                <p className="text-slate-600">Outstanding <span className="font-semibold text-amber-600">${visibleTotals.pending.toLocaleString()}</span></p>
+                <p className="text-slate-600">Overdue <span className="font-semibold text-rose-600">${visibleTotals.overdue.toLocaleString()}</span></p>
+              </div>
+            </div>
+          ) : null}
 
         {/* ── Desktop table ── */}
         <CardContent className="hidden sm:block overflow-x-auto p-0">
@@ -195,24 +312,30 @@ const Invoices = () => {
                 <th className="px-6 py-4">Issued</th>
                 <th className="px-6 py-4">Due</th>
                 <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Sent</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {invoices.length === 0 ? (
-                <tr><td colSpan="7" className="py-8 text-center text-slate-500">No invoices yet.</td></tr>
-              ) : invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+              {visibleInvoices.length === 0 ? (
+                <tr><td colSpan="8" className="py-8 text-center text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</td></tr>
+              ) : visibleInvoices.map((invoice) => (
+                <tr key={invoice.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-2 ${invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/40 dark:bg-rose-900/10' : 'border-transparent'}`}>
                   <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{invoice.id}</td>
                   <td className="px-6 py-4 max-w-[160px] truncate">{invoice.client}</td>
                   <td className="px-6 py-4 font-semibold">${Number(invoice.amount).toLocaleString()}</td>
                   <td className="px-6 py-4">{invoice.date}</td>
                   <td className="px-6 py-4">{invoice.due}</td>
                   <td className="px-6 py-4">{getStatusBadge(invoice.status)}</td>
+                  <td className="px-6 py-4 text-xs text-emerald-600">{invoice.sentAt ? `Sent ${new Date(invoice.sentAt).toLocaleDateString()}` : '—'}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Button size="sm" variant="ghost" onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="danger" onClick={() => deleteInvoice(invoice.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => markSent(invoice)} title="Send"><Send className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => copyInvoiceLink(invoice)} title="Copy link"><Link2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => sendInvoiceSmsStub(invoice)} title="SMS stub"><MessageSquare className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => exportInvoicePdfStub(invoice)} title="PDF"><FileText className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="danger" onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -220,6 +343,16 @@ const Invoices = () => {
             </tbody>
           </table>
         </CardContent>
+
+        {visibleInvoices.length > 0 ? (
+          <div className="hidden sm:block border-t border-slate-200 bg-slate-50 px-6 py-3 text-xs dark:border-slate-700 dark:bg-slate-800/40">
+            <div className="grid grid-cols-3 gap-2">
+              <p className="text-slate-600">Total collected <span className="font-semibold text-emerald-600">${visibleTotals.paid.toLocaleString()}</span></p>
+              <p className="text-slate-600">Total outstanding <span className="font-semibold text-amber-600">${visibleTotals.pending.toLocaleString()}</span></p>
+              <p className="text-slate-600">Total overdue <span className="font-semibold text-rose-600">${visibleTotals.overdue.toLocaleString()}</span></p>
+            </div>
+          </div>
+        ) : null}
       </Card>
     </div>
   );
