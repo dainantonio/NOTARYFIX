@@ -795,6 +795,7 @@ const EntryModal = ({ isOpen, onClose, onSave, initial, appointments, invoices, 
     if (initial) {
       setForm({
         ...BLANK_FORM, ...initial,
+        idType: initial.idType || "Driver's License",
         fee: initial.fee !== undefined ? String(initial.fee) : '',
         thumbprintTaken: !!initial.thumbprintTaken,
         witnessRequired: !!initial.witnessRequired,
