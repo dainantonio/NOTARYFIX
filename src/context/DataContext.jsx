@@ -76,6 +76,7 @@ const defaultData = {
     { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },
     { id: 2, title: 'Journal Entries Up To Date', category: 'Records', dueDate: todayISO, status: 'Needs Review', notes: 'Audit journal entries for completeness.' },
   ],
+  agentRuns: [],
   signerSessions: [
     { id: 1, clientName: 'Estate Realty', signerName: 'Sarah Johnson', signerEmail: 's.johnson@email.com', status: 'active', createdAt: past4h, startedAt: past4h, completedAt: null },
   ],
@@ -325,6 +326,7 @@ const hydrate = () => {
           invoices:        Array.isArray(parsed.invoices)        ? parsed.invoices        : defaultData.invoices,
           mileageLogs:     Array.isArray(parsed.mileageLogs)     ? parsed.mileageLogs     : defaultData.mileageLogs,
           complianceItems: Array.isArray(parsed.complianceItems) ? parsed.complianceItems : defaultData.complianceItems,
+          agentRuns:      Array.isArray(parsed.agentRuns)      ? parsed.agentRuns      : defaultData.agentRuns,
           signerSessions:  Array.isArray(parsed.signerSessions)  ? parsed.signerSessions  : defaultData.signerSessions,
           signerDocuments: Array.isArray(parsed.signerDocuments) ? parsed.signerDocuments : defaultData.signerDocuments,
           portalMessages:  Array.isArray(parsed.portalMessages)  ? parsed.portalMessages  : defaultData.portalMessages,
@@ -430,6 +432,104 @@ export const DataProvider = ({ children }) => {
     const filled = checks.filter(Boolean).length;
     return Math.round((filled / checks.length) * 100);
   };
+
+  const runCloseoutAgent = (appointmentId, actor = 'Closeout Agent') => setData((p) => {
+    const appointment = (p.appointments || []).find((apt) => String(apt.id) === String(appointmentId));
+    if (!appointment) return p;
+
+    const stateCode = p.settings?.currentStateCode || 'WA';
+    const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === stateCode && fee.actType === 'Acknowledgment');
+    const suggestedAmount = parseMoneyLike(appointment.amount) ?? 0;
+    const maxFee = parseMoneyLike(schedule?.maxFee);
+    const invoiceAmount = maxFee == null ? suggestedAmount : Math.min(suggestedAmount, maxFee);
+
+    const nowIso = new Date().toISOString();
+    const invoiceId = `INV-${Math.floor(1000 + Math.random() * 9000)}`;
+    const runId = `AGENT-${Date.now()}`;
+    const journalId = Date.now() + Math.floor(Math.random() * 999);
+
+    const draftJournal = {
+      id: journalId,
+      entryNumber: `JE-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
+      date: appointment.date || todayISO,
+      time: appointment.time?.replace(' PM', '').replace(' AM', '') || '09:00',
+      actType: /jurat/i.test(appointment.type || '') ? 'Jurat' : 'Acknowledgment',
+      signerName: appointment.client || 'Unknown Signer',
+      signerAddress: '',
+      idType: '',
+      idIssuingState: stateCode,
+      idLast4: '',
+      idExpiration: '',
+      fee: invoiceAmount,
+      thumbprintTaken: false,
+      witnessRequired: false,
+      notes: `Drafted by closeout agent from appointment #${appointment.id}.`,
+      documentDescription: appointment.type || 'Notary appointment',
+      linkedAppointmentId: appointment.id,
+      linkedInvoiceId: invoiceId,
+      qualityScore: 65,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const draftInvoice = {
+      id: invoiceId,
+      client: appointment.client || 'Unknown',
+      amount: invoiceAmount,
+      date: new Date(nowIso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      due: appointment.date || todayISO,
+      status: 'Pending',
+      notes: `Auto-drafted by closeout agent for ${appointment.type || 'notary service'}.`,
+      sourceAppointmentId: appointment.id,
+      createdAt: nowIso,
+      sentAt: null,
+      paymentLink: '',
+    };
+
+    const runRecord = {
+      id: runId,
+      appointmentId: appointment.id,
+      appointmentClient: appointment.client || 'Unknown',
+      actor,
+      ranAt: nowIso,
+      actions: [
+        { type: 'journal_drafted', refId: journalId },
+        { type: 'invoice_drafted', refId: invoiceId },
+      ],
+      warnings: [
+        !draftJournal.idType ? 'Missing ID type in draft journal entry.' : null,
+        !draftJournal.idLast4 ? 'Missing signer ID last 4.' : null,
+      ].filter(Boolean),
+    };
+
+    const nextAppointments = (p.appointments || []).map((apt) => {
+      if (String(apt.id) !== String(appointmentId)) return apt;
+      return {
+        ...apt,
+        status: apt.status || 'completed',
+        agentCloseoutRunId: runId,
+        linkedInvoiceId: invoiceId,
+        linkedJournalEntryId: journalId,
+        closeoutCompletedAt: nowIso,
+      };
+    });
+
+    return _appendAuditLog({
+      ...p,
+      appointments: nextAppointments,
+      invoices: [draftInvoice, ...(p.invoices || [])],
+      journalEntries: [draftJournal, ...(p.journalEntries || [])],
+      agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
+    }, {
+      actor,
+      actorRole: 'ai_agent',
+      action: 'created',
+      resourceType: 'closeoutAgent',
+      resourceId: runId,
+      resourceLabel: `${appointment.client || 'Unknown'} closeout`,
+      diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
+    });
+  });
 
   const addTeamMember    = (m)     => setData((p) => ({ ...p, teamMembers: [m, ...(p.teamMembers || [])] }));
   const updateTeamMember = (id, u) => setData((p) => ({ ...p, teamMembers: (p.teamMembers || []).map((x) => x.id === id ? { ...x, ...u } : x) }));
@@ -868,6 +968,7 @@ export const DataProvider = ({ children }) => {
         addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
         submitForReview, approveRecord, rejectReview,
         importJurisdictionDataset,
+        runCloseoutAgent,
         appendAuditLog,
       }}
     >
