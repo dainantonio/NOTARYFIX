@@ -42,12 +42,18 @@ export const promptBus = {
 // ─── HOOK ─────────────────────────────────────────────────────────────────────
 export const useLinker = () => {
   const navigate = useNavigate();
-  const { data, updateAppointment, updateSignerSession, updateDispatchJob } = useData();
+  const { data, updateAppointment, updateSignerSession, updateDispatchJob, runCloseoutAgent } = useData();
 
   // ── Appointment → Journal + Invoice chain ────────────────────────────────────
   const completeAppointment = useCallback((apt) => {
     updateAppointment(apt.id, { status: 'completed', completedAt: new Date().toISOString() });
     toast.success(`"${apt.client}" marked complete.`);
+
+    const alreadyRan = (data.agentRuns || []).some((run) => String(run.appointmentId) === String(apt.id));
+    if (!alreadyRan && (parseFloat(apt.amount) || 0) > 0) {
+      runCloseoutAgent(apt.id, 'Closeout Agent');
+      toast.info('Agent drafted journal + invoice for review.');
+    }
 
     const hasJournal = (data.journalEntries || []).some((e) => e.linkedAppointmentId === apt.id);
     const hasInvoice = (data.invoices || []).some((i) => i.linkedAppointmentId === apt.id);
@@ -86,7 +92,7 @@ export const useLinker = () => {
     } else {
       showInvoicePrompt();
     }
-  }, [data.journalEntries, data.invoices, updateAppointment, navigate]);
+  }, [data.agentRuns, data.journalEntries, data.invoices, updateAppointment, navigate, runCloseoutAgent]);
 
   // ── Journal entry saved → suggest Invoice ────────────────────────────────────
   const afterJournalSave = useCallback((entry) => {
