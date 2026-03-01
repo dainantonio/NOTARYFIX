@@ -1,7 +1,7 @@
 // src/components/AgentSuggestionCard.jsx
 // Phase 1 — Suggestion card: Approve / Edit / Reject with confidence + missing fields
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt } from 'lucide-react';
+import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt, UserPlus, DollarSign, Bell, Phone, Mail, MapPin, Calendar } from 'lucide-react';
 
 const CONFIDENCE_COLORS = {
   high:   { bar: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800' },
@@ -25,6 +25,8 @@ const ActionIcon = ({ type }) => {
   if (type === 'journal_drafted') return <FileText className="h-3.5 w-3.5 text-blue-500" />;
   if (type === 'invoice_drafted') return <Receipt className="h-3.5 w-3.5 text-emerald-500" />;
   if (type === 'reminder_drafted') return <Clock className="h-3.5 w-3.5 text-violet-500" />;
+  if (type === 'client_drafted') return <UserPlus className="h-3.5 w-3.5 text-blue-500" />;
+  if (type === 'appointment_drafted') return <Calendar className="h-3.5 w-3.5 text-violet-500" />;
   return <Sparkles className="h-3.5 w-3.5 text-slate-400" />;
 };
 
@@ -33,18 +35,205 @@ const ActionLabel = ({ type }) => {
     journal_drafted: 'Journal entry drafted',
     invoice_drafted: 'Invoice drafted',
     reminder_drafted: 'Reminder queued',
+    client_drafted: 'Client created',
+    appointment_drafted: 'Appointment drafted',
   };
   return <span>{labels[type] || type}</span>;
 };
 
 export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject }) => {
   const [expanded, setExpanded] = useState(false);
+  const [sourceExpanded, setSourceExpanded] = useState(false);
   const score = suggestion.confidenceScore ?? 65;
   const tier = confidenceTier(score);
   const colors = CONFIDENCE_COLORS[tier];
   const missingFields = suggestion.missingFields || [];
   const hasWarnings = missingFields.length > 0 || (suggestion.warnings || []).length > 0;
 
+  const isAgingAR = suggestion.type === 'aging_ar';
+  const isLeadIntake = suggestion.type === 'lead_intake';
+
+  // Aging AR card
+  if (isAgingAR) {
+    return (
+      <div className="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10 shadow-sm overflow-hidden transition-all">
+        <div className="flex items-start gap-3 p-4">
+          <div className="flex-shrink-0 mt-0.5">
+            <Receipt className="h-5 w-5 text-amber-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                {suggestion.label || 'Overdue Invoice'}
+              </p>
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
+                {suggestion.daysOverdue} days overdue
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {suggestion.appointmentClient} · Invoice {suggestion.invoiceId} · ${suggestion.invoiceAmount}
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {suggestion.actor} · {new Date(suggestion.ranAt || suggestion.createdAt || Date.now()).toLocaleString()}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2 border-t border-amber-200/60 dark:border-amber-700/40 px-4 py-3">
+          <button
+            onClick={() => onReject?.(suggestion)}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition-colors"
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            Dismiss
+          </button>
+          <button
+            onClick={() => onApprove?.(suggestion)}
+            className="flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition-colors shadow-sm"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Send Reminder
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Lead intake card
+  if (isLeadIntake) {
+    const dc = suggestion.draftClient || {};
+    const da = suggestion.draftAppointment || {};
+    return (
+      <div className="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 shadow-sm overflow-hidden transition-all">
+        <div className="flex items-start gap-3 p-4">
+          <div className="flex-shrink-0 mt-0.5">
+            <UserPlus className="h-5 w-5 text-blue-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                {suggestion.label || 'New Lead'}
+              </p>
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
+                {score}% confidence
+              </span>
+              {suggestion.aiGenerated && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
+                  ✦ AI Parsed
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {suggestion.actor} · {new Date(suggestion.ranAt || suggestion.createdAt || Date.now()).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {expanded && (
+          <div className="mx-4 mb-2 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg border border-blue-100 dark:border-blue-900 bg-white dark:bg-slate-900 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-400 mb-2">Client Info</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-200">
+                    <UserPlus className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                    <span className="font-medium">{dc.name || '—'}</span>
+                  </div>
+                  {dc.phone && (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <Phone className="h-3 w-3 flex-shrink-0" />
+                      {dc.phone}
+                    </div>
+                  )}
+                  {dc.email && (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <Mail className="h-3 w-3 flex-shrink-0" />
+                      {dc.email}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="rounded-lg border border-blue-100 dark:border-blue-900 bg-white dark:bg-slate-900 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-400 mb-2">Appointment</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-200">
+                    <FileText className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                    <span className="font-medium">{da.type || '—'}</span>
+                  </div>
+                  {da.date && (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      {da.date}{da.time ? ` · ${da.time}` : ''}
+                    </div>
+                  )}
+                  {da.location && (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <MapPin className="h-3 w-3 flex-shrink-0" />
+                      {da.location}
+                    </div>
+                  )}
+                  {da.amount > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <DollarSign className="h-3 w-3 flex-shrink-0" />
+                      ${da.amount}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {suggestion.rawText && (
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+                <button
+                  onClick={() => setSourceExpanded(v => !v)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  Source text
+                  {sourceExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                </button>
+                {sourceExpanded && (
+                  <pre className="px-3 pb-3 text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap font-mono">{suggestion.rawText}</pre>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-2 border-t border-blue-200/60 dark:border-blue-700/40 px-4 py-3">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          >
+            {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {expanded ? 'Hide details' : 'View details'}
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onReject?.(suggestion)}
+              className="flex items-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 transition-colors"
+            >
+              <XCircle className="h-3.5 w-3.5" />
+              Discard
+            </button>
+            <button
+              onClick={() => onEdit?.(suggestion)}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Edit
+            </button>
+            <button
+              onClick={() => onApprove?.(suggestion)}
+              className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Create Lead
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Closeout (default) card
   return (
     <div className={`rounded-2xl border ${colors.border} ${colors.bg} shadow-sm overflow-hidden transition-all`}>
       {/* Header */}
@@ -109,7 +298,6 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
               : 'Needs your review before approving'}
           </div>
           <ul className="space-y-1.5">
-            {/* Rich compliance issues with fix instructions */}
             {(suggestion.complianceIssues || []).map((issue, i) => (
               <li key={`ci-${i}`} className="flex items-start gap-2">
                 <span className={`mt-0.5 text-xs font-bold flex-shrink-0 ${issue.severity === 'error' ? 'text-rose-500' : 'text-amber-500'}`}>
@@ -125,7 +313,6 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
                 </div>
               </li>
             ))}
-            {/* Fallback: plain missing fields when no complianceIssues */}
             {!(suggestion.complianceIssues || []).length && missingFields.map((field) => (
               <li key={field} className="text-xs text-amber-700 dark:text-amber-300">
                 · Missing: {MISSING_FIELD_LABELS[field] || field}

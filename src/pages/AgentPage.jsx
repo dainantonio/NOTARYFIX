@@ -1,11 +1,11 @@
 // src/pages/AgentPage.jsx
 // Phase 1 — Agent command center: pending suggestions, run history, KPIs
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles, CheckCircle2, XCircle, Clock, TrendingUp, FileText,
   Receipt, AlertTriangle, ChevronDown, ChevronUp, Pencil, Activity,
-  Zap, Shield, BarChart2, Settings2
+  Zap, Shield, BarChart2, Settings2, BellRing, Bell, UserPlus, RefreshCw, Send, X
 } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import { useData } from '../context/DataContext';
@@ -96,8 +96,10 @@ const RunRow = ({ run }) => {
 // ─── Main page ────────────────────────────────────────────────────────────────
 const AgentPage = () => {
   const navigate = useNavigate();
-  const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion } = useData();
+  const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion, runAgingARAgent, runLeadIntakeAgent, updateReminderStatus } = useData();
   const [historyTab, setHistoryTab] = useState('all');
+  const [leadText, setLeadText] = useState('');
+  const [leadParsing, setLeadParsing] = useState(false);
 
   const suggestions = useMemo(
     () => (data.agentSuggestions || []).filter((s) => s.status === 'pending'),
@@ -143,6 +145,32 @@ const AgentPage = () => {
     toast.info('Draft rejected and dismissed');
   };
 
+  const handleRunARCheck = () => {
+    runAgingARAgent?.();
+    toast.success('AR check complete — check pending drafts');
+  };
+
+  const handleParseLead = async () => {
+    if (!leadText.trim()) return;
+    setLeadParsing(true);
+    try {
+      await runLeadIntakeAgent?.(leadText);
+      setLeadText('');
+      toast.success('Lead parsed — review the draft below');
+    } finally {
+      setLeadParsing(false);
+    }
+  };
+
+  const pendingReminders = useMemo(() => {
+    const today = new Date();
+    const soon = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return (data.reminderQueue || [])
+      .filter(r => r.status === 'pending')
+      .sort((a, b) => new Date(a.scheduledFor) - new Date(b.scheduledFor))
+      .map(r => ({ ...r, isSoon: new Date(r.scheduledFor) <= soon }));
+  }, [data.reminderQueue]);
+
   const autonomyMode = data.settings?.autonomyMode || 'assistive';
 
   return (
@@ -163,6 +191,14 @@ const AgentPage = () => {
             <AutoBadge mode={autonomyMode} />
             <Button
               variant="secondary"
+              onClick={handleRunARCheck}
+              className="flex items-center gap-1.5"
+            >
+              <RefreshCw className="h-4 w-4" />
+              AR Check
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => navigate('/settings')}
               className="flex items-center gap-1.5"
             >
@@ -180,6 +216,51 @@ const AgentPage = () => {
         <KpiCard label="Approval rate" value={kpis.approvalRate != null ? `${kpis.approvalRate}%` : '—'} color="text-blue-600" icon={TrendingUp} />
         <KpiCard label="Edit rate" value={kpis.editRate != null ? `${kpis.editRate}%` : '—'} sub="how often you corrected drafts" icon={Pencil} />
       </div>
+
+      {/* Reminder Queue */}
+      {pendingReminders.length > 0 && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <BellRing className="h-4 w-4 text-amber-500" />
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Payment Reminders</p>
+              <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                {pendingReminders.length}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {pendingReminders.map((r) => (
+                <div key={r.id} className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${r.isSoon ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Bell className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{r.clientName}</p>
+                      <p className="text-xs text-slate-400">
+                        {r.type === 'initial_followup' ? '7-day follow-up' : 'Overdue notice'} · ${r.amount} · Due {new Date(r.scheduledFor).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => updateReminderStatus?.(r.id, 'sent')}
+                      className="flex items-center gap-1 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 transition-colors"
+                    >
+                      <Send className="h-3 w-3" />
+                      Sent
+                    </button>
+                    <button
+                      onClick={() => updateReminderStatus?.(r.id, 'dismissed')}
+                      className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Pending suggestions */}
       {suggestions.length > 0 ? (
@@ -214,6 +295,37 @@ const AgentPage = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Lead Intake */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-blue-500" />
+            <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">New Lead Intake</p>
+            <span className="text-xs text-slate-400">Paste any text — SMS, email, or voicemail</span>
+          </div>
+          <textarea
+            value={leadText}
+            onChange={(e) => setLeadText(e.target.value)}
+            rows={4}
+            placeholder="Paste lead text here... e.g. 'Hi, I need a loan signing done Friday at 3pm in Columbus OH, my name is John Smith, call me at 614-555-1234'"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={handleParseLead}
+              disabled={!leadText.trim() || leadParsing}
+              className="flex items-center gap-1.5"
+            >
+              {leadParsing ? (
+                <><RefreshCw className="h-4 w-4 animate-spin" /> Parsing...</>
+              ) : (
+                <><Sparkles className="h-4 w-4" /> Parse Lead</>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Autonomy mode info */}
       <Card>

@@ -149,4 +149,65 @@ export async function generateComplianceSummary(missingFields = [], stateCode = 
   return await callGemini(prompt);
 }
 
-export default { generateCloseoutDraft, generateComplianceSummary };
+
+/**
+ * Parse raw lead text (SMS, email, voicemail) into structured lead data.
+ */
+export async function parseLeadText(rawText) {
+  const prompt = `You are a notary business assistant. Parse the following raw text (could be an SMS, email, or voicemail transcript) about a potential notary appointment request. Extract structured data.
+
+Raw text:
+"${rawText.slice(0, 1000)}"
+
+Output ONLY a JSON object with these keys (use null for anything not found):
+{
+  "clientName": "full name or null",
+  "phone": "phone number or null",
+  "email": "email address or null",
+  "serviceType": "most likely notary service type (Loan Signing, Acknowledgment, Jurat, I-9, Power of Attorney, etc.) or null",
+  "suggestedDate": "ISO date string YYYY-MM-DD or null",
+  "suggestedTime": "time string like '2:00 PM' or null",
+  "location": "address or city/zip or null",
+  "estimatedFee": number or null,
+  "notes": "any other relevant details as a short string or null",
+  "confidence": number between 50 and 95 representing how confident you are in the parse
+}`;
+
+  const raw = await callGemini(prompt);
+
+  // Fallback: simple regex heuristics
+  const fallback = () => {
+    const phoneMatch = rawText.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);
+    const emailMatch = rawText.match(/[\w.-]+@[\w.-]+\.\w+/);
+    const dollarMatch = rawText.match(/\$(\d+)/);
+    const dateMatch = rawText.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/);
+    const nameMatch = rawText.match(/(?:from|for|hi,?\s+i(?:'m| am)?|name is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+    return {
+      clientName: nameMatch?.[1] || null,
+      phone: phoneMatch?.[0] || null,
+      email: emailMatch?.[0] || null,
+      serviceType: /loan/i.test(rawText) ? 'Loan Signing'
+        : /i-?9/i.test(rawText) ? 'I-9 Verification'
+        : /power of attorney|poa/i.test(rawText) ? 'Power of Attorney'
+        : /jurat/i.test(rawText) ? 'Jurat'
+        : 'Notary Appointment',
+      suggestedDate: dateMatch ? `${dateMatch[3]?.length === 2 ? '20' + dateMatch[3] : dateMatch[3]}-${String(dateMatch[1]).padStart(2,'0')}-${String(dateMatch[2]).padStart(2,'0')}` : null,
+      suggestedTime: null,
+      location: null,
+      estimatedFee: dollarMatch ? parseInt(dollarMatch[1]) : null,
+      notes: rawText.slice(0, 200),
+      confidence: 55,
+    };
+  };
+
+  if (!raw) return fallback();
+
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return fallback();
+  }
+}
+
+export default { generateCloseoutDraft, generateComplianceSummary, parseLeadText };

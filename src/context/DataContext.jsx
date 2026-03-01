@@ -83,6 +83,7 @@ const defaultData = {
   ],
   agentRuns: [],
   agentSuggestions: [],
+  reminderQueue: [],
   autonomyRoadmap: {
     owner: 'Product + Ops',
     updatedAt: new Date().toISOString(),
@@ -350,6 +351,7 @@ const hydrate = () => {
           complianceItems: Array.isArray(parsed.complianceItems) ? parsed.complianceItems : defaultData.complianceItems,
           agentRuns:      Array.isArray(parsed.agentRuns)      ? parsed.agentRuns      : defaultData.agentRuns,
           agentSuggestions: Array.isArray(parsed.agentSuggestions) ? parsed.agentSuggestions : defaultData.agentSuggestions,
+          reminderQueue: Array.isArray(parsed.reminderQueue) ? parsed.reminderQueue : defaultData.reminderQueue,
           autonomyRoadmap: parsed.autonomyRoadmap && typeof parsed.autonomyRoadmap === 'object' ? { ...defaultData.autonomyRoadmap, ...parsed.autonomyRoadmap } : defaultData.autonomyRoadmap,
           signerSessions:  Array.isArray(parsed.signerSessions)  ? parsed.signerSessions  : defaultData.signerSessions,
           signerDocuments: Array.isArray(parsed.signerDocuments) ? parsed.signerDocuments : defaultData.signerDocuments,
@@ -607,16 +609,91 @@ export const DataProvider = ({ children }) => {
     const updated = (p.agentSuggestions || []).map((s) =>
       s.id === id ? { ...s, status: 'approved', approvedAt: nowIso } : s
     );
+
+    // Aging AR: mark invoice overdue + add sent reminder
+    if (suggestion.type === 'aging_ar') {
+      const sentReminder = {
+        id: `REM-${Date.now()}`,
+        invoiceId: suggestion.invoiceId,
+        clientName: suggestion.appointmentClient,
+        amount: suggestion.invoiceAmount,
+        type: 'reminder_sent',
+        scheduledFor: nowIso,
+        status: 'sent',
+        createdAt: nowIso,
+      };
+      const updatedInvoices = (p.invoices || []).map((inv) =>
+        inv.id === suggestion.invoiceId ? { ...inv, status: 'Overdue', reminderSentAt: nowIso } : inv
+      );
+      return _appendAuditLog({
+        ...p,
+        invoices: updatedInvoices,
+        reminderQueue: [sentReminder, ...(p.reminderQueue || [])],
+        agentSuggestions: updated,
+      }, {
+        actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
+        action: 'approved', resourceType: 'agentSuggestion', resourceId: id,
+        resourceLabel: suggestion.label || 'Aging AR draft',
+        diff: `Sent reminder for invoice ${suggestion.invoiceId}`,
+      });
+    }
+
+    // Lead intake: commit client + appointment
+    if (suggestion.type === 'lead_intake') {
+      return _appendAuditLog({
+        ...p,
+        clients: suggestion.draftClient ? [suggestion.draftClient, ...(p.clients || [])] : (p.clients || []),
+        appointments: suggestion.draftAppointment ? [suggestion.draftAppointment, ...(p.appointments || [])] : (p.appointments || []),
+        agentSuggestions: updated,
+      }, {
+        actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
+        action: 'approved', resourceType: 'agentSuggestion', resourceId: id,
+        resourceLabel: suggestion.label || 'Lead intake draft',
+        diff: `Created client ${suggestion.draftClient?.name} + appointment`,
+      });
+    }
+
+    // Closeout (default): commit journal + invoice + queue reminders
+    const reminders = [];
+    if (suggestion.draftInvoice) {
+      const dueDate = new Date(suggestion.draftInvoice.due || nowIso);
+      const followupDate = new Date(dueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const overdueDate = new Date(dueDate.getTime() + 21 * 24 * 60 * 60 * 1000);
+      reminders.push(
+        {
+          id: `REM-${Date.now()}-1`,
+          invoiceId: suggestion.draftInvoice.id,
+          clientName: suggestion.draftInvoice.client,
+          amount: suggestion.draftInvoice.amount,
+          type: 'initial_followup',
+          scheduledFor: followupDate.toISOString(),
+          status: 'pending',
+          createdAt: nowIso,
+        },
+        {
+          id: `REM-${Date.now()}-2`,
+          invoiceId: suggestion.draftInvoice.id,
+          clientName: suggestion.draftInvoice.client,
+          amount: suggestion.draftInvoice.amount,
+          type: 'overdue_notice',
+          scheduledFor: overdueDate.toISOString(),
+          status: 'pending',
+          createdAt: nowIso,
+        }
+      );
+    }
+
     return _appendAuditLog({
       ...p,
       journalEntries: suggestion.draftJournal ? [suggestion.draftJournal, ...(p.journalEntries || [])] : (p.journalEntries || []),
       invoices: suggestion.draftInvoice ? [suggestion.draftInvoice, ...(p.invoices || [])] : (p.invoices || []),
+      reminderQueue: [...reminders, ...(p.reminderQueue || [])],
       agentSuggestions: updated,
     }, {
       actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
       action: 'approved', resourceType: 'agentSuggestion', resourceId: id,
       resourceLabel: suggestion.label || 'Agent draft',
-      diff: `Approved — journal + invoice committed to live data`,
+      diff: `Approved — journal + invoice committed${reminders.length ? ' + 2 reminders queued' : ''}`,
     });
   });
 
@@ -1219,6 +1296,112 @@ export const DataProvider = ({ children }) => {
   }, []);
 
 
+
+  const runAgingARAgent = () => setData((p) => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const existingARSuggestions = new Set(
+      (p.agentSuggestions || [])
+        .filter(s => s.type === 'aging_ar' && s.status === 'pending')
+        .map(s => s.invoiceId)
+    );
+
+    const overdueInvoices = (p.invoices || []).filter(inv => {
+      if (existingARSuggestions.has(inv.id)) return false;
+      if (!['Pending', 'Overdue'].includes(inv.status)) return false;
+      const dueDate = new Date(inv.due);
+      return !isNaN(dueDate.getTime()) && dueDate < today;
+    });
+
+    if (overdueInvoices.length === 0) return p;
+
+    const nowIso = new Date().toISOString();
+    const newSuggestions = overdueInvoices.map(inv => {
+      const dueDate = new Date(inv.due);
+      const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+      return {
+        id: `AR-${inv.id}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+        type: 'aging_ar',
+        status: 'pending',
+        label: `Overdue Invoice — ${inv.client}`,
+        appointmentClient: inv.client,
+        ranAt: nowIso,
+        createdAt: nowIso,
+        actor: 'Aging AR Agent',
+        invoiceId: inv.id,
+        invoiceAmount: inv.amount,
+        daysOverdue,
+        diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
+        actions: [{ type: 'reminder_drafted', refId: inv.id }],
+        confidenceScore: 90,
+        warnings: [],
+        missingFields: [],
+      };
+    });
+
+    return {
+      ...p,
+      agentSuggestions: [...newSuggestions, ...(p.agentSuggestions || [])].slice(0, 200),
+    };
+  });
+
+  const runLeadIntakeAgent = async (rawText) => {
+    if (!rawText?.trim()) return;
+    const { parseLeadText } = await import('../services/agentService');
+    const parsed = await parseLeadText(rawText);
+    const nowIso = new Date().toISOString();
+    const id = `LEAD-${Date.now()}`;
+    const clientId = `C-${Date.now()}`;
+    const apptId = Date.now() + 1;
+
+    const suggestion = {
+      id,
+      type: 'lead_intake',
+      status: 'pending',
+      label: `New Lead — ${parsed.clientName || 'Unknown'}`,
+      appointmentClient: parsed.clientName || 'Unknown',
+      ranAt: nowIso,
+      createdAt: nowIso,
+      actor: 'Lead Intake Agent',
+      rawText,
+      draftClient: {
+        id: clientId,
+        name: parsed.clientName || '',
+        phone: parsed.phone || '',
+        email: parsed.email || '',
+        type: 'Individual',
+        status: 'Active',
+      },
+      draftAppointment: {
+        id: apptId,
+        client: parsed.clientName || '',
+        type: parsed.serviceType || 'Notary Appointment',
+        date: parsed.suggestedDate || '',
+        time: parsed.suggestedTime || '',
+        location: parsed.location || '',
+        amount: parsed.estimatedFee || 0,
+        status: 'upcoming',
+        notes: parsed.notes || '',
+      },
+      confidenceScore: parsed.confidence || 70,
+      diff: `Client: ${parsed.clientName || 'Unknown'}\nService: ${parsed.serviceType || 'TBD'}\nDate: ${parsed.suggestedDate || 'TBD'}`,
+      actions: [{ type: 'client_drafted', refId: clientId }, { type: 'appointment_drafted', refId: String(apptId) }],
+      warnings: [],
+      missingFields: [],
+      aiGenerated: true,
+    };
+
+    setData((p) => ({
+      ...p,
+      agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
+    }));
+  };
+
+  const updateReminderStatus = (id, status) => setData((p) => ({
+    ...p,
+    reminderQueue: (p.reminderQueue || []).map((r) => r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r),
+  }));
+
   return (
     <DataContext.Provider
       value={{
@@ -1248,6 +1431,7 @@ export const DataProvider = ({ children }) => {
         importJurisdictionDataset,
         runCloseoutAgent,
         runCloseoutAgentWithAI,
+        runAgingARAgent, runLeadIntakeAgent, updateReminderStatus,
         approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion,
         updateAutonomyRoadmap,
         appendAuditLog,
