@@ -56,3 +56,9 @@ A mobile-first operations dashboard for notary businesses:
 ```bash
 npm install
 npm run dev
+
+
+---
+
+## Autonomous Roadmap
+- See `docs/AUTONOMY_ROADMAP.md` for the implementation plan to move from assistive UI to autonomous task completion (with supervision and audit guardrails).
