@@ -133,8 +133,9 @@ const AgentPage = () => {
   };
 
   const handleEdit = (suggestion) => {
-    // Navigate to journal with the draft pre-filled for editing
-    navigate('/journal', { state: { prefillFromSuggestion: suggestion.id } });
+    // Navigate to journal with the linked appointment pre-filled for editing
+    const aptId = suggestion.appointmentId || suggestion.linkedAppointmentId;
+    navigate('/journal', { state: aptId ? { prefillFromAppointment: aptId } : undefined });
   };
 
   const handleReject = (suggestion) => {

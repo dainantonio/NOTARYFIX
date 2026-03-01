@@ -466,7 +466,7 @@ const Dashboard = () => {
 
   const { theme }             = useTheme();
   const navigate              = useNavigate();
-  const { data, addAppointment } = useData();
+  const { data, addAppointment, approveAgentSuggestion, rejectAgentSuggestion } = useData();
 
   const planTier  = data.settings?.planTier  || 'free';
   const userRole  = data.settings?.userRole  || 'owner';
