@@ -852,8 +852,8 @@ const EntryModal = ({ isOpen, onClose, onSave, initial, appointments, invoices, 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (hasErrors) { setShowWarnings(true); return; }
-    const warns = warnings.filter((w) => w.severity !== 'info');
-    if (warns.length && !showWarnings) { setShowWarnings(true); return; }
+    // Warnings (non-errors) are shown inline but never block saving
+    setShowWarnings(true);
     onSave({ ...form, fee: parseFloat(form.fee) || 0 });
     onClose();
   };
