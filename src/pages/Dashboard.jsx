@@ -13,6 +13,7 @@ import {
 } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import { useTheme } from '../context/ThemeContext';
+import { PendingSuggestionsPanel } from '../components/AgentSuggestionCard';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import {
@@ -597,6 +598,21 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* ══ AGENT SUGGESTIONS ════════════════════════════════════════════ */}
+        {(data.agentSuggestions || []).filter(s => s.status === 'pending').length > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <PendingSuggestionsPanel
+                suggestions={(data.agentSuggestions || []).filter(s => s.status === 'pending')}
+                onApprove={(s) => { approveAgentSuggestion?.(s.id); navigate('/journal'); }}
+                onEdit={(s) => navigate('/agent')}
+                onReject={(s) => rejectAgentSuggestion?.(s.id)}
+                onViewAll={() => navigate('/agent')}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* ══ KPI STRIP ═══════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

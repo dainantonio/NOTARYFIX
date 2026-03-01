@@ -19,6 +19,7 @@ import TeamDispatch from './pages/TeamDispatch';
 import AITrainer from './pages/AITrainer';
 import FormGuide from './pages/FormGuide';
 import Admin from './pages/Admin';
+import AgentPage from './pages/AgentPage';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
 
@@ -77,6 +78,7 @@ function App() {
             <Route path="/team-dispatch"  element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
             <Route path="/ai-trainer"     element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
             <Route path="/admin"          element={<Admin />} />
+            <Route path="/agent"          element={<AgentPage />} />
 
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />

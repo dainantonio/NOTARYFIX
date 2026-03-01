@@ -49,12 +49,11 @@ export const useLinker = () => {
     updateAppointment(apt.id, { status: 'completed', completedAt: new Date().toISOString() });
     toast.success(`"${apt.client}" marked complete.`);
 
-    const alreadyRan = (data.agentRuns || []).some((run) => String(run.appointmentId) === String(apt.id));
-    const autonomyMode = data.settings?.autonomyMode || 'assistive';
+    const alreadyRan = (data.agentSuggestions || []).some((s) => String(s.appointmentId) === String(apt.id));
     const autoCloseoutEnabled = data.settings?.enableAutoCloseoutAgent !== false;
-    if (!alreadyRan && autoCloseoutEnabled && autonomyMode !== 'assistive' && (parseFloat(apt.amount) || 0) > 0) {
+    if (!alreadyRan && autoCloseoutEnabled) {
       runCloseoutAgent(apt.id, 'Closeout Agent');
-      toast.info('Closeout agent drafted journal + invoice for review.');
+      toast.info('Agent drafted journal + invoice — review in Copilot.');
     }
 
     const hasJournal = (data.journalEntries || []).some((e) => e.linkedAppointmentId === apt.id);

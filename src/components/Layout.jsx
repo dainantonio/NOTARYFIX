@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale
-} from 'lucide-react';
+, Sparkles } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -118,6 +118,7 @@ const LayoutInner = ({ children }) => {
     { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
     { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
     { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
+    { icon: Sparkles, label: 'Agent Copilot', path: '/agent' },
     { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
     { icon: Scale, label: 'Form Guide', path: '/form-guide' },

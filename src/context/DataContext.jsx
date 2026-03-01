@@ -80,6 +80,7 @@ const defaultData = {
     { id: 2, title: 'Journal Entries Up To Date', category: 'Records', dueDate: todayISO, status: 'Needs Review', notes: 'Audit journal entries for completeness.' },
   ],
   agentRuns: [],
+  agentSuggestions: [],
   autonomyRoadmap: {
     owner: 'Product + Ops',
     updatedAt: new Date().toISOString(),
@@ -346,6 +347,7 @@ const hydrate = () => {
           mileageLogs:     Array.isArray(parsed.mileageLogs)     ? parsed.mileageLogs     : defaultData.mileageLogs,
           complianceItems: Array.isArray(parsed.complianceItems) ? parsed.complianceItems : defaultData.complianceItems,
           agentRuns:      Array.isArray(parsed.agentRuns)      ? parsed.agentRuns      : defaultData.agentRuns,
+          agentSuggestions: Array.isArray(parsed.agentSuggestions) ? parsed.agentSuggestions : defaultData.agentSuggestions,
           autonomyRoadmap: parsed.autonomyRoadmap && typeof parsed.autonomyRoadmap === 'object' ? { ...defaultData.autonomyRoadmap, ...parsed.autonomyRoadmap } : defaultData.autonomyRoadmap,
           signerSessions:  Array.isArray(parsed.signerSessions)  ? parsed.signerSessions  : defaultData.signerSessions,
           signerDocuments: Array.isArray(parsed.signerDocuments) ? parsed.signerDocuments : defaultData.signerDocuments,
@@ -457,9 +459,9 @@ export const DataProvider = ({ children }) => {
     const appointment = (p.appointments || []).find((apt) => String(apt.id) === String(appointmentId));
     if (!appointment) return p;
 
-    const autonomyMode = p.settings?.autonomyMode || 'assistive';
     const autoCloseoutEnabled = p.settings?.enableAutoCloseoutAgent !== false;
-    if (!autoCloseoutEnabled || autonomyMode === 'assistive') return p;
+    if (!autoCloseoutEnabled) return p;
+    const autonomyMode = p.settings?.autonomyMode || 'assistive';
 
     const stateCode = p.settings?.currentStateCode || 'WA';
     const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === stateCode && fee.actType === 'Acknowledgment');
@@ -538,21 +540,102 @@ export const DataProvider = ({ children }) => {
       };
     });
 
+    // Detect missing fields for confidence scoring
+    const missingFields = [];
+    if (!draftJournal.idType) missingFields.push('idType');
+    if (!draftJournal.idLast4) missingFields.push('idLast4');
+    if (!draftJournal.signerAddress) missingFields.push('signerAddress');
+    if (!draftJournal.idExpiration) missingFields.push('idExpiration');
+    const confidenceScore = Math.max(10, 100 - (missingFields.length * 15) - (runRecord.warnings.length * 5));
+
+    const suggestion = {
+      id: runId,
+      type: 'closeout',
+      status: 'pending',
+      autonomyMode,
+      appointmentId: appointment.id,
+      appointmentClient: appointment.client || 'Unknown',
+      actor,
+      ranAt: nowIso,
+      createdAt: nowIso,
+      label: `Closeout — ${appointment.client || 'Unknown'}`,
+      actions: runRecord.actions,
+      warnings: runRecord.warnings,
+      missingFields,
+      confidenceScore,
+      draftJournal,
+      draftInvoice,
+      diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId}\nFee: $${invoiceAmount}\nState: ${stateCode}`,
+      wasEdited: false,
+    };
+
+    // In autonomous mode: auto-approve immediately (write directly to live data)
+    if (autonomyMode === 'autonomous') {
+      return _appendAuditLog({
+        ...p,
+        appointments: nextAppointments,
+        invoices: [draftInvoice, ...(p.invoices || [])],
+        journalEntries: [draftJournal, ...(p.journalEntries || [])],
+        agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
+        agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
+      }, {
+        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent',
+        resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
+        diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
+      });
+    }
+
+    // Assistive / supervised: create pending suggestion, update appointment linkage
     return _appendAuditLog({
       ...p,
       appointments: nextAppointments,
-      invoices: [draftInvoice, ...(p.invoices || [])],
-      journalEntries: [draftJournal, ...(p.journalEntries || [])],
       agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
+      agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
     }, {
-      actor,
-      actorRole: 'ai_agent',
-      action: 'created',
-      resourceType: 'closeoutAgent',
-      resourceId: runId,
-      resourceLabel: `${appointment.client || 'Unknown'} closeout`,
-      diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
+      actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent',
+      resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
+      diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval`,
     });
+  });
+
+  const approveAgentSuggestion = (id) => setData((p) => {
+    const suggestion = (p.agentSuggestions || []).find((s) => s.id === id);
+    if (!suggestion || suggestion.status !== 'pending') return p;
+    const nowIso = new Date().toISOString();
+    const updated = (p.agentSuggestions || []).map((s) =>
+      s.id === id ? { ...s, status: 'approved', approvedAt: nowIso } : s
+    );
+    return _appendAuditLog({
+      ...p,
+      journalEntries: suggestion.draftJournal ? [suggestion.draftJournal, ...(p.journalEntries || [])] : (p.journalEntries || []),
+      invoices: suggestion.draftInvoice ? [suggestion.draftInvoice, ...(p.invoices || [])] : (p.invoices || []),
+      agentSuggestions: updated,
+    }, {
+      actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
+      action: 'approved', resourceType: 'agentSuggestion', resourceId: id,
+      resourceLabel: suggestion.label || 'Agent draft',
+      diff: `Approved — journal + invoice committed to live data`,
+    });
+  });
+
+  const rejectAgentSuggestion = (id) => setData((p) => {
+    const suggestion = (p.agentSuggestions || []).find((s) => s.id === id);
+    const nowIso = new Date().toISOString();
+    const updated = (p.agentSuggestions || []).map((s) =>
+      s.id === id ? { ...s, status: 'rejected', rejectedAt: nowIso } : s
+    );
+    return _appendAuditLog({ ...p, agentSuggestions: updated }, {
+      actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
+      action: 'rejected', resourceType: 'agentSuggestion', resourceId: id,
+      resourceLabel: suggestion?.label || 'Agent draft', diff: 'Draft rejected by user',
+    });
+  });
+
+  const editAgentSuggestion = (id, changes) => setData((p) => {
+    const updated = (p.agentSuggestions || []).map((s) =>
+      s.id === id ? { ...s, ...changes, wasEdited: true, editedAt: new Date().toISOString() } : s
+    );
+    return { ...p, agentSuggestions: updated };
   });
 
   const updateAutonomyRoadmap = (updater) => setData((p) => {
@@ -999,6 +1082,7 @@ export const DataProvider = ({ children }) => {
         submitForReview, approveRecord, rejectReview,
         importJurisdictionDataset,
         runCloseoutAgent,
+        approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion,
         updateAutonomyRoadmap,
         appendAuditLog,
       }}
