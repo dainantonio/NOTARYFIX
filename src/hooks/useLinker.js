@@ -42,7 +42,7 @@ export const promptBus = {
 // ─── HOOK ─────────────────────────────────────────────────────────────────────
 export const useLinker = () => {
   const navigate = useNavigate();
-  const { data, updateAppointment, updateSignerSession, updateDispatchJob, runCloseoutAgent } = useData();
+  const { data, updateAppointment, updateSignerSession, updateDispatchJob, runCloseoutAgent, runCloseoutAgentWithAI } = useData();
 
   // ── Appointment → Journal + Invoice chain ────────────────────────────────────
   const completeAppointment = useCallback((apt) => {
