@@ -71,12 +71,31 @@ const defaultData = {
     complianceReviewDay: 'Monday',
     eAndOExpiresOn: '2026-12-31',
     onboardingComplete: true,
+    autonomyMode: 'supervised',
+    enableAutoCloseoutAgent: true,
+    enableAutoReminderDrafts: false,
   },
   complianceItems: [
     { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },
     { id: 2, title: 'Journal Entries Up To Date', category: 'Records', dueDate: todayISO, status: 'Needs Review', notes: 'Audit journal entries for completeness.' },
   ],
   agentRuns: [],
+  autonomyRoadmap: {
+    owner: 'Product + Ops',
+    updatedAt: new Date().toISOString(),
+    phases: [
+      { id: 'phase1', name: 'Assistive Foundation', status: 'in_progress', completion: 70 },
+      { id: 'phase2', name: 'Supervised Autonomy', status: 'in_progress', completion: 35 },
+      { id: 'phase3', name: 'Autonomous Operations', status: 'planned', completion: 0 },
+      { id: 'phase4', name: 'Learning + Defensibility', status: 'planned', completion: 0 },
+    ],
+    kpis: {
+      closeoutLatencyMinutes: null,
+      draftApprovalRate: null,
+      manualEditRate: null,
+      dsoDays: null,
+    },
+  },
   signerSessions: [
     { id: 1, clientName: 'Estate Realty', signerName: 'Sarah Johnson', signerEmail: 's.johnson@email.com', status: 'active', createdAt: past4h, startedAt: past4h, completedAt: null },
   ],
@@ -327,6 +346,7 @@ const hydrate = () => {
           mileageLogs:     Array.isArray(parsed.mileageLogs)     ? parsed.mileageLogs     : defaultData.mileageLogs,
           complianceItems: Array.isArray(parsed.complianceItems) ? parsed.complianceItems : defaultData.complianceItems,
           agentRuns:      Array.isArray(parsed.agentRuns)      ? parsed.agentRuns      : defaultData.agentRuns,
+          autonomyRoadmap: parsed.autonomyRoadmap && typeof parsed.autonomyRoadmap === 'object' ? { ...defaultData.autonomyRoadmap, ...parsed.autonomyRoadmap } : defaultData.autonomyRoadmap,
           signerSessions:  Array.isArray(parsed.signerSessions)  ? parsed.signerSessions  : defaultData.signerSessions,
           signerDocuments: Array.isArray(parsed.signerDocuments) ? parsed.signerDocuments : defaultData.signerDocuments,
           portalMessages:  Array.isArray(parsed.portalMessages)  ? parsed.portalMessages  : defaultData.portalMessages,
@@ -437,6 +457,10 @@ export const DataProvider = ({ children }) => {
     const appointment = (p.appointments || []).find((apt) => String(apt.id) === String(appointmentId));
     if (!appointment) return p;
 
+    const autonomyMode = p.settings?.autonomyMode || 'assistive';
+    const autoCloseoutEnabled = p.settings?.enableAutoCloseoutAgent !== false;
+    if (!autoCloseoutEnabled || autonomyMode === 'assistive') return p;
+
     const stateCode = p.settings?.currentStateCode || 'WA';
     const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === stateCode && fee.actType === 'Acknowledgment');
     const suggestedAmount = parseMoneyLike(appointment.amount) ?? 0;
@@ -506,7 +530,7 @@ export const DataProvider = ({ children }) => {
       if (String(apt.id) !== String(appointmentId)) return apt;
       return {
         ...apt,
-        status: apt.status || 'completed',
+        status: 'completed',
         agentCloseoutRunId: runId,
         linkedInvoiceId: invoiceId,
         linkedJournalEntryId: journalId,
@@ -529,6 +553,12 @@ export const DataProvider = ({ children }) => {
       resourceLabel: `${appointment.client || 'Unknown'} closeout`,
       diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
     });
+  });
+
+  const updateAutonomyRoadmap = (updater) => setData((p) => {
+    const current = p.autonomyRoadmap || defaultData.autonomyRoadmap;
+    const next = typeof updater === 'function' ? updater(current) : { ...current, ...(updater || {}) };
+    return { ...p, autonomyRoadmap: { ...current, ...next, updatedAt: new Date().toISOString() } };
   });
 
   const addTeamMember    = (m)     => setData((p) => ({ ...p, teamMembers: [m, ...(p.teamMembers || [])] }));
@@ -969,6 +999,7 @@ export const DataProvider = ({ children }) => {
         submitForReview, approveRecord, rejectReview,
         importJurisdictionDataset,
         runCloseoutAgent,
+        updateAutonomyRoadmap,
         appendAuditLog,
       }}
     >

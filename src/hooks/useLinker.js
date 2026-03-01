@@ -50,9 +50,11 @@ export const useLinker = () => {
     toast.success(`"${apt.client}" marked complete.`);
 
     const alreadyRan = (data.agentRuns || []).some((run) => String(run.appointmentId) === String(apt.id));
-    if (!alreadyRan && (parseFloat(apt.amount) || 0) > 0) {
+    const autonomyMode = data.settings?.autonomyMode || 'assistive';
+    const autoCloseoutEnabled = data.settings?.enableAutoCloseoutAgent !== false;
+    if (!alreadyRan && autoCloseoutEnabled && autonomyMode !== 'assistive' && (parseFloat(apt.amount) || 0) > 0) {
       runCloseoutAgent(apt.id, 'Closeout Agent');
-      toast.info('Agent drafted journal + invoice for review.');
+      toast.info('Closeout agent drafted journal + invoice for review.');
     }
 
     const hasJournal = (data.journalEntries || []).some((e) => e.linkedAppointmentId === apt.id);
