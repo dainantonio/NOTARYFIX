@@ -1,11 +1,12 @@
 // src/pages/AgentPage.jsx
-// Phase 1 — Agent command center: pending suggestions, run history, KPIs
+// Phase 3 — Agent command center: weekly digest, playbooks, pending suggestions, run history, KPIs
 import React, { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles, CheckCircle2, XCircle, Clock, TrendingUp, FileText,
   Receipt, AlertTriangle, ChevronDown, ChevronUp, Pencil, Activity,
-  Zap, Shield, BarChart2, Settings2, BellRing, Bell, UserPlus, RefreshCw, Send, X
+  Zap, Shield, BarChart2, Settings2, BellRing, Bell, UserPlus, RefreshCw, Send, X,
+  ScrollText, DollarSign, Calendar
 } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import { useData } from '../context/DataContext';
@@ -96,10 +97,24 @@ const RunRow = ({ run }) => {
 // ─── Main page ────────────────────────────────────────────────────────────────
 const AgentPage = () => {
   const navigate = useNavigate();
-  const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion, runAgingARAgent, runLeadIntakeAgent, updateReminderStatus } = useData();
+  const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion, runAgingARAgent, runARScan, runLeadIntakeAgent, updateReminderStatus, runCloseoutAgentWithAI, generateWeeklySummary } = useData();
   const [historyTab, setHistoryTab] = useState('all');
   const [leadText, setLeadText] = useState('');
   const [leadParsing, setLeadParsing] = useState(false);
+
+  // Weekly digest state
+  const [digest, setDigest] = useState(null);
+  const [digestLoading, setDigestLoading] = useState(false);
+
+  const handleGenerateDigest = async () => {
+    setDigestLoading(true);
+    try {
+      const result = await generateWeeklySummary?.();
+      setDigest(result);
+    } finally {
+      setDigestLoading(false);
+    }
+  };
 
   const suggestions = useMemo(
     () => (data.agentSuggestions || []).filter((s) => s.status === 'pending'),
@@ -150,18 +165,6 @@ const AgentPage = () => {
     toast.success('AR check complete — check pending drafts');
   };
 
-  const handleParseLead = async () => {
-    if (!leadText.trim()) return;
-    setLeadParsing(true);
-    try {
-      await runLeadIntakeAgent?.(leadText);
-      setLeadText('');
-      toast.success('Lead parsed — review the draft below');
-    } finally {
-      setLeadParsing(false);
-    }
-  };
-
   const pendingReminders = useMemo(() => {
     const today = new Date();
     const soon = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -209,6 +212,54 @@ const AgentPage = () => {
         </CardContent>
       </Card>
 
+      {/* Weekly Digest */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-violet-500" />
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Weekly Digest</p>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleGenerateDigest}
+              disabled={digestLoading}
+              className="flex items-center gap-1.5"
+            >
+              {digestLoading ? <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Generating…</> : <><RefreshCw className="h-3.5 w-3.5" /> {(digest || data.weeklyDigest) ? 'Refresh' : 'Generate Digest'}</>}
+            </Button>
+          </div>
+
+          {(digest || data.weeklyDigest) ? (() => {
+            const d = digest || data.weeklyDigest;
+            return (
+              <div className="space-y-3">
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{d.narrative}</p>
+                {d.stats && (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                      <Calendar className="h-3 w-3" /> {d.stats.appointmentsCompleted} appts
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                      <DollarSign className="h-3 w-3" /> ${d.stats.totalRevenue?.toFixed(2) || '0.00'}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                      <Bell className="h-3 w-3" /> {d.stats.remindersSent} reminders sent
+                    </span>
+                    <span className="text-xs text-slate-400 self-center ml-auto">
+                      Generated {new Date(d.generatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })() : (
+            <p className="text-sm text-slate-400">Generate a weekly summary of your business activity, powered by AI.</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCard label="Pending review" value={kpis.pending} color="text-amber-600" icon={Clock} />
@@ -216,6 +267,103 @@ const AgentPage = () => {
         <KpiCard label="Approval rate" value={kpis.approvalRate != null ? `${kpis.approvalRate}%` : '—'} color="text-blue-600" icon={TrendingUp} />
         <KpiCard label="Edit rate" value={kpis.editRate != null ? `${kpis.editRate}%` : '—'} sub="how often you corrected drafts" icon={Pencil} />
       </div>
+
+      {/* Playbooks */}
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Playbooks</p>
+            </div>
+            <button
+              onClick={() => navigate('/audit')}
+              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors"
+            >
+              <ScrollText className="h-3.5 w-3.5" />
+              View Full Audit Log →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Post-Appointment Closeout */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Post-Appointment Closeout</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Auto-draft journal + invoice from completed appointment</p>
+              </div>
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                {suggestions.length} pending closeout draft{suggestions.length !== 1 ? 's' : ''}
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                onClick={async () => {
+                  // Find most recent completed appointment without a pending suggestion
+                  const pendingApptIds = new Set((data.agentSuggestions || []).filter(s => s.status === 'pending' && s.type === 'closeout').map(s => String(s.appointmentId)));
+                  const target = [...(data.appointments || [])]
+                    .filter(a => a.status === 'completed' && !pendingApptIds.has(String(a.id)))
+                    .sort((a, b) => new Date(b.closeoutCompletedAt || b.date) - new Date(a.closeoutCompletedAt || a.date))[0]
+                    || [...(data.appointments || [])].filter(a => a.status !== 'completed').sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                  if (!target) { toast.error('No eligible appointments found'); return; }
+                  toast.info(`Running closeout for ${target.client}…`);
+                  await runCloseoutAgentWithAI?.(target.id);
+                  toast.success('Closeout draft created — check pending suggestions');
+                }}
+              >
+                <Zap className="h-3.5 w-3.5 mr-1.5" /> Run on Latest
+              </Button>
+            </div>
+
+            {/* AR Check */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">AR Check</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scan all overdue invoices and queue reminder suggestions</p>
+              </div>
+              <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                {(data.invoices || []).filter(i => ['Pending', 'Overdue'].includes(i.status)).length} overdue invoice{(data.invoices || []).filter(i => ['Pending', 'Overdue'].includes(i.status)).length !== 1 ? 's' : ''}
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                onClick={() => { runARScan?.(); toast.success('AR check complete — check pending drafts'); }}
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Run Now
+              </Button>
+            </div>
+
+            {/* Lead Intake */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Intake</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Parse a text snippet into a client + appointment</p>
+              </div>
+              <textarea
+                value={leadText}
+                onChange={(e) => setLeadText(e.target.value)}
+                rows={3}
+                placeholder="Paste SMS, email, or voicemail text..."
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={async () => {
+                  if (!leadText.trim()) return;
+                  setLeadParsing(true);
+                  try { await runLeadIntakeAgent?.(leadText); setLeadText(''); toast.success('Lead parsed — review the draft below'); }
+                  finally { setLeadParsing(false); }
+                }}
+                disabled={!leadText.trim() || leadParsing}
+              >
+                {leadParsing ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Parsing…</> : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Parse Lead</>}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Reminder Queue */}
       {pendingReminders.length > 0 && (
@@ -295,37 +443,6 @@ const AgentPage = () => {
           </CardContent>
         </Card>
       )}
-
-      {/* Lead Intake */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4 text-blue-500" />
-            <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">New Lead Intake</p>
-            <span className="text-xs text-slate-400">Paste any text — SMS, email, or voicemail</span>
-          </div>
-          <textarea
-            value={leadText}
-            onChange={(e) => setLeadText(e.target.value)}
-            rows={4}
-            placeholder="Paste lead text here... e.g. 'Hi, I need a loan signing done Friday at 3pm in Columbus OH, my name is John Smith, call me at 614-555-1234'"
-            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-          />
-          <div className="flex justify-end">
-            <Button
-              onClick={handleParseLead}
-              disabled={!leadText.trim() || leadParsing}
-              className="flex items-center gap-1.5"
-            >
-              {leadParsing ? (
-                <><RefreshCw className="h-4 w-4 animate-spin" /> Parsing...</>
-              ) : (
-                <><Sparkles className="h-4 w-4" /> Parse Lead</>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Autonomy mode info */}
       <Card>

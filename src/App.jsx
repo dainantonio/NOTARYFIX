@@ -20,6 +20,7 @@ import AITrainer from './pages/AITrainer';
 import FormGuide from './pages/FormGuide';
 import Admin from './pages/Admin';
 import AgentPage from './pages/AgentPage';
+import AuditPage from './pages/AuditPage';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
 
@@ -79,6 +80,7 @@ function App() {
             <Route path="/ai-trainer"     element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
             <Route path="/admin"          element={<Admin />} />
             <Route path="/agent"          element={<AgentPage />} />
+            <Route path="/audit"          element={<AuditPage />} />
 
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />

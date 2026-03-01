@@ -210,4 +210,40 @@ Output ONLY a JSON object with these keys (use null for anything not found):
   }
 }
 
-export default { generateCloseoutDraft, generateComplianceSummary, parseLeadText };
+/**
+ * Generate an AI weekly summary narrative for the notary business.
+ */
+export async function generateWeeklySummary(stats, notaryName = 'Notary') {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    return `This week: ${stats.appointmentsCompleted} appointments completed, $${stats.totalRevenue?.toFixed(2) || '0.00'} revenue, ${stats.remindersSent} reminders sent.`;
+  }
+
+  const prompt = `You are a business assistant for ${notaryName}, a mobile notary public.
+Write a concise, encouraging 2-3 sentence weekly summary based on these stats:
+- Appointments completed: ${stats.appointmentsCompleted}
+- Invoices created: ${stats.invoicesCreated}
+- Total revenue: $${stats.totalRevenue?.toFixed(2) || '0.00'}
+- Payment reminders sent: ${stats.remindersSent}
+- Compliance warnings flagged: ${stats.complianceWarnings}
+- Pending agent suggestions: ${stats.pendingSuggestions}
+
+Be specific, professional but warm. Highlight wins and any action needed.`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      }
+    );
+    const json = await res.json();
+    return json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || `Week recap: ${stats.appointmentsCompleted} appointments, $${stats.totalRevenue?.toFixed(2)} earned.`;
+  } catch {
+    return `Week recap: ${stats.appointmentsCompleted} appointments completed, $${stats.totalRevenue?.toFixed(2) || '0.00'} in revenue.`;
+  }
+}
+
+export default { generateCloseoutDraft, generateComplianceSummary, parseLeadText, generateWeeklySummary };

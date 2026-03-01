@@ -119,6 +119,7 @@ const LayoutInner = ({ children }) => {
     { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
     { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
     { icon: Sparkles, label: 'Agent Copilot', path: '/agent' },
+    { icon: ScrollText, label: 'Audit Log', path: '/audit' },
     { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
     { icon: Scale, label: 'Form Guide', path: '/form-guide' },

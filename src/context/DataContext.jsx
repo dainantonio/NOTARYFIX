@@ -1,6 +1,6 @@
 // File: src/context/DataContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { generateCloseoutDraft } from '../services/agentService';
+import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI } from '../services/agentService';
 import { checkCompliance, STATE_RULES } from '../hooks/useComplianceChecker';
 
 const DataContext = createContext();
@@ -76,6 +76,9 @@ const defaultData = {
     autonomyMode: 'supervised',
     enableAutoCloseoutAgent: true,
     enableAutoReminderDrafts: false,
+    confidenceThreshold: 85,
+    requireApprovalForWarnings: true,
+    autoScanAR: false,
   },
   complianceItems: [
     { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },
@@ -1164,7 +1167,7 @@ export const DataProvider = ({ children }) => {
 
       const autoCloseoutEnabled = p.settings?.enableAutoCloseoutAgent !== false;
       if (!autoCloseoutEnabled) return p;
-      const autonomyMode = p.settings?.autonomyMode || 'assistive';
+      let autonomyMode = p.settings?.autonomyMode || 'assistive';
       const sc = p.settings?.currentStateCode || 'WA';
       const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === sc && fee.actType === 'Acknowledgment');
       const suggestedAmount = parseMoneyLike(apt.amount) ?? 0;
@@ -1274,6 +1277,20 @@ export const DataProvider = ({ children }) => {
         diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId}\nFee: $${invoiceAmount}\nState: ${sc}`,
         wasEdited: false,
       };
+
+      // Check if supervised mode should auto-approve
+      const threshold = p.settings?.confidenceThreshold ?? 85;
+      const requireWarningApproval = p.settings?.requireApprovalForWarnings ?? true;
+      const hasWarnings = (suggestion.warnings || []).length > 0;
+
+      if (autonomyMode === 'supervised') {
+        const meetsConfidence = (suggestion.confidenceScore || 0) >= threshold;
+        const warningBlocks = requireWarningApproval && hasWarnings;
+        if (meetsConfidence && !warningBlocks) {
+          // Auto-approve: commit directly like autonomous mode
+          autonomyMode = 'autonomous'; // reuse existing autonomous branch below
+        }
+      }
 
       if (autonomyMode === 'autonomous') {
         return _appendAuditLog({
@@ -1402,6 +1419,90 @@ export const DataProvider = ({ children }) => {
     reminderQueue: (p.reminderQueue || []).map((r) => r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r),
   }));
 
+  // Alias for AgentPage playbook launcher
+  const runARScan = () => {
+    runAgingARAgent();
+  };
+
+  // Auto AR scan on mount — call this from app shell or AgentPage
+  const checkAutoScanAR = useCallback(() => {
+    setData((p) => {
+      if (!p.settings?.autoScanAR) return p;
+      const today = new Date().toISOString().split('T')[0];
+      if (p.settings?.autoScanAR_lastRun === today) return p;
+      // Mark lastRun today first (prevents double-run)
+      const updated = { ...p, settings: { ...p.settings, autoScanAR_lastRun: today } };
+      // Run AR scan inline
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+      const existingARSuggestions = new Set(
+        (updated.agentSuggestions || [])
+          .filter(s => s.type === 'aging_ar' && s.status === 'pending')
+          .map(s => s.invoiceId)
+      );
+      const overdueInvoices = (updated.invoices || []).filter(inv => {
+        if (existingARSuggestions.has(inv.id)) return false;
+        if (!['Pending', 'Overdue'].includes(inv.status)) return false;
+        const dueDate = new Date(inv.due);
+        return !isNaN(dueDate.getTime()) && dueDate < todayDate;
+      });
+      if (overdueInvoices.length === 0) return updated;
+      const nowIso = new Date().toISOString();
+      const newSuggestions = overdueInvoices.map(inv => {
+        const dueDate = new Date(inv.due);
+        const daysOverdue = Math.floor((todayDate - dueDate) / (1000 * 60 * 60 * 24));
+        return {
+          id: `AR-${inv.id}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+          type: 'aging_ar', status: 'pending',
+          label: `Overdue Invoice — ${inv.client}`,
+          appointmentClient: inv.client, ranAt: nowIso, createdAt: nowIso,
+          actor: 'Aging AR Agent (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
+          daysOverdue, diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
+          actions: [{ type: 'reminder_drafted', refId: inv.id }],
+          confidenceScore: 90, warnings: [], missingFields: [],
+        };
+      });
+      return { ...updated, agentSuggestions: [...newSuggestions, ...(updated.agentSuggestions || [])].slice(0, 200) };
+    });
+  }, []);
+
+  // Generate weekly digest — returns { stats, narrative, generatedAt }
+  const generateWeeklySummary = useCallback(async () => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    setData((p) => {
+      // compute stats synchronously in setData read-only pass
+      return p;
+    });
+    // Read current data snapshot
+    let snap;
+    setData((p) => { snap = p; return p; });
+
+    const sevenDaysAgoISO = sevenDaysAgo.toISOString();
+    const appointmentsCompleted = (snap.appointments || []).filter(a =>
+      a.status === 'completed' && a.closeoutCompletedAt && a.closeoutCompletedAt >= sevenDaysAgoISO
+    ).length;
+    const invoicesCreated = (snap.invoices || []).filter(i =>
+      i.createdAt && i.createdAt >= sevenDaysAgoISO
+    ).length;
+    const totalRevenue = (snap.invoices || [])
+      .filter(i => i.createdAt && i.createdAt >= sevenDaysAgoISO)
+      .reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0);
+    const remindersSent = (snap.reminderQueue || []).filter(r =>
+      r.status === 'sent' && r.createdAt && r.createdAt >= sevenDaysAgoISO
+    ).length;
+    const complianceWarnings = (snap.agentRuns || []).filter(r =>
+      r.ranAt && r.ranAt >= sevenDaysAgoISO && (r.warnings || []).length > 0
+    ).length;
+    const pendingSuggestions = (snap.agentSuggestions || []).filter(s => s.status === 'pending').length;
+
+    const stats = { appointmentsCompleted, invoicesCreated, totalRevenue, remindersSent, complianceWarnings, pendingSuggestions };
+    const narrative = await generateWeeklySummaryAI(stats, snap.settings?.name);
+    const result = { stats, narrative, generatedAt: new Date().toISOString() };
+
+    setData((p) => ({ ...p, weeklyDigest: result }));
+    return result;
+  }, []);
+
   return (
     <DataContext.Provider
       value={{
@@ -1431,10 +1532,11 @@ export const DataProvider = ({ children }) => {
         importJurisdictionDataset,
         runCloseoutAgent,
         runCloseoutAgentWithAI,
-        runAgingARAgent, runLeadIntakeAgent, updateReminderStatus,
+        runAgingARAgent, runARScan, runLeadIntakeAgent, updateReminderStatus,
         approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion,
         updateAutonomyRoadmap,
         appendAuditLog,
+        generateWeeklySummary, checkAutoScanAR,
       }}
     >
       {children}

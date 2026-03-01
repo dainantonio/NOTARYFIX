@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck } from 'lucide-react';
+import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck, Bot } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
@@ -36,6 +36,7 @@ const Settings = () => {
     { id: 'business', label: 'Business', icon: Building },
     { id: 'compliance', label: 'Compliance', icon: ShieldCheck },
     { id: 'preferences', label: 'Preferences', icon: Bell },
+    { id: 'agent', label: 'Agent', icon: Bot },
   ];
 
   const settingsHealth = useMemo(() => {
@@ -211,6 +212,129 @@ const Settings = () => {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {activeTab === 'agent' && (
+            <div className="space-y-6">
+              {/* Autonomy Mode Picker */}
+              <Card>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5 text-violet-500" /> Autonomy Mode</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Choose how much the agent is allowed to act on your behalf.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      {
+                        value: 'assistive',
+                        label: 'Suggest Only',
+                        desc: 'Agent drafts everything, you approve each action before anything is saved.',
+                        ring: 'ring-blue-400 border-blue-400 bg-blue-50 dark:bg-blue-900/20',
+                        icon: '🤝',
+                      },
+                      {
+                        value: 'supervised',
+                        label: 'Supervised',
+                        desc: 'Agent auto-approves high-confidence drafts (no compliance issues, above threshold). Everything else queues for review.',
+                        ring: 'ring-amber-400 border-amber-400 bg-amber-50 dark:bg-amber-900/20',
+                        icon: '👁',
+                      },
+                      {
+                        value: 'autonomous',
+                        label: 'Autonomous',
+                        desc: 'Agent commits all actions immediately. Review via Audit Log.',
+                        ring: 'ring-violet-400 border-violet-400 bg-violet-50 dark:bg-violet-900/20',
+                        icon: '⚡',
+                      },
+                    ].map(({ value, label, desc, ring, icon }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, autonomyMode: value }))}
+                        className={`rounded-xl border p-4 text-left transition-all ${
+                          formData.autonomyMode === value
+                            ? `ring-2 ${ring}`
+                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        <p className="text-lg mb-1">{icon}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{desc}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Confidence threshold — only show in supervised mode */}
+                  {formData.autonomyMode === 'supervised' && (
+                    <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Auto-approve when confidence ≥ {formData.settings?.confidenceThreshold ?? formData.confidenceThreshold ?? 85}%</Label>
+                        <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                          {formData.settings?.confidenceThreshold ?? formData.confidenceThreshold ?? 85}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={50}
+                        max={100}
+                        step={5}
+                        value={formData.confidenceThreshold ?? 85}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, confidenceThreshold: parseInt(e.target.value, 10) }))}
+                        className="w-full accent-amber-500"
+                      />
+                      <div className="flex justify-between text-xs text-slate-400">
+                        <span>50% (lenient)</span>
+                        <span>100% (strict)</span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Agent Behavior Toggles */}
+              <Card>
+                <CardHeader><CardTitle>Agent Behavior</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-white text-sm">Require approval for compliance warnings</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">When off, supervised mode ignores compliance warnings for the auto-approve decision.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, requireApprovalForWarnings: !(prev.requireApprovalForWarnings ?? true) }))}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                        (formData.requireApprovalForWarnings ?? true) ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
+                      }`}
+                    >
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                        (formData.requireApprovalForWarnings ?? true) ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-white text-sm">Auto-scan AR on app open</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automatically runs the aging AR check once per day when the app loads.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, autoScanAR: !(prev.autoScanAR ?? false) }))}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                        (formData.autoScanAR ?? false) ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
+                      }`}
+                    >
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                        (formData.autoScanAR ?? false) ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Agent Settings'}</Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
