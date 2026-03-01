@@ -52,8 +52,14 @@ export const useLinker = () => {
     const alreadyRan = (data.agentSuggestions || []).some((s) => String(s.appointmentId) === String(apt.id));
     const autoCloseoutEnabled = data.settings?.enableAutoCloseoutAgent !== false;
     if (!alreadyRan && autoCloseoutEnabled) {
-      runCloseoutAgent(apt.id, 'Closeout Agent');
-      toast.info('Agent drafted journal + invoice — review in Copilot.');
+      // Phase 2: Use AI-enhanced async closeout agent
+      runCloseoutAgentWithAI(apt.id, 'Closeout Agent')
+        .then(() => toast.info('✦ AI drafted journal + invoice — review in Copilot.'))
+        .catch(() => {
+          // Fallback to sync agent if AI call fails
+          runCloseoutAgent(apt.id, 'Closeout Agent');
+          toast.info('Agent drafted journal + invoice — review in Copilot.');
+        });
     }
 
     const hasJournal = (data.journalEntries || []).some((e) => e.linkedAppointmentId === apt.id);

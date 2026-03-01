@@ -1,5 +1,7 @@
 // File: src/context/DataContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { generateCloseoutDraft } from '../services/agentService';
+import { checkCompliance, STATE_RULES } from '../hooks/useComplianceChecker';
 
 const DataContext = createContext();
 
@@ -1054,6 +1056,169 @@ export const DataProvider = ({ children }) => {
     );
   });
 
+
+  // Phase 2 — AI-enhanced async closeout: calls Gemini then applies sync closeout
+  const runCloseoutAgentWithAI = useCallback(async (appointmentId, actor = 'Closeout Agent') => {
+    // Get appointment from current state
+    const currentData = (() => {
+      let d;
+      setData((p) => { d = p; return p; });
+      return d;
+    })();
+    const appointment = (currentData?.appointments || []).find(
+      (apt) => String(apt.id) === String(appointmentId)
+    );
+
+    const stateCode = currentData?.settings?.currentStateCode || 'WA';
+    const stateRules = STATE_RULES[stateCode];
+
+    // Call Gemini to generate real content
+    let aiDraft = null;
+    try {
+      aiDraft = await generateCloseoutDraft(appointment, stateCode, stateRules);
+    } catch (e) {
+      console.warn('[runCloseoutAgentWithAI] AI draft failed, using fallback:', e);
+    }
+
+    // Now run the sync closeout agent with AI-enriched data
+    setData((p) => {
+      const apt = (p.appointments || []).find((a) => String(a.id) === String(appointmentId));
+      if (!apt) return p;
+
+      const autoCloseoutEnabled = p.settings?.enableAutoCloseoutAgent !== false;
+      if (!autoCloseoutEnabled) return p;
+      const autonomyMode = p.settings?.autonomyMode || 'assistive';
+      const sc = p.settings?.currentStateCode || 'WA';
+      const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === sc && fee.actType === 'Acknowledgment');
+      const suggestedAmount = parseMoneyLike(apt.amount) ?? 0;
+      const maxFee = parseMoneyLike(schedule?.maxFee);
+      const invoiceAmount = maxFee == null ? suggestedAmount : Math.min(suggestedAmount, maxFee);
+
+      const nowIso = new Date().toISOString();
+      const invoiceId = `INV-${Math.floor(1000 + Math.random() * 9000)}`;
+      const runId = `AGENT-${Date.now()}`;
+      const journalId = Date.now() + Math.floor(Math.random() * 999);
+
+      // Determine act type from AI or appointment type
+      const detectedActType = aiDraft?.documentType
+        || (/jurat/i.test(apt.type || '') ? 'Jurat' : 'Acknowledgment');
+
+      const draftJournal = {
+        id: journalId,
+        entryNumber: `JE-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
+        date: apt.date || todayISO,
+        time: apt.time?.replace(' PM', '').replace(' AM', '') || '09:00',
+        actType: detectedActType,
+        signerName: apt.client || '',
+        signerAddress: apt.address || apt.location || '',
+        idType: '',
+        idIssuingState: sc,
+        idLast4: '',
+        idExpiration: '',
+        fee: invoiceAmount,
+        thumbprintTaken: false,
+        witnessRequired: false,
+        // AI-generated fields
+        notes: aiDraft?.journalNotes || `Drafted by closeout agent from appointment #${apt.id}.`,
+        documentDescription: aiDraft?.documentDescription || apt.type || 'Notary appointment',
+        linkedAppointmentId: apt.id,
+        linkedInvoiceId: invoiceId,
+        aiGenerated: aiDraft?.aiGenerated || false,
+        qualityScore: 65,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+
+      const draftInvoice = {
+        id: invoiceId,
+        client: apt.client || 'Unknown',
+        amount: invoiceAmount,
+        date: new Date(nowIso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        due: apt.date || todayISO,
+        status: 'Pending',
+        notes: aiDraft?.invoiceNotes || `Notary services rendered for ${apt.type || 'appointment'}.`,
+        sourceAppointmentId: apt.id,
+        createdAt: nowIso,
+        sentAt: null,
+        paymentLink: '',
+      };
+
+      // Run compliance check for the draft
+      const complianceResult = checkCompliance(draftJournal, sc);
+      const missingFields = complianceResult.missingRequired.map((m) => m.field);
+      const complianceWarnings = complianceResult.allIssues.map((i) => i.message);
+      // Confidence: compliance score + AI boost
+      const aiBoost = aiDraft?.aiConfidenceBoost || 0;
+      const confidenceScore = Math.min(100, complianceResult.score + aiBoost);
+
+      const runRecord = {
+        id: runId,
+        appointmentId: apt.id,
+        appointmentClient: apt.client || 'Unknown',
+        actor,
+        ranAt: nowIso,
+        aiGenerated: aiDraft?.aiGenerated || false,
+        actions: [
+          { type: 'journal_drafted', refId: journalId },
+          { type: 'invoice_drafted', refId: invoiceId },
+        ],
+        warnings: complianceWarnings.slice(0, 5),
+      };
+
+      const nextAppointments = (p.appointments || []).map((a) =>
+        String(a.id) !== String(appointmentId) ? a : {
+          ...a, status: 'completed', agentCloseoutRunId: runId,
+          linkedInvoiceId: invoiceId, linkedJournalEntryId: journalId,
+          closeoutCompletedAt: nowIso,
+        }
+      );
+
+      const suggestion = {
+        id: runId,
+        type: 'closeout',
+        status: 'pending',
+        autonomyMode,
+        appointmentId: apt.id,
+        appointmentClient: apt.client || 'Unknown',
+        actor,
+        ranAt: nowIso,
+        createdAt: nowIso,
+        label: `Closeout — ${apt.client || 'Unknown'}`,
+        actions: runRecord.actions,
+        warnings: runRecord.warnings,
+        missingFields,
+        complianceIssues: complianceResult.allIssues,
+        confidenceScore,
+        stateCode: sc,
+        stateName: complianceResult.stateName,
+        aiGenerated: aiDraft?.aiGenerated || false,
+        draftJournal,
+        draftInvoice,
+        diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId}\nFee: $${invoiceAmount}\nState: ${sc}`,
+        wasEdited: false,
+      };
+
+      if (autonomyMode === 'autonomous') {
+        return _appendAuditLog({
+          ...p,
+          appointments: nextAppointments,
+          invoices: [draftInvoice, ...(p.invoices || [])],
+          journalEntries: [draftJournal, ...(p.journalEntries || [])],
+          agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
+          agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
+        }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}` });
+      }
+
+      return _appendAuditLog({
+        ...p,
+        appointments: nextAppointments,
+        agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
+        agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
+      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
+    });
+  }, []);
+
+
   return (
     <DataContext.Provider
       value={{
@@ -1082,6 +1247,7 @@ export const DataProvider = ({ children }) => {
         submitForReview, approveRecord, rejectReview,
         importJurisdictionDataset,
         runCloseoutAgent,
+        runCloseoutAgentWithAI,
         approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion,
         updateAutonomyRoadmap,
         appendAuditLog,
