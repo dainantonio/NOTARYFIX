@@ -1,5 +1,5 @@
 // File: src/context/DataContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { generateCloseoutDraft } from '../services/agentService';
 import { checkCompliance, STATE_RULES } from '../hooks/useComplianceChecker';
 
