@@ -3,3 +3,17 @@ dist
 .DS_Store
 .env
 .env.local
+
+# Dangerous patch scripts — use git branches instead
+upgrade_v*.sh
+fix_and_upgrade_v*.sh
+master_fix.sh
+setup.sh
+
+# State snapshots — never commit real user data
+state_database.json
+*.json.bak
+
+# Build artifacts
+*.zip
+*.tar.gz
