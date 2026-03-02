@@ -1,24 +1,75 @@
 // api/gemini.js — Vercel serverless function
 // Proxies Gemini API calls server-side so the key never reaches the browser.
-// Frontend calls POST /api/gemini with { prompt, generationConfig?, safetySettings? }
+// Rate limited: 20 requests/minute per IP, plus origin check.
 
 const GEMINI_API_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
+// In-memory rate limit store: IP → { count, resetAt }
+// Vercel functions are warm for ~5 min, so this provides meaningful protection
+// against accidental loops and casual abuse without external infra.
+const rateLimitMap = new Map();
+const RATE_LIMIT    = 20;   // max requests
+const WINDOW_MS     = 60_000; // per 60 seconds
+
+function checkRateLimit(ip) {
+  const now  = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
+// Allowed origins — expand if you add a custom domain
+const ALLOWED_ORIGINS = [
+  'https://dainantonio.github.io',
+  'https://notaryfix.vercel.app',
+];
+
 export default async function handler(req, res) {
-  // Only allow POST
+  // ── CORS / Origin check ──────────────────────────────────────────────────
+  const origin = req.headers.origin || '';
+  const isAllowed =
+    ALLOWED_ORIGINS.some((o) => origin === o || origin.endsWith('.vercel.app')) ||
+    origin === ''; // server-to-server or same-origin (Vercel preview deploys)
+
+  if (!isAllowed) {
+    return res.status(403).json({ error: 'Forbidden origin.' });
+  }
+
+  // ── Method guard ─────────────────────────────────────────────────────────
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // ── Rate limit ───────────────────────────────────────────────────────────
+  const ip =
+    req.headers['x-forwarded-for']?.split(',')[0].trim() ||
+    req.socket?.remoteAddress ||
+    'unknown';
+
+  if (!checkRateLimit(ip)) {
+    console.warn('[api/gemini] Rate limit hit for IP:', ip);
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
+  }
+
+  // ── API key check ─────────────────────────────────────────────────────────
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY not configured on server.' });
   }
 
+  // ── Prompt validation ─────────────────────────────────────────────────────
   const { prompt, generationConfig, safetySettings } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid prompt.' });
+  }
+  if (prompt.length > 32_000) {
+    return res.status(400).json({ error: 'Prompt too long (max 32,000 chars).' });
   }
 
   const body = {
