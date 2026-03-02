@@ -603,6 +603,7 @@ export default function Onboarding() {
                     { label: 'Notary Type', val: form.notaryType },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                     { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
+                    { label: 'Agent Mode', val: { assistive: 'Assistive — drafts only', supervised: 'Supervised — review before commit', autonomous: 'Autonomous — auto-commit safe actions' }[form.agentMode] || '—' },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                       <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{row.label}</span>
