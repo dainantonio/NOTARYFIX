@@ -630,7 +630,7 @@ const Dashboard = () => {
                 <Button onClick={() => setIsModalOpen(true)}
                   className="border-0 bg-blue-500 text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600">
                   <Plus className="mr-1.5 h-4 w-4" />
-                  <span className="hidden xs:inline">New </span>Appointment
+                  New Appointment
                 </Button>
               </div>
             </div>
