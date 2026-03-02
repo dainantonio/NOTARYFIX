@@ -135,9 +135,9 @@ const Field = ({ label, children }) => (
   </div>
 );
 
-const TextInput = ({ ...props }) => (
+const TextInput = ({ className = '', ...props }) => (
   <input
-    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+    className={`w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${className}`}
     {...props}
   />
 );
@@ -364,7 +364,7 @@ export default function Onboarding() {
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
                     <TextInput
                       type="number"
-                      className="pl-8"
+                      className="pl-8 !text-white"
                       placeholder="10000"
                       value={form.monthlyGoal}
                       onChange={e => set('monthlyGoal', e.target.value)}

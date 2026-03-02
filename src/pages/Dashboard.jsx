@@ -547,9 +547,10 @@ const Dashboard = () => {
   const GreetIcon = greeting.Icon;
 
   const TIPS = [
-    'Owner focus: review margin trends daily and clear pending invoices before end-of-week.',
-    'Operator focus: block similar service types together to reduce travel and context-switching.',
-    'Batch mileage entries weekly — keeping them current saves hours at tax time.',
+    'Core Service: Use the Digital Journal to capture compliant on-site entries with automated prompts.',
+    'Core Service: Automated Invoicing keeps your cash flow visible — track status in real-time.',
+    'Core Service: Ground your guidance in jurisdiction policy records via the AI Compliance Coach.',
+    'Owner focus: Review revenue velocity and net profit margins to optimize your business growth.',
   ];
 
   return (
@@ -620,10 +621,10 @@ const Dashboard = () => {
             [1,2,3,4].map(i => <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-700" />)
           ) : (
             <>
-              <KpiTile title="Total Revenue"   value={`$${totalRevenue.toLocaleString()}`}  sub="All-time"             Icon={DollarSign}    accent="blue"   onClick={() => navigate('/invoices')} />
+              <KpiTile title="Total Revenue"   value={`$${totalRevenue.toLocaleString()}`}  sub={`Goal: $${(data.settings?.monthlyGoal || 0).toLocaleString()}/mo`} Icon={DollarSign}    accent="blue"   onClick={() => navigate('/invoices')} />
               <KpiTile title="Net Profit"       value={`$${netProfit.toLocaleString()}`}     sub={`${margin}% margin`}  Icon={Wallet}        accent="purple" onClick={() => navigate('/invoices')} />
-              <KpiTile title="Upcoming"         value={String(upcomingCount)}                sub={`${completedCount} completed`} Icon={CalendarClock} accent="orange" onClick={() => navigate('/schedule')} />
-              <KpiTile title="Outstanding"      value={`$${pendingAmt.toLocaleString()}`}    sub="Invoices pending"     Icon={FileText}      accent={pendingAmt > 0 ? 'rose' : 'green'} onClick={() => navigate('/invoices', { state: { statusFilter: ['Pending', 'Overdue'] } })} />
+              <KpiTile title="Journal Entries"  value={String((data.journalEntries || []).length)} sub="Compliant records" Icon={BookOpen} accent="green" onClick={() => navigate('/journal')} />
+              <KpiTile title="Outstanding"      value={`$${pendingAmt.toLocaleString()}`}    sub="Invoices pending"     Icon={FileText}      accent={pendingAmt > 0 ? 'rose' : 'orange'} onClick={() => navigate('/invoices', { state: { statusFilter: ['Pending', 'Overdue'] } })} />
             </>
           )}
         </div>

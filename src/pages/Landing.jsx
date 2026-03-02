@@ -35,10 +35,10 @@ const OLD_WAY = [
   { title: 'Admin Overload',   desc: 'Spending hours manually entering journal data after every signing.', icon: Clock3       },
 ];
 const NEW_WAY = [
-  { title: 'Invoices Auto-Tracked',  desc: 'Generated invoices and real-time status keep your cash flow visible.',  icon: Check },
-  { title: 'Compliance Confidence',  desc: 'State-aware prompts reduce mistakes and protect your commission.',       icon: Check },
-  { title: 'Admin Time Back',        desc: 'Journal and workflow automation cut repetitive post-signing work.',      icon: Check },
-  { title: 'Consistent Interface',   desc: 'Unified hero cards, dark-mode contrast, and consistent spacing reduce visual friction.', icon: Check },
+  { title: 'Automated Invoicing',    desc: 'Generate professional invoices instantly and track payment status in real-time.', icon: Check },
+  { title: 'Digital Journaling',     desc: 'Compliant on-site data capture with automated prompts and state-specific rules.', icon: Check },
+  { title: 'Compliance Management',  desc: 'AI-powered guidance grounded in 50-state jurisdiction policy records.',           icon: Check },
+  { title: 'Team Dispatch Board',    desc: 'Coordinate multi-notary teams with standardized UI and centralized records.',     icon: Check },
 ];
 
 const HOW_STEPS = [
@@ -82,15 +82,13 @@ const COMPARE_ROWS = [
 ];
 
 const FAQ = [
-  { q: 'Can I switch plans later?',              a: 'Yes — upgrade or downgrade anytime. Your data stays intact regardless of plan changes.' },
-  { q: 'Does NotaryOS support all 50 states?',   a: 'Yes. Compliance prompts and fee guardrails are calibrated for 50-state workflows.' },
-  { q: 'Do you offer a free trial?',             a: 'Every paid plan starts with a 14-day full-feature trial. No credit card required.' },
-  { q: 'Can agencies manage multiple notaries?', a: 'Yes. The Agency plan includes multi-user access, shared records, and full dispatch operations.' },
-  { q: 'Is signer data private?',                a: 'Absolutely. Signer workflows are fully isolated. We never share or sell signer data.' },
-  { q: 'Why is dark mode the default experience?', a: 'We prioritize readability and contrast consistency across dense operational views like dispatch, finance tables, and audit logs.' },
-  { q: 'Are Admin and Team Dispatch visuals standardized?', a: 'Yes. Core hero/header styles and spacing are standardized so switching between modules feels consistent and predictable.' },
-  { q: 'Can AI answers be grounded in jurisdiction policy records?', a: 'Yes. Admin can import state policy records and NotaryOS uses that structure for grounded fee, ID, and red-flag guidance.' },
-  { q: 'Does it work offline?',                  a: 'Yes. The mobile-first design works offline for field signings. Data syncs automatically when you reconnect.' },
+  { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides a unified platform for Appointment Scheduling, Digital Journaling, Automated Invoicing, and Compliance Management. Our Agency plan adds Team Dispatch and Multi-notary coordination.' },
+  { q: 'How does the AI Compliance Coach work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts to ensure every signing is compliant.' },
+  { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
+  { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
+  { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
+  { q: 'Can I switch plans or cancel anytime?', a: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.' },
+  { q: 'Why is the interface standardized across modules?', a: 'We use a unified design system (Standardized UI) so that switching between Admin, Dispatch, and Journaling feels predictable, reducing training time and operational errors.' },
 ];
 
 const TRUST_ITEMS = [
