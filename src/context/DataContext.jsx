@@ -1,7 +1,7 @@
 // File: src/context/DataContext.jsx
 // Slim orchestrator: initialises state, imports slice factories, exposes context.
 // ~280 lines — all business logic lives in src/context/slices/.
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createCrudOps }     from './slices/crudOps';
 import { createDispatchOps } from './slices/dispatchOps';
 import { createAgentOps }    from './slices/agentOps';
@@ -171,13 +171,11 @@ export const DataProvider = ({ children }) => {
     localStorage.setItem('notaryfix_data', JSON.stringify(data));
   }, [data]);
 
-  // Stable snapshot reader — passes current state without triggering re-render.
-  // Used by async agent functions (runCloseoutAgentWithAI, generateWeeklySummary).
-  const getData = useCallback(() => {
-    let snapshot;
-    setData((p) => { snapshot = p; return p; });
-    return snapshot;
-  }, []); // setData is stable; empty deps are correct
+  // Stable snapshot reader — always reflects latest state via ref.
+  // More reliable than the setState snapshot trick (no batching edge-cases).
+  const dataRef = useRef(data);
+  useEffect(() => { dataRef.current = data; }, [data]);
+  const getData = useCallback(() => dataRef.current, []);
 
   // ── Instantiate slice ops (memoised — only recreated if setData/getData change) ──
   const crudOps     = useMemo(() => createCrudOps(setData),          []);       // eslint-disable-line react-hooks/exhaustive-deps
