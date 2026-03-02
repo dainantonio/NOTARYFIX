@@ -24,7 +24,7 @@ const Settings = () => {
   const [savedFlash, setSavedFlash] = useState(false);
 
   useEffect(() => {
-    setFormData(data.settings);
+    setFormData({ ...data.settings, commissionedStates: Array.isArray(data.settings?.commissionedStates) && data.settings.commissionedStates.length ? data.settings.commissionedStates : [data.settings?.currentStateCode || 'WA'] });
   }, [data.settings]);
 
   useEffect(() => () => {
@@ -198,6 +198,40 @@ const Settings = () => {
                       <option value="">Select state</option>
                       {US_STATE_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
                     </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label>Commissioned states (multi-select)</Label>
+                    <div className="mt-1 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {(formData.commissionedStates || []).map((code) => (
+                          <span key={code} className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{code}</span>
+                        ))}
+                      </div>
+                      <div className="grid max-h-36 grid-cols-6 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-8">
+                        {US_STATE_CODES.map((code) => {
+                          const active = (formData.commissionedStates || []).includes(code);
+                          return (
+                            <button
+                              key={code}
+                              type="button"
+                              onClick={() => {
+                                const setStates = new Set(formData.commissionedStates || []);
+                                if (active) setStates.delete(code); else setStates.add(code);
+                                const next = Array.from(setStates);
+                                setFormData({
+                                  ...formData,
+                                  commissionedStates: next,
+                                  currentStateCode: next.includes(formData.currentStateCode) ? formData.currentStateCode : (next[0] || formData.currentStateCode),
+                                });
+                              }}
+                              className={`rounded-md border px-2 py-1 text-xs font-semibold transition ${active ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}`}
+                            >
+                              {code}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">

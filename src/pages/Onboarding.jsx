@@ -153,6 +153,7 @@ export default function Onboarding() {
     name:                 data.settings?.name          || '',
     businessName:         data.settings?.businessName  || '',
     stateCode:            data.settings?.currentStateCode || 'OH',
+    commissionedStates:    Array.isArray(data.settings?.commissionedStates) && data.settings.commissionedStates.length ? data.settings.commissionedStates : [data.settings?.currentStateCode || 'OH'],
     monthlyGoal:          data.settings?.monthlyGoal   || 10000,
     selectedPlan:         data.settings?.planTier      || 'pro',
     licenseNumber:        '',
@@ -165,7 +166,7 @@ export default function Onboarding() {
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
   const canAdvance = () => {
-    if (step === 1) return form.name.trim().length > 1;
+    if (step === 1) return form.name.trim().length > 1 && (form.commissionedStates || []).length > 0;
     if (step === 2) return form.businessName.trim().length > 1;
     if (step === 3) return form.licenseNumber.trim().length > 3;
     if (step === 4) return true;
@@ -181,6 +182,7 @@ export default function Onboarding() {
       name:                 form.name,
       businessName:         form.businessName,
       currentStateCode:     form.stateCode,
+      commissionedStates:    Array.from(new Set([form.stateCode, ...(form.commissionedStates || [])])),
       monthlyGoal:          Number(form.monthlyGoal),
       planTier:             form.selectedPlan,
       licenseNumber:        form.licenseNumber,
@@ -344,6 +346,40 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <p className="text-xs text-slate-500">We'll load the right fee limits and ID requirements.</p>
+                </Field>
+                <Field label="Commissioned States (multi-select)">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="mb-2 flex flex-wrap gap-2">
+                      {(form.commissionedStates || []).map(code => (
+                        <span key={code} className="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-1 text-[11px] font-semibold text-blue-300">{code}</span>
+                      ))}
+                      {(!form.commissionedStates || form.commissionedStates.length === 0) && (
+                        <span className="text-xs text-slate-500">Select at least one state</span>
+                      )}
+                    </div>
+                    <div className="grid max-h-40 grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-7">
+                      {US_STATES.map(code => {
+                        const active = (form.commissionedStates || []).includes(code);
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => {
+                              const setStates = new Set(form.commissionedStates || []);
+                              if (active) setStates.delete(code); else setStates.add(code);
+                              const next = Array.from(setStates);
+                              set('commissionedStates', next);
+                              if (!next.includes(form.stateCode)) set('stateCode', next[0] || 'OH');
+                            }}
+                            className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-all ${active ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'}`}
+                          >
+                            {code}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500">Primary state drives defaults. Additional states are stored for multi-state commissions.</p>
                 </Field>
               </div>
             )}
@@ -598,7 +634,8 @@ export default function Onboarding() {
                   {[
                     { label: 'Name',       val: form.name          || '—' },
                     { label: 'Business',   val: form.businessName  || '—' },
-                    { label: 'State',      val: form.stateCode              },
+                    { label: 'Primary State', val: form.stateCode },
+                    { label: 'Commissioned States', val: (form.commissionedStates || []).join(', ') || '—' },
                     { label: 'License',    val: form.licenseNumber || '—' },
                     { label: 'Notary Type', val: form.notaryType },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
