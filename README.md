@@ -1,64 +1,102 @@
+# NOTARYFIX — Agentic Notary Operations Platform
 
-# NOTARYFIX — Notary Operations Suite
-
-A mobile-first operations dashboard for notary businesses:
-- Executive dashboard (Owner / Operator views)
-- Scheduling (calendar + “smart add” parsing)
-- Clients CRM (smart fill from pasted text or scanned filename)
-- Invoices (smart fill + receipt filename parsing)
-- Mileage tracking (smart fill + GPS auto-calc + export)
-- Journal / Signer Portal / Team Dispatch / AI Trainer (Phase 1 scaffolds)
-
-> Built as a fast-moving MVP: clean UI, real CRUD in local state, and upgrade-ready modules.
+A mobile-first, AI-powered operations platform for notary businesses. Built to move from a human-operated dashboard toward autonomous task execution with compliance guardrails, confidence scoring, and full audit trails.
 
 ---
 
 ## Tech Stack
-- React + Vite
-- Tailwind CSS
-- React Router
-- Recharts charts
-- Framer Motion animations
+- **React + Vite** — SPA with BrowserRouter
+- **Tailwind CSS** — mobile-first styling
+- **Recharts** — KPI and revenue charts
+- **Framer Motion** — animations
+- **Vercel** — hosting + serverless API proxy
+- **localStorage** — client-side persistence (Firebase migration ready)
 
 ---
 
-## Features (Current)
-### Dashboard
-- KPI cards + revenue charts
-- “Owner View” vs “Operator View” quick actions
+## Architecture
 
-### Schedule
-- Month calendar
-- Create/edit appointments
-- “Smart Calendar Input” → parses date/time/amount/type/client
+### Context Slices (src/context/slices/)
+Business logic is split into three focused slice factories:
+- crudOps.js — appointments, clients, invoices, journal, mileage, compliance
+- dispatchOps.js — team dispatch, jobs, payouts, notes
+- agentOps.js — AI closeout agent, AR scan, lead intake, weekly digest
 
-### Clients
-- Add clients with smart parsing for email/phone/company
+DataContext.jsx is a slim orchestrator (~200 lines) that wires slices and handles localStorage hydration/persistence.
 
-### Invoices
-- Add/edit invoices
-- Smart fill supports parsing amount/due/status/client from pasted text or filename
+### AI Agent Service (src/services/agentService.js)
+All Gemini calls route through the /api/gemini Vercel serverless proxy. API key never reaches the browser. Capabilities:
+- Closeout Agent — drafts journal entries + invoices post-appointment
+- Lead Intake Parser — parses SMS/email/voicemail into structured appointment data
+- AR Scan Agent — flags overdue invoices and drafts payment reminders
+- Weekly Digest — summarises business performance with AI narrative
 
-### Mileage
-- Trip log CRUD
-- GPS “Start/Stop” tracking to auto-calc miles
-- Year-to-date deduction calculation
+### Autonomy Modes
+Three-tier agent autonomy controlled via Settings:
+- assistive — AI drafts only, notary creates manually
+- supervised — AI drafts surface in Review Queue for one-tap approve/reject
+- autonomous — AI auto-executes low-risk actions (Phase 3, planned)
 
-### Scaffolds (ready for next pass)
-- Journal
-- Signer Portal
-- Team Dispatch
-- AI Trainer
+---
+
+## Features
+
+### Agent Command Center (/agent)
+- Pending suggestion queue with confidence scores + compliance warnings
+- KPIs: approval rate, edit rate, pending count
+- Lead intake parser (paste SMS/email to structured appointment)
+- Weekly AI digest
+
+### Review Queue (/review)
+- Dedicated page for all pending agent suggestions
+- Filter by type (Closeout / AR / Lead), sort by date or confidence
+- Approve: journal + invoice created atomically
+- Nav badge shows live pending count
+
+### ArriveMode (/arrive/:id)
+- On-site appointment workflow assistant
+- Type-aware checklists (Loan Signing, I-9, Apostille, RON, GNW)
+- State-aware ID requirements and fee cap warnings
+
+### Compliance Layer
+- All 50 states + DC with per-state fee caps, required journal fields, thumbprint rules
+- Conditional rules (e.g. CA thumbprint required for deeds + POAs)
+
+### Feature Gating
+- Three plan tiers: free / pro / agency
+- Role-based access: owner / admin / dispatcher / notary
+- Soft journal entry limit (10/month on free tier)
 
 ---
 
 ## Getting Started
-```bash
+
 npm install
 npm run dev
 
+### Environment Variables
+
+Local (.env.local):
+VITE_GEMINI_API_KEY=your_key_here
+
+Vercel (dashboard environment variables):
+GEMINI_API_KEY=your_key_here
+BASE_URL=/
 
 ---
 
-## Autonomous Roadmap
-- See `docs/AUTONOMY_ROADMAP.md` for the implementation plan to move from assistive UI to autonomous task completion (with supervision and audit guardrails).
+## Deployment
+
+### Vercel (recommended)
+1. Import repo into Vercel
+2. Set GEMINI_API_KEY and BASE_URL=/ in environment variables
+3. Deploy — vercel.json handles SPA rewrites and API routing
+
+### GitHub Pages (static, no AI features)
+- AI calls fall back to deterministic heuristics
+- Base path defaults to /NOTARYFIX/
+
+---
+
+See SECURITY.md for API key handling and rate limiting details.
+See docs/AUTONOMY_ROADMAP.md for the 4-phase autonomy plan.
