@@ -1,54 +1,32 @@
 // src/services/agentService.js
-// Phase 2 Step 1 — Gemini-powered AI drafting for the Post-Appointment Closeout Agent
-// Generates real journal narratives, document descriptions, and invoice notes
-
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-
-function getApiKey() {
-  return import.meta.env.VITE_GEMINI_API_KEY || '';
-}
+// All Gemini calls route through /api/gemini (Vercel serverless function).
+// The API key lives server-side only — never in the browser bundle.
 
 /**
- * Call Gemini API with a prompt. Returns the text response or null on failure.
+ * Call the /api/gemini proxy with a prompt.
+ * Returns the text response or null on failure.
  */
-async function callGemini(prompt) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    console.warn('[agentService] VITE_GEMINI_API_KEY not set — skipping AI draft.');
-    return null;
-  }
-
+async function callGemini(prompt, generationConfig = null) {
   try {
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const response = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 512,
-          topP: 0.8,
-        },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-        ],
+        prompt,
+        ...(generationConfig ? { generationConfig } : {}),
       }),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      console.error('[agentService] Gemini API error:', err);
+      console.error('[agentService] /api/gemini error:', err);
       return null;
     }
 
     const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return text ? text.trim() : null;
+    return data.text ? data.text.trim() : null;
   } catch (err) {
-    console.error('[agentService] Gemini call failed:', err);
+    console.error('[agentService] callGemini failed:', err);
     return null;
   }
 }
@@ -62,15 +40,14 @@ async function callGemini(prompt) {
  * @returns {Object} { journalNotes, documentDescription, invoiceNotes, aiConfidenceBoost, aiGenerated }
  */
 export async function generateCloseoutDraft(appointment, stateCode = 'WA', stateRules = null) {
-  const client = appointment?.client || 'the signer';
-  const apptType = appointment?.type || 'notary appointment';
-  const apptDate = appointment?.date || new Date().toLocaleDateString();
-  const apptTime = appointment?.time || '';
-  const apptAddress = appointment?.address || appointment?.location || '';
-  const apptNotes = appointment?.notes || '';
-  const fee = appointment?.amount ? `$${appointment.amount}` : 'fee per schedule';
+  const client      = appointment?.client   || 'the signer';
+  const apptType    = appointment?.type     || 'notary appointment';
+  const apptDate    = appointment?.date     || new Date().toLocaleDateString();
+  const apptTime    = appointment?.time     || '';
+  const apptAddress = appointment?.address  || appointment?.location || '';
+  const apptNotes   = appointment?.notes    || '';
+  const fee         = appointment?.amount   ? `$${appointment.amount}` : 'fee per schedule';
 
-  // Build state-specific compliance context
   const stateContext = stateRules
     ? `This notarization was performed in ${stateRules.name} (${stateCode}). ${stateRules.notes || ''}`
     : `State: ${stateCode}.`;
@@ -97,7 +74,6 @@ Output a JSON object with exactly these keys (no extra text, just JSON):
   const raw = await callGemini(prompt);
 
   if (!raw) {
-    // Fallback: generate reasonable defaults without AI
     return {
       journalNotes: `Signer appeared in person and presented valid government-issued identification. Notarization performed for ${apptType} on ${apptDate}.${apptNotes ? ` Notes: ${apptNotes}` : ''}`,
       documentDescription: apptType || 'Notary appointment',
@@ -108,47 +84,39 @@ Output a JSON object with exactly these keys (no extra text, just JSON):
     };
   }
 
-  // Parse JSON from AI response
   try {
-    // Strip markdown code fences if present
     const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const parsed = JSON.parse(cleaned);
-
+    const parsed  = JSON.parse(cleaned);
     return {
-      journalNotes: parsed.journalNotes || '',
+      journalNotes:        parsed.journalNotes        || '',
       documentDescription: parsed.documentDescription || apptType,
-      invoiceNotes: parsed.invoiceNotes || `Notary services for ${apptType}.`,
-      documentType: parsed.documentType || 'Acknowledgment',
-      aiGenerated: true,
-      aiConfidenceBoost: 10, // AI-generated content bumps confidence score by 10 points
+      invoiceNotes:        parsed.invoiceNotes        || `Notary services for ${apptType}.`,
+      documentType:        parsed.documentType        || 'Acknowledgment',
+      aiGenerated:         true,
+      aiConfidenceBoost:   10,
     };
   } catch (parseErr) {
     console.warn('[agentService] JSON parse failed — using raw text as notes:', parseErr);
     return {
-      journalNotes: raw.slice(0, 300),
+      journalNotes:        raw.slice(0, 300),
       documentDescription: apptType,
-      invoiceNotes: `Notary services rendered for ${apptType} on ${apptDate}.`,
-      documentType: /jurat/i.test(apptType) ? 'Jurat' : 'Acknowledgment',
-      aiGenerated: true,
-      aiConfidenceBoost: 5,
+      invoiceNotes:        `Notary services rendered for ${apptType} on ${apptDate}.`,
+      documentType:        /jurat/i.test(apptType) ? 'Jurat' : 'Acknowledgment',
+      aiGenerated:         true,
+      aiConfidenceBoost:   5,
     };
   }
 }
 
 /**
  * Generate a compliance check summary narrative for the suggestion card.
- * Used to explain to the notary what still needs to be filled in and why.
  */
 export async function generateComplianceSummary(missingFields = [], stateCode = 'WA', stateName = '') {
   if (missingFields.length === 0) return null;
-
   const fieldList = missingFields.map((f) => f.field || f).join(', ');
-
   const prompt = `You are a notary compliance assistant. Write a single short, friendly sentence (max 25 words) telling a notary they need to fill in these missing fields before the journal entry is complete in ${stateName || stateCode}: ${fieldList}. Be specific and helpful.`;
-
   return await callGemini(prompt);
 }
-
 
 /**
  * Parse raw lead text (SMS, email, voicemail) into structured lead data.
@@ -175,33 +143,33 @@ Output ONLY a JSON object with these keys (use null for anything not found):
 
   const raw = await callGemini(prompt);
 
-  // Fallback: simple regex heuristics
   const fallback = () => {
-    const phoneMatch = rawText.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);
-    const emailMatch = rawText.match(/[\w.-]+@[\w.-]+\.\w+/);
+    const phoneMatch  = rawText.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);
+    const emailMatch  = rawText.match(/[\w.-]+@[\w.-]+\.\w+/);
     const dollarMatch = rawText.match(/\$(\d+)/);
-    const dateMatch = rawText.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/);
-    const nameMatch = rawText.match(/(?:from|for|hi,?\s+i(?:'m| am)?|name is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+    const dateMatch   = rawText.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/);
+    const nameMatch   = rawText.match(/(?:from|for|hi,?\s+i(?:'m| am)?|name is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
     return {
-      clientName: nameMatch?.[1] || null,
-      phone: phoneMatch?.[0] || null,
-      email: emailMatch?.[0] || null,
-      serviceType: /loan/i.test(rawText) ? 'Loan Signing'
-        : /i-?9/i.test(rawText) ? 'I-9 Verification'
-        : /power of attorney|poa/i.test(rawText) ? 'Power of Attorney'
-        : /jurat/i.test(rawText) ? 'Jurat'
-        : 'Notary Appointment',
-      suggestedDate: dateMatch ? `${dateMatch[3]?.length === 2 ? '20' + dateMatch[3] : dateMatch[3]}-${String(dateMatch[1]).padStart(2,'0')}-${String(dateMatch[2]).padStart(2,'0')}` : null,
+      clientName:    nameMatch?.[1]  || null,
+      phone:         phoneMatch?.[0] || null,
+      email:         emailMatch?.[0] || null,
+      serviceType:   /loan/i.test(rawText)              ? 'Loan Signing'
+                   : /i-?9/i.test(rawText)              ? 'I-9 Verification'
+                   : /power of attorney|poa/i.test(rawText) ? 'Power of Attorney'
+                   : /jurat/i.test(rawText)             ? 'Jurat'
+                   : 'Notary Appointment',
+      suggestedDate: dateMatch
+        ? `${dateMatch[3]?.length === 2 ? '20' + dateMatch[3] : dateMatch[3]}-${String(dateMatch[1]).padStart(2,'0')}-${String(dateMatch[2]).padStart(2,'0')}`
+        : null,
       suggestedTime: null,
-      location: null,
-      estimatedFee: dollarMatch ? parseInt(dollarMatch[1]) : null,
-      notes: rawText.slice(0, 200),
-      confidence: 55,
+      location:      null,
+      estimatedFee:  dollarMatch ? parseInt(dollarMatch[1]) : null,
+      notes:         rawText.slice(0, 200),
+      confidence:    55,
     };
   };
 
   if (!raw) return fallback();
-
   try {
     const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     return JSON.parse(cleaned);
@@ -214,11 +182,6 @@ Output ONLY a JSON object with these keys (use null for anything not found):
  * Generate an AI weekly summary narrative for the notary business.
  */
 export async function generateWeeklySummary(stats, notaryName = 'Notary') {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    return `This week: ${stats.appointmentsCompleted} appointments completed, $${stats.totalRevenue?.toFixed(2) || '0.00'} revenue, ${stats.remindersSent} reminders sent.`;
-  }
-
   const prompt = `You are a business assistant for ${notaryName}, a mobile notary public.
 Write a concise, encouraging 2-3 sentence weekly summary based on these stats:
 - Appointments completed: ${stats.appointmentsCompleted}
@@ -230,20 +193,8 @@ Write a concise, encouraging 2-3 sentence weekly summary based on these stats:
 
 Be specific, professional but warm. Highlight wins and any action needed.`;
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-      }
-    );
-    const json = await res.json();
-    return json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || `Week recap: ${stats.appointmentsCompleted} appointments, $${stats.totalRevenue?.toFixed(2)} earned.`;
-  } catch {
-    return `Week recap: ${stats.appointmentsCompleted} appointments completed, $${stats.totalRevenue?.toFixed(2) || '0.00'} in revenue.`;
-  }
+  const text = await callGemini(prompt, { temperature: 0.5, maxOutputTokens: 256, topP: 0.9 });
+  return text || `This week: ${stats.appointmentsCompleted} appointments completed, $${stats.totalRevenue?.toFixed(2) || '0.00'} revenue, ${stats.remindersSent} reminders sent.`;
 }
 
 export default { generateCloseoutDraft, generateComplianceSummary, parseLeadText, generateWeeklySummary };
