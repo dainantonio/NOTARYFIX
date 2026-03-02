@@ -4,8 +4,8 @@ import { Link, useLocation, BrowserRouter, useInRouterContext, useNavigate } fro
 import { 
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
-  UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale
-, Sparkles, ClipboardList} from 'lucide-react';
+  UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
+  Sparkles, ClipboardList, Maximize2, Minimize2} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -69,6 +69,7 @@ const LayoutInner = ({ children }) => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,6 +80,7 @@ const LayoutInner = ({ children }) => {
   const userRole = data.settings?.userRole || 'owner';
   const userName = data.settings?.name || 'User';
   const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'DA';
+  const businessLogo = data.settings?.businessLogo || '';
 
   const tierStyle = TIER_STYLES[planTier] || TIER_STYLES.free;
 
@@ -91,6 +93,21 @@ const LayoutInner = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
   }, [isSidebarCollapsed]);
+
+
+  useEffect(() => {
+    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onFs);
+    onFs();
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (_) {}
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -177,10 +194,17 @@ const LayoutInner = ({ children }) => {
         </nav>
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-3 relative">
-          <button onClick={toggleTheme} title="Dark mode is locked for consistent contrast" className={`w-full flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <button onClick={toggleTheme} title="Toggle theme" className={`w-full flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
-              <Moon className="w-5 h-5" />
-              {!isSidebarCollapsed && <span className="text-sm font-medium">Dark Mode</span>}
+              {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              {!isSidebarCollapsed && <span className="text-sm font-medium">{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>}
+            </div>
+          </button>
+
+          <button onClick={toggleFullscreen} title="Toggle fullscreen" className={`w-full flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            <div className="flex items-center gap-3">
+              {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+              {!isSidebarCollapsed && <span className="text-sm font-medium">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>}
             </div>
           </button>
 
@@ -189,7 +213,7 @@ const LayoutInner = ({ children }) => {
               {/* Current tier indicator */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+                  {businessLogo ? <img src={businessLogo} alt="Business logo" className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-600" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">{initials}</div>}
                   <div className="overflow-hidden">
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">{userRole}</p>
@@ -222,7 +246,7 @@ const LayoutInner = ({ children }) => {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-offset-2 ring-blue-500 transition-all">{initials}</div>
+              {businessLogo ? <img src={businessLogo} alt="Business logo" className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-600 cursor-pointer hover:ring-2 hover:ring-offset-2 ring-blue-500 transition-all" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-offset-2 ring-blue-500 transition-all">{initials}</div>}
               <button onClick={handleSignOut} title="Sign Out" className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors">
                 <LogOut className="w-4 h-4" />
               </button>
@@ -239,11 +263,12 @@ const LayoutInner = ({ children }) => {
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} min-w-0`}>
         <header className="md:hidden bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-2">
-             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">N</div>
+             {businessLogo ? <img src={businessLogo} alt="Business logo" className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700" /> : <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">N</div>}
              <span className="font-bold text-slate-900 dark:text-white">NotaryOS</span>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={() => setIsCommandPaletteOpen(true)}><Search className="w-5 h-5 dark:text-white" /></Button>
+            <Button variant="ghost" size="icon" onClick={toggleFullscreen}>{isFullscreen ? <Minimize2 className="w-5 h-5 dark:text-white" /> : <Maximize2 className="w-5 h-5 dark:text-white" />}</Button>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}><Menu className="w-6 h-6 dark:text-white" /></Button>
           </div>
         </header>

@@ -62,6 +62,8 @@ const defaultData = {
   settings: {
     name: '',
     businessName: '',
+    businessLogo: '',
+    businessLogoName: '',
     planTier: 'free',
     userRole: 'owner',
     currentStateCode: 'WA',

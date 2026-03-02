@@ -152,6 +152,8 @@ export default function Onboarding() {
   const [form, setForm] = useState({
     name:                 data.settings?.name          || '',
     businessName:         data.settings?.businessName  || '',
+    businessLogo:         data.settings?.businessLogo || '',
+    businessLogoName:     data.settings?.businessLogoName || '',
     stateCode:            data.settings?.currentStateCode || 'OH',
     commissionedStates:    Array.isArray(data.settings?.commissionedStates) && data.settings.commissionedStates.length ? data.settings.commissionedStates : [data.settings?.currentStateCode || 'OH'],
     monthlyGoal:          data.settings?.monthlyGoal   || 10000,
@@ -181,6 +183,8 @@ export default function Onboarding() {
     updateSettings({
       name:                 form.name,
       businessName:         form.businessName,
+      businessLogo:         form.businessLogo || '',
+      businessLogoName:     form.businessLogoName || '',
       currentStateCode:     form.stateCode,
       commissionedStates:    Array.from(new Set([form.stateCode, ...(form.commissionedStates || [])])),
       monthlyGoal:          Number(form.monthlyGoal),
@@ -398,6 +402,35 @@ export default function Onboarding() {
                     onChange={e => set('businessName', e.target.value)}
                     autoFocus
                   />
+                </Field>
+                <Field label="Business Logo (optional)">
+                  <div className="flex items-center gap-3">
+                    {form.businessLogo ? (
+                      <img src={form.businessLogo} alt="Business logo" className="h-14 w-14 rounded-xl border border-white/15 object-cover" />
+                    ) : (
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 text-xs font-bold text-slate-400">LOGO</div>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/10">
+                        Upload logo
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            if (typeof reader.result === 'string') {
+                              set('businessLogo', reader.result);
+                              set('businessLogoName', file.name);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }} />
+                      </label>
+                      {form.businessLogo && (
+                        <button type="button" onClick={() => { set('businessLogo', ''); set('businessLogoName', ''); }} className="text-xs text-rose-400 hover:text-rose-300">Remove logo</button>
+                      )}
+                    </div>
+                  </div>
                 </Field>
                 <Field label="Monthly Revenue Goal">
                   <div className="relative">
