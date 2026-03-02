@@ -144,6 +144,15 @@ const DailyBrief = ({ data, navigate }) => {
 
   const todayEarnings = todayApts.reduce((s, a) => s + (Number(a.amount) || 0), 0);
 
+  const pendingAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
+  const approvedAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'approved').length;
+
+  const agentActivityLine = pendingAgentDrafts > 0
+    ? `You have ${pendingAgentDrafts} agent draft${pendingAgentDrafts > 1 ? 's' : ''} awaiting review.`
+    : approvedAgentDrafts > 0
+      ? `Your agent has completed ${approvedAgentDrafts} approved draft${approvedAgentDrafts > 1 ? 's' : ''}.`
+      : 'Your agent is standing by for the next appointment. Try a test closeout → Schedule.';
+
   const items = [
     {
       Icon: CalendarClock,
@@ -210,9 +219,14 @@ const DailyBrief = ({ data, navigate }) => {
           <Sparkles className="h-4 w-4 text-amber-400" />
           Daily Brief
         </CardTitle>
-        <span className="text-xs text-slate-400 dark:text-slate-500">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-        </span>
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          </span>
+          <span className="mt-1 text-[11px] text-violet-500 dark:text-violet-300">
+            {agentActivityLine}
+          </span>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {items.map((item, i) => (
@@ -345,7 +359,7 @@ const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
 };
 
 // ─── QUICK ACTIONS GRID ───────────────────────────────────────────────────────
-const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
+const QuickActions = ({ navigate, onNew, planTier, userRole, pendingAgentDrafts = 0 }) => {
   const ctx = { planTier, role: userRole };
   const portalOK   = getGateState('signerPortal', ctx).allowed;
   const dispatchOK = getGateState('teamDispatch', ctx).allowed;
@@ -357,6 +371,7 @@ const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
     { Icon: DollarSign,    label: 'New Invoice',   cls: 'bg-emerald-600 hover:bg-emerald-700 text-white', fn: () => navigate('/invoices'), locked: false },
     { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO' },
     { Icon: Truck,         label: 'Dispatch',      cls: dispatchOK ? 'bg-amber-600 hover:bg-amber-700 text-white'  : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/team-dispatch'),  locked: !dispatchOK, lockLabel:'AGENCY' },
+    { Icon: Sparkles,      label: pendingAgentDrafts > 0 ? `Review ${pendingAgentDrafts} Draft${pendingAgentDrafts > 1 ? 's' : ''}` : 'AI Agent', cls: 'bg-violet-600 hover:bg-violet-700 text-white', fn: () => navigate('/agent'), locked: false },
     { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO' },
   ];
 
@@ -529,6 +544,7 @@ const Dashboard = () => {
       date: fd.date || todayISO(),
       time: fd.time, status: 'upcoming',
       amount: parseFloat(fd.fee) || 0,
+      address: fd.address || '',
       location: fd.location || 'TBD',
       notes: fd.notes || '',
       receiptName: fd.receiptName || '',
@@ -549,7 +565,7 @@ const Dashboard = () => {
   const TIPS = [
     'Core Service: Use the Digital Journal to capture compliant on-site entries with automated prompts.',
     'Core Service: Automated Invoicing keeps your cash flow visible — track status in real-time.',
-    'Core Service: Ground your guidance in jurisdiction policy records via the AI Compliance Coach.',
+    'Core Service: Let the AI Closeout Agent draft next-step actions grounded in jurisdiction policy records.',
     'Owner focus: Review revenue velocity and net profit margins to optimize your business growth.',
   ];
 
@@ -593,7 +609,7 @@ const Dashboard = () => {
                 <Button onClick={() => setIsModalOpen(true)}
                   className="border-0 bg-blue-500 text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600">
                   <Plus className="mr-1.5 h-4 w-4" />
-                  <span className="hidden xs:inline">New </span>Appointment
+                  New Appointment
                 </Button>
               </div>
             </div>
@@ -791,7 +807,7 @@ const Dashboard = () => {
                 <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 pt-0">
-                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} />
+                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} pendingAgentDrafts={(data.agentSuggestions || []).filter(s => s.status === 'pending').length} />
               </CardContent>
             </Card>
 

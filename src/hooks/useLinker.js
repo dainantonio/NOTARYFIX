@@ -54,11 +54,11 @@ export const useLinker = () => {
     if (!alreadyRan && autoCloseoutEnabled) {
       // Phase 2: Use AI-enhanced async closeout agent
       runCloseoutAgentWithAI(apt.id, 'Closeout Agent')
-        .then(() => toast.info('✦ AI drafted journal + invoice — review in Copilot.'))
+        .then(() => toast.info('✦ AI drafted journal + invoice — review in AI Agent.'))
         .catch(() => {
           // Fallback to sync agent if AI call fails
           runCloseoutAgent(apt.id, 'Closeout Agent');
-          toast.info('Agent drafted journal + invoice — review in Copilot.');
+          toast.info('Agent drafted journal + invoice — review in AI Agent.');
         });
     }
 
@@ -99,7 +99,7 @@ export const useLinker = () => {
     } else {
       showInvoicePrompt();
     }
-  }, [data.agentRuns, data.journalEntries, data.invoices, updateAppointment, navigate, runCloseoutAgent]);
+  }, [data.agentSuggestions, data.settings, data.journalEntries, data.invoices, updateAppointment, navigate, runCloseoutAgent, runCloseoutAgentWithAI]);
 
   // ── Journal entry saved → suggest Invoice ────────────────────────────────────
   const afterJournalSave = useCallback((entry) => {
