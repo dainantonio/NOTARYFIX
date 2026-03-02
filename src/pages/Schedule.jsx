@@ -124,6 +124,7 @@ const Schedule = () => {
         date: formData.date,
         time: formData.time,
         amount: parseFloat(formData.fee) || 0,
+        address: formData.address || '',
         location: formData.location || 'TBD',
         notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
         receiptName: formData.receiptName || '',
@@ -144,6 +145,7 @@ const Schedule = () => {
       time: formData.time,
       status: 'upcoming',
       amount: parseFloat(formData.fee) || 0,
+      address: formData.address || '',
       location: formData.location || 'TBD',
       notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
       receiptName: formData.receiptName || '',
@@ -188,7 +190,7 @@ const Schedule = () => {
     if (!smartPreview) return;
     addAppointment({
       id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
-      amount: smartPreview.amount, location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`, receiptName: '', receiptImage: '',
+      amount: smartPreview.amount, address: '', location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`, receiptName: '', receiptImage: '',
     });
     toast.success('Smart appointment added');
     setSmartCalendarInput('');
@@ -236,6 +238,7 @@ const Schedule = () => {
         time: '10:00 AM',
         status: 'upcoming',
         amount: 0,
+        address: '',
         location,
         notes: 'Imported from calendar file',
         receiptName: '',

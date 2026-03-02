@@ -24,7 +24,7 @@ const Settings = () => {
   const [savedFlash, setSavedFlash] = useState(false);
 
   useEffect(() => {
-    setFormData(data.settings);
+    setFormData({ ...data.settings, commissionedStates: Array.isArray(data.settings?.commissionedStates) && data.settings.commissionedStates.length ? data.settings.commissionedStates : [data.settings?.currentStateCode || 'WA'] });
   }, [data.settings]);
 
   useEffect(() => () => {
@@ -120,8 +120,30 @@ const Settings = () => {
               <CardHeader><CardTitle>Public Profile</CardTitle></CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-6">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-2xl font-bold text-slate-500 dark:bg-slate-700 dark:text-slate-400">{String(formData.name || 'NA').substring(0, 2).toUpperCase()}</div>
-                  <Button variant="secondary" size="sm">Upload New Picture</Button>
+                  {formData.businessLogo ? (
+                    <img src={formData.businessLogo} alt="Business logo" className="h-20 w-20 rounded-2xl border border-slate-200 object-cover dark:border-slate-700" />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-2xl font-bold text-slate-500 dark:bg-slate-700 dark:text-slate-400">{String(formData.name || 'NA').substring(0, 2).toUpperCase()}</div>
+                  )}
+                  <div className="space-y-2">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                      Upload Business Logo
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          if (typeof reader.result === 'string') {
+                            setFormData({ ...formData, businessLogo: reader.result, businessLogoName: file.name });
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }} />
+                    </label>
+                    {formData.businessLogo && (
+                      <button type="button" className="block text-xs text-rose-600 hover:underline dark:text-rose-400" onClick={() => setFormData({ ...formData, businessLogo: '', businessLogoName: '' })}>Remove logo</button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div><Label>Full Name</Label><Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
@@ -199,6 +221,40 @@ const Settings = () => {
                       {US_STATE_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
                     </select>
                   </div>
+                  <div className="md:col-span-2">
+                    <Label>Commissioned states (multi-select)</Label>
+                    <div className="mt-1 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {(formData.commissionedStates || []).map((code) => (
+                          <span key={code} className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{code}</span>
+                        ))}
+                      </div>
+                      <div className="grid max-h-36 grid-cols-6 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-8">
+                        {US_STATE_CODES.map((code) => {
+                          const active = (formData.commissionedStates || []).includes(code);
+                          return (
+                            <button
+                              key={code}
+                              type="button"
+                              onClick={() => {
+                                const setStates = new Set(formData.commissionedStates || []);
+                                if (active) setStates.delete(code); else setStates.add(code);
+                                const next = Array.from(setStates);
+                                setFormData({
+                                  ...formData,
+                                  commissionedStates: next,
+                                  currentStateCode: next.includes(formData.currentStateCode) ? formData.currentStateCode : (next[0] || formData.currentStateCode),
+                                });
+                              }}
+                              className={`rounded-md border px-2 py-1 text-xs font-semibold transition ${active ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}`}
+                            >
+                              {code}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">Operations Guardrail</p>
@@ -219,11 +275,11 @@ const Settings = () => {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-700">
                   <div>
                     <p className="font-medium text-slate-900 dark:text-white">Theme</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Dark mode is enforced to keep text and data contrast consistent.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Choose your preferred theme. Both modes keep contrast-safe text and UI colors.</p>
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" disabled className="flex w-24 cursor-not-allowed flex-col items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/40 p-3 text-slate-500 opacity-60"><Sun className="h-5 w-5" /><span className="text-xs font-medium">Light</span></button>
-                    <button onClick={toggleTheme} className="flex w-24 flex-col items-center gap-2 rounded-lg border border-blue-500 bg-blue-900/20 p-3 text-blue-400"><Moon className="h-5 w-5" /><span className="text-xs font-medium">Dark</span></button>
+                    <button type="button" onClick={() => theme !== 'light' && toggleTheme()} className={`flex w-24 flex-col items-center gap-2 rounded-lg border p-3 ${theme === 'light' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-300 text-slate-600 dark:border-slate-700 dark:text-slate-300'}`}><Sun className="h-5 w-5" /><span className="text-xs font-medium">Light</span></button>
+                    <button type="button" onClick={() => theme !== 'dark' && toggleTheme()} className={`flex w-24 flex-col items-center gap-2 rounded-lg border p-3 ${theme === 'dark' ? 'border-blue-500 bg-blue-900/20 text-blue-400' : 'border-slate-300 text-slate-600 dark:border-slate-700 dark:text-slate-300'}`}><Moon className="h-5 w-5" /><span className="text-xs font-medium">Dark</span></button>
                   </div>
                 </div>
               </CardContent>
