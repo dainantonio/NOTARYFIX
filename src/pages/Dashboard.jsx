@@ -605,10 +605,10 @@ const Dashboard = () => {
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-300">
                     {data.settings?.businessName || 'NotaryOS'}
                   </p>
-                  <h1 className="mt-0.5 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+                  <h1 className="mt-0.5 text-xl font-bold tracking-tight text-white sm:text-2xl lg:text-3xl">
                     {greeting.label}, {firstName}
                   </h1>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="mt-0.5 text-xs text-white/75">
                     {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
                   </p>
                   <p className="mt-1.5 text-xs font-medium text-cyan-300/90 flex items-center gap-1.5">

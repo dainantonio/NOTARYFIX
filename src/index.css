@@ -164,3 +164,27 @@ textarea {
 *::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
 }
+
+
+/* Improve native date/time picker legibility in dark mode */
+.dark .date-time-input {
+  color-scheme: dark;
+}
+
+.dark .date-time-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.25);
+  opacity: 0.95;
+  cursor: pointer;
+}
+
+.dark .date-time-input::-webkit-datetime-edit,
+.dark .date-time-input::-webkit-datetime-edit-fields-wrapper,
+.dark .date-time-input::-webkit-datetime-edit-text,
+.dark .date-time-input::-webkit-datetime-edit-month-field,
+.dark .date-time-input::-webkit-datetime-edit-day-field,
+.dark .date-time-input::-webkit-datetime-edit-year-field,
+.dark .date-time-input::-webkit-datetime-edit-hour-field,
+.dark .date-time-input::-webkit-datetime-edit-minute-field,
+.dark .date-time-input::-webkit-datetime-edit-ampm-field {
+  color: #f8fafc;
+}
