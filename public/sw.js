@@ -1,5 +1,6 @@
-const CACHE_NAME = 'notaryfix-v1';
-const STATIC_ASSETS = ['/', '/index.html'];
+const CACHE_NAME = 'notaryfix-v2';
+const BASE = '/NOTARYFIX/';
+const STATIC_ASSETS = [BASE, BASE + 'index.html'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
