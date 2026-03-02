@@ -151,7 +151,7 @@ const DailyBrief = ({ data, navigate }) => {
     ? `You have ${pendingAgentDrafts} agent draft${pendingAgentDrafts > 1 ? 's' : ''} awaiting review.`
     : approvedAgentDrafts > 0
       ? `Your agent has completed ${approvedAgentDrafts} approved draft${approvedAgentDrafts > 1 ? 's' : ''}.`
-      : 'Your agent is standing by for the next appointment.';
+      : 'Your agent is standing by for the next appointment. Try a test closeout → Schedule.';
 
   const items = [
     {
@@ -359,7 +359,7 @@ const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
 };
 
 // ─── QUICK ACTIONS GRID ───────────────────────────────────────────────────────
-const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
+const QuickActions = ({ navigate, onNew, planTier, userRole, pendingAgentDrafts = 0 }) => {
   const ctx = { planTier, role: userRole };
   const portalOK   = getGateState('signerPortal', ctx).allowed;
   const dispatchOK = getGateState('teamDispatch', ctx).allowed;
@@ -371,6 +371,7 @@ const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
     { Icon: DollarSign,    label: 'New Invoice',   cls: 'bg-emerald-600 hover:bg-emerald-700 text-white', fn: () => navigate('/invoices'), locked: false },
     { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO' },
     { Icon: Truck,         label: 'Dispatch',      cls: dispatchOK ? 'bg-amber-600 hover:bg-amber-700 text-white'  : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/team-dispatch'),  locked: !dispatchOK, lockLabel:'AGENCY' },
+    { Icon: Sparkles,      label: pendingAgentDrafts > 0 ? `Review ${pendingAgentDrafts} Draft${pendingAgentDrafts > 1 ? 's' : ''}` : 'AI Agent', cls: 'bg-violet-600 hover:bg-violet-700 text-white', fn: () => navigate('/agent'), locked: false },
     { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO' },
   ];
 
@@ -826,7 +827,7 @@ const Dashboard = () => {
                 <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 pt-0">
-                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} />
+                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} pendingAgentDrafts={(data.agentSuggestions || []).filter(s => s.status === 'pending').length} />
               </CardContent>
             </Card>
 

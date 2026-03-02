@@ -45,10 +45,10 @@ const OLD_WAY = [
   { title: 'Admin Overload',   desc: 'Spending hours manually entering journal data after every signing.', icon: Clock3       },
 ];
 const NEW_WAY = [
-  { title: 'Automated Invoicing',    desc: 'Generate professional invoices instantly and track payment status in real-time.', icon: Check },
-  { title: 'Digital Journaling',     desc: 'Compliant on-site data capture with automated prompts and state-specific rules.', icon: Check },
-  { title: 'Compliance Management',  desc: 'AI-powered guidance grounded in 50-state jurisdiction policy records.',           icon: Check },
-  { title: 'Team Dispatch Board',    desc: 'Coordinate multi-notary teams with standardized UI and centralized records.',     icon: Check },
+  { title: 'Agent-Drafted Invoices', desc: 'Your agent drafts professional invoices automatically after each completed appointment.', icon: Check },
+  { title: 'Agent-Assisted Journaling', desc: 'Your agent prepares compliant journal drafts with state-specific prompts ready for review.', icon: Check },
+  { title: 'Active Compliance Guardrails', desc: 'Your agent flags fee, ID, and act-level risks using grounded 50-state policy records.', icon: Check },
+  { title: 'Agent-Ready Team Dispatch', desc: 'Coordinate multi-notary teams while agent drafts keep closeout workflows consistent.', icon: Check },
 ];
 
 const HOW_STEPS = [
