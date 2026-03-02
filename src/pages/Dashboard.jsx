@@ -144,6 +144,15 @@ const DailyBrief = ({ data, navigate }) => {
 
   const todayEarnings = todayApts.reduce((s, a) => s + (Number(a.amount) || 0), 0);
 
+  const pendingAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
+  const approvedAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'approved').length;
+
+  const agentActivityLine = pendingAgentDrafts > 0
+    ? `You have ${pendingAgentDrafts} agent draft${pendingAgentDrafts > 1 ? 's' : ''} awaiting review.`
+    : approvedAgentDrafts > 0
+      ? `Your agent has completed ${approvedAgentDrafts} approved draft${approvedAgentDrafts > 1 ? 's' : ''}.`
+      : 'Your agent is standing by for the next appointment.';
+
   const items = [
     {
       Icon: CalendarClock,
@@ -210,9 +219,14 @@ const DailyBrief = ({ data, navigate }) => {
           <Sparkles className="h-4 w-4 text-amber-400" />
           Daily Brief
         </CardTitle>
-        <span className="text-xs text-slate-400 dark:text-slate-500">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-        </span>
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          </span>
+          <span className="mt-1 text-[11px] text-violet-500 dark:text-violet-300">
+            {agentActivityLine}
+          </span>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {items.map((item, i) => (
@@ -549,7 +563,7 @@ const Dashboard = () => {
   const TIPS = [
     'Core Service: Use the Digital Journal to capture compliant on-site entries with automated prompts.',
     'Core Service: Automated Invoicing keeps your cash flow visible — track status in real-time.',
-    'Core Service: Ground your guidance in jurisdiction policy records via the AI Compliance Coach.',
+    'Core Service: Let the AI Closeout Agent draft next-step actions grounded in jurisdiction policy records.',
     'Owner focus: Review revenue velocity and net profit margins to optimize your business growth.',
   ];
 
