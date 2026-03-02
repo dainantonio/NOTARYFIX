@@ -27,7 +27,7 @@ const AGENT_STEPS = [
 ];
 
 const STATS = [
-  { val: 'Beta',   label: 'Early Access Open'       },
+  { val: 'Auto',   label: 'Post-Appt Closeouts'     },
   { val: '50',     label: 'States Supported'        },
   { val: 'Free',   label: 'No Credit Card'          },
   { val: '~90s',   label: 'Avg Agent Closeout Time' },
@@ -72,7 +72,7 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    features: ['Unlimited Appointments', 'AI Closeout Agent', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
@@ -86,7 +86,7 @@ const COMPARE_ROWS = [
   { feature: 'Appointments per month', starter: '5',         pro: 'Unlimited',              agency: 'Unlimited + team routing', proHighlight: true  },
   { feature: 'Journal workflows',      starter: 'Basic',     pro: '✓ Advanced + templates', agency: '✓ Team oversight',         proHighlight: true  },
   { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
-  { feature: 'AI compliance coach',    starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
+  { feature: 'AI Closeout Agent',      starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
   { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
   { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
   { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
@@ -94,7 +94,7 @@ const COMPARE_ROWS = [
 
 const FAQ = [
   { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides a unified platform for Appointment Scheduling, Digital Journaling, Automated Invoicing, and Compliance Management. Our Agency plan adds Team Dispatch and Multi-notary coordination.' },
-  { q: 'How does the AI Compliance Coach work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts to ensure every signing is compliant.' },
+  { q: 'How does the AI Closeout Agent work?', a: 'After every appointment, your AI Closeout Agent automatically drafts the journal entry, generates the invoice, and flags compliance gaps — so you just review and approve. It is also grounded in 50-state jurisdiction policy records for real-time fee cap, ID, and RON guidance.' },
   { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
   { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
@@ -104,7 +104,7 @@ const FAQ = [
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'AI Compliance Coach'  },
+  { icon: Sparkles,    label: 'AI Closeout Agent'    },
   { icon: BadgeCheck,  label: '50-State Workflows'   },
   { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
@@ -535,12 +535,13 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Compliance Agent</span>
+            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Closeout Agent</span>
             <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight md:text-5xl">
               Your compliance agent,{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">grounded in state law.</span>
             </h2>
             <p className="mt-4 text-lg text-slate-400">Ask anything — fee caps, ID rules, thumbprint requirements, RON statutes. Your agent knows all 50 states cold.</p>
+            <p className="mt-3 text-sm font-medium text-cyan-300/80 border-l-2 border-cyan-400/40 pl-3">NotaryOS doesn't just answer questions — it prepares the next compliant actions automatically.</p>
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
