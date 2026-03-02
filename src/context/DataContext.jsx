@@ -65,6 +65,7 @@ const defaultData = {
     planTier: 'free',
     userRole: 'owner',
     currentStateCode: 'WA',
+    commissionedStates: ['WA'],
     costPerMile: 0.67,
     taxRate: 15,
     monthlyGoal: 15000,
