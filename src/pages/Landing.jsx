@@ -35,10 +35,10 @@ const OLD_WAY = [
   { title: 'Admin Overload',   desc: 'Spending hours manually entering journal data after every signing.', icon: Clock3       },
 ];
 const NEW_WAY = [
-  { title: 'Automated Invoicing',    desc: 'Generate professional invoices instantly and track payment status in real-time.', icon: Check },
-  { title: 'Digital Journaling',     desc: 'Compliant on-site data capture with automated prompts and state-specific rules.', icon: Check },
-  { title: 'Compliance Management',  desc: 'AI-powered guidance grounded in 50-state jurisdiction policy records.',           icon: Check },
-  { title: 'Team Dispatch Board',    desc: 'Coordinate multi-notary teams with standardized UI and centralized records.',     icon: Check },
+  { title: 'Agent-Drafted Invoices', desc: 'Your agent drafts professional invoices automatically after each completed appointment.', icon: Check },
+  { title: 'Agent-Assisted Journaling', desc: 'Your agent prepares compliant journal drafts with state-specific prompts ready for review.', icon: Check },
+  { title: 'Active Compliance Guardrails', desc: 'Your agent flags fee, ID, and act-level risks using grounded 50-state policy records.', icon: Check },
+  { title: 'Agent-Ready Team Dispatch', desc: 'Coordinate multi-notary teams while agent drafts keep closeout workflows consistent.', icon: Check },
 ];
 
 const HOW_STEPS = [
@@ -61,7 +61,7 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    features: ['Unlimited Appointments', 'AI Closeout Agent', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
@@ -75,7 +75,7 @@ const COMPARE_ROWS = [
   { feature: 'Appointments per month', starter: '5',         pro: 'Unlimited',              agency: 'Unlimited + team routing', proHighlight: true  },
   { feature: 'Journal workflows',      starter: 'Basic',     pro: '✓ Advanced + templates', agency: '✓ Team oversight',         proHighlight: true  },
   { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
-  { feature: 'AI compliance coach',    starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
+  { feature: 'AI closeout agent',      starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
   { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
   { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
   { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
@@ -83,7 +83,7 @@ const COMPARE_ROWS = [
 
 const FAQ = [
   { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides a unified platform for Appointment Scheduling, Digital Journaling, Automated Invoicing, and Compliance Management. Our Agency plan adds Team Dispatch and Multi-notary coordination.' },
-  { q: 'How does the AI Compliance Coach work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts to ensure every signing is compliant.' },
+  { q: 'How does the AI Closeout Agent work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts, then drafts next-step closeout actions so every signing stays compliant.' },
   { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
   { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
@@ -93,7 +93,7 @@ const FAQ = [
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'AI Compliance Coach'  },
+  { icon: Sparkles,    label: 'AI Closeout Agent'    },
   { icon: BadgeCheck,  label: '50-State Workflows'   },
   { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
@@ -403,7 +403,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Compliance Coach</span>
+            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Closeout Agent</span>
             <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight md:text-5xl">
               Your personal compliance expert,{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">available 24/7.</span>

@@ -8,6 +8,7 @@ const DEFAULT_FORM = {
   date: '',
   time: '',
   fee: '',
+  address: '',
   location: '',
   notes: '',
   receiptName: '',
@@ -75,6 +76,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
       date: initialData.date && /^\d{4}-\d{2}-\d{2}$/.test(initialData.date) ? initialData.date : '',
       time: normalizeTimeInput(initialData.time),
       fee: initialData.amount?.toString?.() || initialData.fee || '',
+      address: initialData.address || '',
       location: initialData.location || '',
       notes: initialData.notes || '',
       receiptName: initialData.receiptName || '',
@@ -204,6 +206,14 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
               <div className="relative">
                 <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input required type="number" placeholder="0.00" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.fee} onChange={(e) => setFormData({ ...formData, fee: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Signer Address</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="text" placeholder="123 Main St, City, ST 12345" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
               </div>
             </div>
 

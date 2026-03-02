@@ -121,7 +121,7 @@ const LayoutInner = ({ children }) => {
     { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
     { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
     { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
-    { icon: Sparkles, label: 'Agent Copilot', path: '/agent' },
+    { icon: Sparkles, label: 'AI Agent', path: '/agent' },
     { icon: ClipboardList, label: 'Review Queue', path: '/review', pendingCount: pendingReviewCount },
     { icon: ScrollText, label: 'Audit Log', path: '/audit' },
     { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
