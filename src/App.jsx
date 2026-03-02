@@ -21,6 +21,7 @@ import FormGuide from './pages/FormGuide';
 import Admin from './pages/Admin';
 import AgentPage from './pages/AgentPage';
 import AuditPage from './pages/AuditPage';
+import ReviewQueuePage from './pages/ReviewQueuePage';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
 import PublicSignerView from './pages/PublicSignerView';
@@ -88,6 +89,7 @@ function App() {
                 <Route path="/admin"          element={<Admin />} />
                 <Route path="/agent"          element={<AgentPage />} />
                 <Route path="/audit"          element={<AuditPage />} />
+                <Route path="/review"         element={<ReviewQueuePage />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<Navigate to="/" replace />} />

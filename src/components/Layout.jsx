@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale
-, Sparkles } from 'lucide-react';
+, Sparkles, ClipboardList} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -109,6 +109,8 @@ const LayoutInner = ({ children }) => {
     navigate('/auth');
   };
 
+  const pendingReviewCount = (data?.agentSuggestions || []).filter(s => s.status === 'pending').length;
+
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Schedule', path: '/schedule' },
@@ -120,6 +122,7 @@ const LayoutInner = ({ children }) => {
     { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
     { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
     { icon: Sparkles, label: 'Agent Copilot', path: '/agent' },
+    { icon: ClipboardList, label: 'Review Queue', path: '/review', pendingCount: pendingReviewCount },
     { icon: ScrollText, label: 'Audit Log', path: '/audit' },
     { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
@@ -159,6 +162,7 @@ const LayoutInner = ({ children }) => {
                   <>
                     <span className="animate-fade-in flex-1">{item.label}</span>
                     {item.badge && !item.locked ? <span className="rounded-full border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:border-amber-500 dark:text-amber-400">{item.badge}</span> : null}
+                    {item.pendingCount > 0 && !item.locked ? <span className="rounded-full bg-blue-600 text-white px-2 py-0.5 text-[10px] font-bold min-w-[1.25rem] text-center">{item.pendingCount}</span> : null}
                     {item.locked ? (
                       <span className="flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500 dark:text-slate-400">
                         <Lock className="h-2.5 w-2.5" />
