@@ -79,6 +79,10 @@ const defaultData = {
     confidenceThreshold: 85,
     requireApprovalForWarnings: true,
     autoScanAR: false,
+    licenseNumber: '',
+    commissionExpiryDate: '',
+    notaryType: 'Traditional',
+    feeSchedule: { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
   },
   complianceItems: [
     { id: 1, title: 'E&O Insurance Active', category: 'Insurance', dueDate: '2026-12-31', status: 'Compliant', notes: 'Policy #EON-3392 renewed.' },

@@ -23,6 +23,7 @@ import AgentPage from './pages/AgentPage';
 import AuditPage from './pages/AuditPage';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
+import PublicSignerView from './pages/PublicSignerView';
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
 const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
@@ -31,7 +32,7 @@ const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
 const RouteGuard = ({ children }) => {
   const location = useLocation();
   const { data } = useData();
-  const isPublic = PUBLIC_ROUTES.includes(location.pathname);
+  const isPublic = PUBLIC_ROUTES.includes(location.pathname) || location.pathname.startsWith('/portal');
   const onboarded = data.settings?.onboardingComplete;
 
   // On a protected route but onboarding not done → send to onboarding
@@ -45,48 +46,56 @@ const RouteGuard = ({ children }) => {
 // ─── Layout wrapper — hide sidebar shell on public pages ─────────────────────
 const AppLayout = ({ children }) => {
   const location = useLocation();
-  if (PUBLIC_ROUTES.includes(location.pathname)) return children;
+  if (PUBLIC_ROUTES.includes(location.pathname) || location.pathname.startsWith('/portal')) return children;
   return <Layout>{children}</Layout>;
 };
 
 function App() {
   return (
     <Router>
-      <RouteGuard>
-        <AppLayout>
-          <Routes>
-            {/* Public */}
-            <Route path="/"            element={<Landing />} />
-            <Route path="/auth"        element={<Auth />} />
-            <Route path="/onboarding"  element={<Onboarding />} />
-            <Route path="/legal"       element={<Compliance />} />
-            <Route path="/compliance"  element={<Compliance />} />
-            <Route path="/pricing"     element={<Pricing />} />
+      <Routes>
+        {/* Public signer portal — no auth, no layout */}
+        <Route path="/portal/:id" element={<PublicSignerView />} />
 
-            {/* App */}
-            <Route path="/dashboard"   element={<Dashboard />} />
-            <Route path="/schedule"    element={<Schedule />} />
-            <Route path="/clients"     element={<Clients />} />
-            <Route path="/invoices"    element={<Invoices />} />
-            <Route path="/journal"     element={<Journal />} />
-            <Route path="/arrive/:id"   element={<ArriveMode />} />
-            <Route path="/settings"    element={<Settings />} />
-            <Route path="/mileage"     element={<Mileage />} />
-            <Route path="/form-guide"  element={<FormGuide />} />
+        {/* All other routes */}
+        <Route path="/*" element={
+          <RouteGuard>
+            <AppLayout>
+              <Routes>
+                {/* Public */}
+                <Route path="/"            element={<Landing />} />
+                <Route path="/auth"        element={<Auth />} />
+                <Route path="/onboarding"  element={<Onboarding />} />
+                <Route path="/legal"       element={<Compliance />} />
+                <Route path="/compliance"  element={<Compliance />} />
+                <Route path="/pricing"     element={<Pricing />} />
 
-            {/* Gated */}
-            <Route path="/signer-portal"  element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
-            <Route path="/team-dispatch"  element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
-            <Route path="/ai-trainer"     element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
-            <Route path="/admin"          element={<Admin />} />
-            <Route path="/agent"          element={<AgentPage />} />
-            <Route path="/audit"          element={<AuditPage />} />
+                {/* App */}
+                <Route path="/dashboard"   element={<Dashboard />} />
+                <Route path="/schedule"    element={<Schedule />} />
+                <Route path="/clients"     element={<Clients />} />
+                <Route path="/invoices"    element={<Invoices />} />
+                <Route path="/journal"     element={<Journal />} />
+                <Route path="/arrive/:id"   element={<ArriveMode />} />
+                <Route path="/settings"    element={<Settings />} />
+                <Route path="/mileage"     element={<Mileage />} />
+                <Route path="/form-guide"  element={<FormGuide />} />
 
-            {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AppLayout>
-      </RouteGuard>
+                {/* Gated */}
+                <Route path="/signer-portal"  element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
+                <Route path="/team-dispatch"  element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
+                <Route path="/ai-trainer"     element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
+                <Route path="/admin"          element={<Admin />} />
+                <Route path="/agent"          element={<AgentPage />} />
+                <Route path="/audit"          element={<AuditPage />} />
+
+                {/* Catch-all */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </AppLayout>
+          </RouteGuard>
+        } />
+      </Routes>
     </Router>
   );
 }

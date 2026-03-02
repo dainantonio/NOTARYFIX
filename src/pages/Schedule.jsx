@@ -445,6 +445,19 @@ const Schedule = () => {
                       {apt.status !== 'completed' ? <button onClick={() => completeAppointment(apt)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"><CheckCircle2 className="h-4 w-4" /></button> : null}
                       {apt.status !== 'completed' ? <button onClick={() => navigate(`/arrive/${apt.id}`)} className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"><MapPin className="h-4 w-4" /></button> : null}
                       <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><Pencil className="h-4 w-4" /></button>
+                      <button
+                        onClick={() => {
+                          const apptData = { client: apt.client, type: apt.type, date: apt.date, time: apt.time, location: apt.location, amount: apt.amount, status: apt.status, notaryName: data.settings?.name || '', notaryPhone: data.settings?.phone || '', notaryEmail: data.settings?.email || '' };
+                          const encoded = btoa(JSON.stringify(apptData));
+                          const url = `${window.location.origin}${window.location.pathname}#/portal/${apt.id}?d=${encoded}`;
+                          navigator.clipboard.writeText(url).then(() => { alert('Portal link copied to clipboard! Send it to your client.'); }).catch(() => { prompt('Copy this link and send to your client:', url); });
+                        }}
+                        className="flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-600/10 px-3 py-1.5 text-xs font-medium text-blue-300 hover:bg-blue-600/20 transition-colors"
+                        title="Copy client portal link"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                        Portal Link
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -477,6 +490,19 @@ const Schedule = () => {
                 )}
                 <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => { deleteAppointment(apt.id); toast.success('Appointment deleted'); }} className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="h-4 w-4" /></button>
+                <button
+                  onClick={() => {
+                    const apptData = { client: apt.client, type: apt.type, date: apt.date, time: apt.time, location: apt.location, amount: apt.amount, status: apt.status, notaryName: data.settings?.name || '', notaryPhone: data.settings?.phone || '', notaryEmail: data.settings?.email || '' };
+                    const encoded = btoa(JSON.stringify(apptData));
+                    const url = `${window.location.origin}${window.location.pathname}#/portal/${apt.id}?d=${encoded}`;
+                    navigator.clipboard.writeText(url).then(() => { alert('Portal link copied to clipboard! Send it to your client.'); }).catch(() => { prompt('Copy this link and send to your client:', url); });
+                  }}
+                  className="flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-600/10 px-3 py-1.5 text-xs font-medium text-blue-300 hover:bg-blue-600/20 transition-colors"
+                  title="Copy client portal link"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                  Portal Link
+                </button>
               </div>
             </div>
           ))}
@@ -516,6 +542,19 @@ const Schedule = () => {
                       )}
                       <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="danger" onClick={() => { deleteAppointment(apt.id); toast.success('Appointment deleted'); }}><Trash2 className="h-4 w-4" /></Button>
+                      <button
+                        onClick={() => {
+                          const apptData = { client: apt.client, type: apt.type, date: apt.date, time: apt.time, location: apt.location, amount: apt.amount, status: apt.status, notaryName: data.settings?.name || '', notaryPhone: data.settings?.phone || '', notaryEmail: data.settings?.email || '' };
+                          const encoded = btoa(JSON.stringify(apptData));
+                          const url = `${window.location.origin}${window.location.pathname}#/portal/${apt.id}?d=${encoded}`;
+                          navigator.clipboard.writeText(url).then(() => { alert('Portal link copied to clipboard! Send it to your client.'); }).catch(() => { prompt('Copy this link and send to your client:', url); });
+                        }}
+                        className="flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-600/10 px-3 py-1.5 text-xs font-medium text-blue-300 hover:bg-blue-600/20 transition-colors"
+                        title="Copy client portal link"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                        Portal Link
+                      </button>
                     </div>
                   </td>
                 </tr>

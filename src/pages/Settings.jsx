@@ -177,6 +177,22 @@ const Settings = () => {
                     <Input placeholder="Monday" value={formData.complianceReviewDay || ''} onChange={(e) => setFormData({ ...formData, complianceReviewDay: e.target.value })} />
                   </div>
                   <div>
+                    <Label>Notary License / Commission Number</Label>
+                    <Input value={formData.licenseNumber || ''} onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })} placeholder="OH-2024-098765" />
+                  </div>
+                  <div>
+                    <Label>Commission Expiry Date</Label>
+                    <Input type="date" value={formData.commissionExpiryDate || ''} onChange={(e) => setFormData({ ...formData, commissionExpiryDate: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label>Notary Type</Label>
+                    <select value={formData.notaryType || 'Traditional'} onChange={(e) => setFormData({ ...formData, notaryType: e.target.value })} className="h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option>Traditional</option>
+                      <option>Electronic</option>
+                      <option>RON (Remote Online)</option>
+                    </select>
+                  </div>
+                  <div>
                     <Label>Primary operating state</Label>
                     <select value={formData.currentStateCode || ''} onChange={(e) => setFormData({ ...formData, currentStateCode: e.target.value })} className="h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                       <option value="">Select state</option>

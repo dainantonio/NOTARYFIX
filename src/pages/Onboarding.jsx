@@ -11,6 +11,8 @@ const STEPS = [
   { id: 'welcome',  label: 'Welcome'  },
   { id: 'identity', label: 'You'      },
   { id: 'business', label: 'Business' },
+  { id: 'license',  label: 'License'  },
+  { id: 'fees',     label: 'Fees'     },
   { id: 'plan',     label: 'Plan'     },
   { id: 'launch',   label: 'Launch'   },
 ];
@@ -147,11 +149,15 @@ export default function Onboarding() {
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
-    name:           data.settings?.name          || '',
-    businessName:   data.settings?.businessName  || '',
-    stateCode:      data.settings?.currentStateCode || 'OH',
-    monthlyGoal:    data.settings?.monthlyGoal   || 10000,
-    selectedPlan:   data.settings?.planTier      || 'pro',
+    name:                 data.settings?.name          || '',
+    businessName:         data.settings?.businessName  || '',
+    stateCode:            data.settings?.currentStateCode || 'OH',
+    monthlyGoal:          data.settings?.monthlyGoal   || 10000,
+    selectedPlan:         data.settings?.planTier      || 'pro',
+    licenseNumber:        '',
+    commissionExpiryDate: data.settings?.commissionExpiryDate || '',
+    notaryType:           data.settings?.notaryType || 'Traditional',
+    feeSchedule:          data.settings?.feeSchedule || { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
   });
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -159,6 +165,9 @@ export default function Onboarding() {
   const canAdvance = () => {
     if (step === 1) return form.name.trim().length > 1;
     if (step === 2) return form.businessName.trim().length > 1;
+    if (step === 3) return form.licenseNumber.trim().length > 3;
+    if (step === 4) return true;
+    if (step === 5) return true;
     return true;
   };
 
@@ -167,12 +176,16 @@ export default function Onboarding() {
 
   const finish = () => {
     updateSettings({
-      name:               form.name,
-      businessName:       form.businessName,
-      currentStateCode:   form.stateCode,
-      monthlyGoal:        Number(form.monthlyGoal),
-      planTier:           form.selectedPlan,
-      onboardingComplete: true,
+      name:                 form.name,
+      businessName:         form.businessName,
+      currentStateCode:     form.stateCode,
+      monthlyGoal:          Number(form.monthlyGoal),
+      planTier:             form.selectedPlan,
+      licenseNumber:        form.licenseNumber,
+      commissionExpiryDate: form.commissionExpiryDate,
+      notaryType:           form.notaryType,
+      feeSchedule:          form.feeSchedule,
+      onboardingComplete:   true,
     });
     navigate('/dashboard');
   };
@@ -184,8 +197,10 @@ export default function Onboarding() {
     0: { title: `Your business, one platform.`,    sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — with a consistent interface across every core module.', Illustration: IllustrationWelcome },
     1: { title: `Let's get to know you.`,           sub: 'Your name and profile power your invoices, journal entries, and client-facing documents.', Illustration: IllustrationWelcome },
     2: { title: `Build your business identity.`,   sub: 'Your business name appears on every invoice and client-facing document you generate.', Illustration: IllustrationBusiness },
-    3: { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
-    4: { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
+    3: { title: `Your notary credentials.`,        sub: 'Your license number and commission details appear on compliance records and client documents.', Illustration: IllustrationBusiness },
+    4: { title: `Set your fee schedule.`,          sub: 'Establish your standard per-act fees. These power invoice automation and AI drafts.', Illustration: IllustrationBusiness },
+    5: { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
+    6: { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
   };
   const lc = leftContent[step];
 
@@ -360,8 +375,83 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* STEP 3: PLAN */}
+            {/* STEP 3: LICENSE */}
             {step === 3 && (
+              <div className="space-y-5">
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-white">Your credentials</h1>
+                  <p className="mt-1.5 text-sm text-slate-400">This appears on compliance records and client documents.</p>
+                </div>
+                <Field label="Notary License / Commission Number">
+                  <TextInput
+                    placeholder="e.g. OH-2024-098765"
+                    value={form.licenseNumber}
+                    onChange={e => set('licenseNumber', e.target.value)}
+                    autoFocus
+                  />
+                </Field>
+                <Field label="Commission Expiry Date">
+                  <input
+                    type="date"
+                    value={form.commissionExpiryDate}
+                    onChange={e => set('commissionExpiryDate', e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                  />
+                </Field>
+                <Field label="Notary Type">
+                  <div className="flex gap-3 flex-wrap">
+                    {['Traditional', 'Electronic', 'RON (Remote Online)'].map(t => (
+                      <button key={t} onClick={() => set('notaryType', t)}
+                        className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+                          form.notaryType === t
+                            ? 'border-blue-500 bg-blue-600/20 text-blue-300'
+                            : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'
+                        }`}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+              </div>
+            )}
+
+            {/* STEP 4: FEES */}
+            {step === 4 && (
+              <div className="space-y-5">
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-white">Your fee schedule</h1>
+                  <p className="mt-1.5 text-sm text-slate-400">Set your standard per-appointment fees. You can always adjust per-job.</p>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { key: 'loanSigning', label: 'Loan Signing', placeholder: '150' },
+                    { key: 'deed',        label: 'Deed / Title',  placeholder: '50'  },
+                    { key: 'affidavit',   label: 'Affidavit',     placeholder: '25'  },
+                    { key: 'i9',          label: 'I-9 Verification', placeholder: '45' },
+                    { key: 'general',     label: 'General Notarial', placeholder: '15' },
+                    { key: 'ron',         label: 'RON / Remote Online', placeholder: '75' },
+                  ].map(({ key, label, placeholder }) => (
+                    <div key={key} className="flex items-center gap-4">
+                      <span className="w-40 text-sm text-slate-300 shrink-0">{label}</span>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">$</span>
+                        <input
+                          type="number"
+                          value={form.feeSchedule[key] ?? ''}
+                          onChange={e => set('feeSchedule', { ...form.feeSchedule, [key]: parseFloat(e.target.value) || 0 })}
+                          placeholder={placeholder}
+                          className="w-full rounded-xl border border-white/10 bg-white/5 pl-8 pr-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500">These are used as defaults when the AI agent drafts invoices. Your state's fee cap will still apply.</p>
+              </div>
+            )}
+
+            {/* STEP 5: PLAN */}
+            {step === 5 && (
               <div className="space-y-4">
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-white">Choose your plan</h1>
@@ -408,8 +498,8 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* STEP 4: LAUNCH */}
-            {step === 4 && (
+            {/* STEP 6: LAUNCH */}
+            {step === 6 && (
               <div className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-white">You're ready to go.</h1>
@@ -417,11 +507,13 @@ export default function Onboarding() {
                 </div>
                 <div className="divide-y divide-white/8 rounded-2xl border border-white/10 bg-white/4 overflow-hidden">
                   {[
-                    { label: 'Name',      val: form.name          || '—' },
-                    { label: 'Business',  val: form.businessName  || '—' },
-                    { label: 'State',     val: form.stateCode              },
-                    { label: 'Goal',      val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
-                    { label: 'Plan',      val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
+                    { label: 'Name',       val: form.name          || '—' },
+                    { label: 'Business',   val: form.businessName  || '—' },
+                    { label: 'State',      val: form.stateCode              },
+                    { label: 'License',    val: form.licenseNumber || '—' },
+                    { label: 'Notary Type', val: form.notaryType },
+                    { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
+                    { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                       <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{row.label}</span>

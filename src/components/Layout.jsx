@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PWAInstallBanner from './PWAInstallBanner';
 import { Link, useLocation, BrowserRouter, useInRouterContext, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
@@ -308,6 +309,7 @@ const LayoutInner = ({ children }) => {
         {/* Global cross-module overlays */}
         <ToastStack />
         <PromptModal />
+        <PWAInstallBanner />
       </div>
     </div>
   );
