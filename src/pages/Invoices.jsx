@@ -4,6 +4,8 @@ import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine,
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { toast } from '../hooks/useLinker';
+import { exportInvoicePDF, generateInvoiceEmailTemplate } from '../services/invoiceService';
+import { generatePaymentReminderMessage } from '../services/emailService';
 
 const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
   const { data } = useData();
@@ -201,9 +203,15 @@ const Invoices = () => {
 
   const sendReminder = (invoice) => {
     const link = invoice.paymentLink || buildInvoiceLink(invoice);
-    navigator.clipboard?.writeText(`Reminder: Invoice ${invoice.id} for ${invoice.client} ($${Number(invoice.amount).toFixed(2)}) is due. Pay here: ${link}`);
-    updateInvoice(invoice.id, { lastReminderSentAt: new Date().toISOString() });
-    toast.success('Reminder copied to clipboard');
+    const updatedInvoice = { ...invoice, paymentLink: link };
+    
+    // Generate branded email template
+    const emailTemplate = generateInvoiceEmailTemplate(updatedInvoice, data.settings);
+    
+    // Copy to clipboard
+    navigator.clipboard?.writeText(emailTemplate);
+    updateInvoice(invoice.id, { lastReminderSentAt: new Date().toISOString(), paymentLink: link });
+    toast.success('Branded email template copied to clipboard');
   };
 
   const copyInvoiceLink = async (invoice) => {
@@ -215,21 +223,20 @@ const Invoices = () => {
 
   const sendInvoiceSmsStub = async (invoice) => {
     const link = invoice.paymentLink || buildInvoiceLink(invoice);
-    await navigator.clipboard?.writeText(`Invoice ${invoice.id} for ${invoice.client}: ${link}`);
+    const message = generatePaymentReminderMessage(invoice, data.settings);
+    await navigator.clipboard?.writeText(message);
     updateInvoice(invoice.id, { paymentLink: link, sentAt: new Date().toISOString() });
     toast.success('SMS message copied to clipboard');
   };
 
   const exportInvoicePdfStub = (invoice) => {
-    const content = `Invoice ${invoice.id}\nClient: ${invoice.client}\nAmount: $${Number(invoice.amount).toFixed(2)}\nDue: ${invoice.due}\nStatus: ${invoice.status}`;
-    const blob = new Blob([content], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${invoice.id}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('PDF exported');
+    try {
+      exportInvoicePDF(invoice, data.settings);
+      toast.success('Invoice PDF opened for printing/export');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error('Failed to export PDF');
+    }
   };
 
   const handleSaveInvoice = (payload) => {

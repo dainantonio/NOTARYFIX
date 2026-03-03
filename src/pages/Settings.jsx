@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck, Bot } from 'lucide-react';
+import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck, Bot, Palette, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
@@ -33,6 +33,7 @@ const Settings = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'brand', label: 'Brand', icon: Palette },
     { id: 'business', label: 'Business', icon: Building },
     { id: 'compliance', label: 'Compliance', icon: ShieldCheck },
     { id: 'preferences', label: 'Preferences', icon: Bell },
@@ -40,7 +41,7 @@ const Settings = () => {
   ];
 
   const settingsHealth = useMemo(() => {
-    const checks = [formData.name, formData.businessName, formData.costPerMile, formData.taxRate, formData.monthlyGoal, formData.eAndOExpiresOn, formData.complianceReviewDay];
+    const checks = [formData.name, formData.businessName, formData.costPerMile, formData.taxRate, formData.monthlyGoal, formData.eAndOExpiresOn, formData.complianceReviewDay, formData.brandColor, formData.businessAddress];
     const filled = checks.filter(Boolean).length;
     return Math.round((filled / checks.length) * 100);
   }, [formData]);
@@ -149,6 +150,54 @@ const Settings = () => {
                   <div><Label>Full Name</Label><Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
                 </div>
                 <div className="flex justify-end"><Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Changes'}</Button></div>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === 'brand' && (
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-purple-500" /> Brand Profile</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Customize your brand appearance for invoices and email communications.</p>
+                
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <Label>Brand Color (Hex)</Label>
+                    <div className="flex gap-2 items-center">
+                      <input type="color" value={formData.brandColor || '#3b82f6'} onChange={(e) => setFormData({ ...formData, brandColor: e.target.value })} className="h-10 w-16 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer" />
+                      <Input type="text" placeholder="#3b82f6" value={formData.brandColor || ''} onChange={(e) => setFormData({ ...formData, brandColor: e.target.value })} />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Business Address</Label>
+                    <Input value={formData.businessAddress || ''} onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })} placeholder="123 Main St, City, ST 12345" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <Label>Notary License Number</Label>
+                    <Input value={formData.licenseNumber || ''} onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })} placeholder="OH-2024-098765" />
+                  </div>
+                  <div>
+                    <Label>Email Reply-To Address</Label>
+                    <Input type="email" value={formData.emailReplyTo || ''} onChange={(e) => setFormData({ ...formData, emailReplyTo: e.target.value })} placeholder="billing@yourcompany.com" />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">Brand Preview</p>
+                  <div className="mt-3 rounded-lg border border-slate-300 p-4 dark:border-slate-600" style={{ borderTopColor: formData.brandColor || '#3b82f6', borderTopWidth: '4px' }}>
+                    <div style={{ color: formData.brandColor || '#3b82f6' }} className="text-sm font-bold">Invoice from {formData.businessName || 'Your Business'}</div>
+                    <p className="text-xs text-slate-500 mt-2">{formData.businessAddress || 'Business address'}</p>
+                    <p className="text-xs text-slate-500">License: {formData.licenseNumber || 'License #'}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="secondary" onClick={() => setFormData(data.settings)}><RotateCcw className="mr-2 h-4 w-4" /> Reset</Button>
+                  <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Brand Profile'}</Button>
+                </div>
               </CardContent>
             </Card>
           )}
