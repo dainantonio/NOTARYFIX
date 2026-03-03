@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Mic, MicOff, ScanLine, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Phone, Mail, Mic, MicOff } from 'lucide-react';
 import { Button } from './UI';
 
 const DEFAULT_FORM = {
@@ -7,11 +7,12 @@ const DEFAULT_FORM = {
   type: 'Loan Signing',
   date: '',
   time: '',
+  phone: '',
+  email: '',
   fee: '',
+  address: '',
   location: '',
   notes: '',
-  receiptName: '',
-  receiptImage: '',
 };
 
 const serviceTypes = ['Loan Signing', 'General Notary Work (GNW)', 'I-9 Verification', 'Apostille', 'Remote Online Notary (RON)'];
@@ -40,6 +41,12 @@ const parseQuickEntry = (text) => {
 
   const timeMatch = text.match(/(\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)?)/);
   if (timeMatch) next.time = normalizeTimeInput(timeMatch[1]) || timeMatch[1];
+
+  const phoneMatch = text.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);
+  if (phoneMatch) next.phone = phoneMatch[0];
+
+  const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
+  if (emailMatch) next.email = emailMatch[0];
 
   const zipMatch = text.match(/\b(\d{5})\b/);
   if (zipMatch) next.location = zipMatch[1];
@@ -75,14 +82,13 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
       date: initialData.date && /^\d{4}-\d{2}-\d{2}$/.test(initialData.date) ? initialData.date : '',
       time: normalizeTimeInput(initialData.time),
       fee: initialData.amount?.toString?.() || initialData.fee || '',
+      phone: initialData.phone || '',
+      email: initialData.email || '',
+      address: initialData.address || '',
       location: initialData.location || '',
       notes: initialData.notes || '',
-      receiptName: initialData.receiptName || '',
-      receiptImage: initialData.receiptImage || '',
     });
   }, [isOpen, initialData]);
-
-  const receiptSaved = useMemo(() => Boolean(formData.receiptName), [formData.receiptName]);
 
   if (!isOpen) return null;
 
@@ -117,15 +123,6 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
-  };
-
-  const handleReceipt = (file) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormData((prev) => ({ ...prev, receiptName: file.name, receiptImage: typeof reader.result === 'string' ? reader.result : '' }));
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e) => {
@@ -174,6 +171,22 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
             </div>
 
             <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Client Phone (optional)</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="tel" placeholder="(555) 123-4567" autoComplete="tel" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Client Email (optional)</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="email" placeholder="client@email.com" autoComplete="email" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
               <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Service Type</label>
               <div className="relative">
                 <FileText className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -186,16 +199,16 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
             <div className="space-y-1">
               <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Date</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input required type="date" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-300" />
+                <input required type="date" className="date-time-input w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
               </div>
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Time</label>
               <div className="relative">
-                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input required type="time" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-300" />
+                <input required type="time" className="date-time-input w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
               </div>
             </div>
 
@@ -208,12 +221,21 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
             </div>
 
             <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Signer Address</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="text" placeholder="123 Main St, City, ST 12345" autoComplete="street-address" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
               <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Zip Code</label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input type="text" placeholder="12345" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                <input type="text" placeholder="12345" inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
               </div>
             </div>
+            <p className="-mt-1 text-[11px] text-slate-500 dark:text-slate-400">Full signer address feeds journal/agent drafts. Zip supports routing and quick scheduling filters.</p>
           </div>
 
           <div className="space-y-1">
@@ -221,14 +243,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
             <textarea rows={2} className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
           </div>
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
-            <label className="mb-2 block text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Scan Receipt</label>
-            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-              <ScanLine className="h-4 w-4" /> Upload / Scan Receipt
-              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleReceipt(e.target.files?.[0])} />
-            </label>
-            {receiptSaved && <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Saved: {formData.receiptName}</div>}
-          </div>
+
 
           <div className="sticky bottom-0 bg-white dark:bg-slate-800 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-4">
             <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>

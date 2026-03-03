@@ -109,7 +109,7 @@ export function createCrudOps(setData) {
     time: appointment.time?.replace(' PM', '').replace(' AM', '') || '09:00',
     actType: 'Acknowledgment',
     signerName: appointment.client,
-    signerAddress: '',
+    signerAddress: appointment.address || appointment.location || '',
     idType: "Driver's License",
     idIssuingState: '',
     idLast4: '',
