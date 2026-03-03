@@ -11,6 +11,7 @@ import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding';
 import Compliance from './pages/Legal';
+import Credentials from './pages/Credentials';
 import Pricing from './pages/Pricing';
 import SignerPortal from './pages/SignerPortal';
 import Journal from './pages/Journal';
@@ -27,7 +28,7 @@ import { useData } from './context/DataContext';
 import PublicSignerView from './pages/PublicSignerView';
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
-const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/compliance', '/pricing'];
+const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
 
 // ─── Guard: redirect new users to onboarding, protect app routes ──────────────
 const RouteGuard = ({ children }) => {
@@ -68,7 +69,8 @@ function App() {
                 <Route path="/auth"        element={<Auth />} />
                 <Route path="/onboarding"  element={<Onboarding />} />
                 <Route path="/legal"       element={<Compliance />} />
-                <Route path="/compliance"  element={<Compliance />} />
+                <Route path="/compliance"  element={<Credentials />} />
+                <Route path="/credentials" element={<Credentials />} />
                 <Route path="/pricing"     element={<Pricing />} />
 
                 {/* App */}
