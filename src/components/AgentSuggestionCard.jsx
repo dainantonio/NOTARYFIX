@@ -420,12 +420,73 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
       {/* Expandable diff / details */}
       {expanded && !isEditingInline && (
         <div className="mx-4 mb-2 space-y-2">
-          {suggestion.diff && (
+          {/* Structured diff — labeled fields */}
+          {suggestion.diffData ? (
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">Agent actions</p>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {suggestion.diffData.signerName && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Signer</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.signerName}</dd>
+                  </>
+                )}
+                {suggestion.diffData.serviceType && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Service</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.serviceType}</dd>
+                  </>
+                )}
+                {suggestion.diffData.actType && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Act type</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.actType}</dd>
+                  </>
+                )}
+                {suggestion.diffData.date && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Date</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.date}</dd>
+                  </>
+                )}
+                {(suggestion.diffData.fee != null && suggestion.diffData.fee !== '') && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Fee</dt>
+                    <dd className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">${Number(suggestion.diffData.fee).toFixed(2)}</dd>
+                  </>
+                )}
+                {suggestion.diffData.state && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">State</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.state}</dd>
+                  </>
+                )}
+                {suggestion.diffData.journalEntry && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Journal</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.journalEntry}</dd>
+                  </>
+                )}
+                {suggestion.diffData.invoiceId && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Invoice</dt>
+                    <dd className="text-xs font-semibold text-slate-800 dark:text-slate-100">{suggestion.diffData.invoiceId}</dd>
+                  </>
+                )}
+                {suggestion.diffData.daysOverdue != null && (
+                  <>
+                    <dt className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Days overdue</dt>
+                    <dd className="text-xs font-semibold text-rose-600 dark:text-rose-400">{suggestion.diffData.daysOverdue}</dd>
+                  </>
+                )}
+              </dl>
+            </div>
+          ) : suggestion.diff ? (
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Agent actions</p>
               <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-mono">{suggestion.diff}</pre>
             </div>
-          )}
+          ) : null}
           {suggestion.draftJournal?.notes && (
             <div className="rounded-lg border border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20 p-3">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-400 mb-1">

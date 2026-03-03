@@ -8,7 +8,7 @@ import { toast } from '../hooks/useLinker';
 const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
   const { data } = useData();
   const clientOptions = (data?.clients || []).map((c) => ({ label: c.name, value: c.name }));
-  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Pending', notes: '' });
+  const [formData, setFormData] = useState({ client: '', amount: '', due: '', status: 'Draft', notes: '' });
   const [smartInput, setSmartInput] = useState('');
 
   useEffect(() => {
@@ -18,12 +18,12 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
         client: initialInvoice.client || '',
         amount: String(initialInvoice.amount || ''),
         due: /^\d{4}-\d{2}-\d{2}$/.test(initialInvoice.due || '') ? initialInvoice.due : '',
-        status: initialInvoice.status || 'Pending',
+        status: initialInvoice.status || 'Draft',
         notes: initialInvoice.notes || '',
       });
       return;
     }
-    setFormData({ client: prefillClientName || clientOptions[0]?.value || '', amount: '', due: '', status: 'Pending', notes: '' });
+      setFormData({ client: prefillClientName || clientOptions[0]?.value || '', amount: '', due: '', status: 'Draft', notes: '' });
   }, [isOpen, initialInvoice, clientOptions, prefillClientName]);
 
   if (!isOpen) return null;
@@ -33,7 +33,7 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
     if (!source) return;
     const amount = source.match(/\$?\s*(\d+(?:\.\d{1,2})?)/)?.[1] || '';
     const due = source.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
-    const status = /paid/i.test(source) ? 'Paid' : /overdue/i.test(source) ? 'Overdue' : 'Pending';
+    const status = /paid/i.test(source) ? 'Paid' : /overdue/i.test(source) ? 'Overdue' : /sent/i.test(source) ? 'Sent' : /pending/i.test(source) ? 'Pending' : 'Draft';
     const matchedClient = clientOptions.find((opt) => source.toLowerCase().includes(opt.label.toLowerCase()));
     setFormData((prev) => ({ ...prev, amount: prev.amount || amount, due: prev.due || due, client: matchedClient?.value || prev.client, status }));
   };
@@ -97,7 +97,7 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
             </div>
             <div>
               <Label>Status</Label>
-              <Select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} options={[{ label: 'Pending', value: 'Pending' }, { label: 'Paid', value: 'Paid' }, { label: 'Overdue', value: 'Overdue' }]} />
+              <Select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} options={[{ label: 'Draft', value: 'Draft' }, { label: 'Pending', value: 'Pending' }, { label: 'Sent', value: 'Sent' }, { label: 'Overdue', value: 'Overdue' }, { label: 'Paid', value: 'Paid' }]} />
             </div>
           </div>
 
@@ -138,7 +138,7 @@ const Invoices = () => {
     let shouldClearState = false;
 
     if (Array.isArray(incoming) && incoming.length > 0) {
-      setStatusFilter(incoming.filter((x) => ['Pending', 'Overdue', 'Paid'].includes(x)));
+      setStatusFilter(incoming.filter((x) => ['Draft', 'Pending', 'Sent', 'Overdue', 'Paid'].includes(x)));
       shouldClearState = true;
     }
 
@@ -160,19 +160,21 @@ const Invoices = () => {
 
   const totals = useMemo(() => ({
     paid: invoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
-    pending: invoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+    pending: invoices.filter((i) => ['Draft', 'Pending', 'Sent'].includes(i.status)).reduce((sum, i) => sum + Number(i.amount || 0), 0),
     overdue: invoices.filter((i) => i.status === 'Overdue').reduce((sum, i) => sum + Number(i.amount || 0), 0),
   }), [invoices]);
 
   const visibleTotals = useMemo(() => ({
     paid: visibleInvoices.filter((i) => i.status === 'Paid').reduce((sum, i) => sum + Number(i.amount || 0), 0),
-    pending: visibleInvoices.filter((i) => i.status === 'Pending').reduce((sum, i) => sum + Number(i.amount || 0), 0),
+    pending: visibleInvoices.filter((i) => ['Draft', 'Pending', 'Sent'].includes(i.status)).reduce((sum, i) => sum + Number(i.amount || 0), 0),
     overdue: visibleInvoices.filter((i) => i.status === 'Overdue').reduce((sum, i) => sum + Number(i.amount || 0), 0),
   }), [visibleInvoices]);
 
   const getStatusBadge = (status) => {
     if (status === 'Paid') return <Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Paid</Badge>;
+    if (status === 'Sent') return <Badge variant="info" className="gap-1"><Send className="h-3 w-3" /> Sent</Badge>;
     if (status === 'Pending') return <Badge variant="warning" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>;
+    if (status === 'Draft') return <Badge variant="secondary" className="gap-1"><Pencil className="h-3 w-3" /> Draft</Badge>;
     if (status === 'Overdue') return <Badge variant="danger" className="gap-1"><AlertCircle className="h-3 w-3" /> Overdue</Badge>;
     return <Badge>{status}</Badge>;
   };
@@ -184,9 +186,24 @@ const Invoices = () => {
     updateInvoice(invoice.id, {
       sentAt: new Date().toISOString(),
       paymentLink: invoice.paymentLink || buildInvoiceLink(invoice),
-      status: invoice.status === 'Paid' ? 'Paid' : 'Pending',
+      status: invoice.status === 'Paid' ? 'Paid' : 'Sent',
     });
     toast.success('Marked as sent');
+  };
+
+  const markPaid = (invoice) => {
+    updateInvoice(invoice.id, {
+      status: 'Paid',
+      paidAt: new Date().toISOString(),
+    });
+    toast.success('Invoice marked as paid');
+  };
+
+  const sendReminder = (invoice) => {
+    const link = invoice.paymentLink || buildInvoiceLink(invoice);
+    navigator.clipboard?.writeText(`Reminder: Invoice ${invoice.id} for ${invoice.client} ($${Number(invoice.amount).toFixed(2)}) is due. Pay here: ${link}`);
+    updateInvoice(invoice.id, { lastReminderSentAt: new Date().toISOString() });
+    toast.success('Reminder copied to clipboard');
   };
 
   const copyInvoiceLink = async (invoice) => {
@@ -266,27 +283,63 @@ const Invoices = () => {
           {visibleInvoices.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</p>
           ) : visibleInvoices.map((invoice) => (
-            <div key={invoice.id} className={`flex items-center gap-3 px-4 py-3.5 border-l-2 ${invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/50 dark:bg-rose-900/10' : 'border-transparent'}`}>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{invoice.id}</span>
-                  {getStatusBadge(invoice.status)}
+            <div key={invoice.id} className={`px-4 py-3.5 border-l-2 ${
+              invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/50 dark:bg-rose-900/10'
+              : invoice.status === 'Draft' ? 'border-slate-300 bg-slate-50/50 dark:bg-slate-800/20'
+              : 'border-transparent'
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{invoice.id}</span>
+                    {getStatusBadge(invoice.status)}
+                  </div>
+                  <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{invoice.client}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Due {invoice.due}</p>
+                  {invoice.sentAt && <p className="text-[11px] text-blue-600">Sent {new Date(invoice.sentAt).toLocaleDateString()}</p>}
+                  {invoice.status === 'Paid' && invoice.paidAt && <p className="text-[11px] text-emerald-600">Paid {new Date(invoice.paidAt).toLocaleDateString()}</p>}
                 </div>
-                <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{invoice.client}</p>
-                <p className="text-xs text-slate-500 mt-0.5">Due {invoice.due}</p>
-                {invoice.sentAt ? <p className="text-[11px] text-emerald-600">Sent {new Date(invoice.sentAt).toLocaleDateString()}</p> : null}
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-base font-black text-emerald-600 dark:text-emerald-400">${Number(invoice.amount).toLocaleString()}</p>
-                <div className="flex gap-1 mt-1 justify-end">
-                  <button onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => markSent(invoice)} className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Send to client"><Send className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => copyInvoiceLink(invoice)} className="p-1.5 rounded-lg text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Copy payment link"><Link2 className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => sendInvoiceSmsStub(invoice)} className="p-1.5 rounded-lg text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors" title="SMS stub"><MessageSquare className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => exportInvoicePdfStub(invoice)} className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="PDF stub"><FileText className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                <div className="shrink-0 text-right">
+                  <p className="text-base font-black text-emerald-600 dark:text-emerald-400">${Number(invoice.amount).toLocaleString()}</p>
+                  <div className="flex gap-1 mt-1 justify-end">
+                    <button onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => copyInvoiceLink(invoice)} className="p-1.5 rounded-lg text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Copy payment link"><Link2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => exportInvoicePdfStub(invoice)} className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Export PDF"><FileText className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
                 </div>
               </div>
+              {/* ── Status-aware next-action strip ── */}
+              {invoice.status === 'Draft' && (
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => markSent(invoice)} className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors">
+                    <Send className="h-3.5 w-3.5" /> Review &amp; Send
+                  </button>
+                </div>
+              )}
+              {(invoice.status === 'Sent' || invoice.status === 'Pending') && (
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => markPaid(invoice)} className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Mark Paid
+                  </button>
+                  <button onClick={() => sendReminder(invoice)} className="flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-colors">
+                    <MessageSquare className="h-3.5 w-3.5" /> Send Reminder
+                  </button>
+                </div>
+              )}
+              {invoice.status === 'Overdue' && (
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => sendReminder(invoice)} className="flex items-center gap-1.5 rounded-lg border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-100 transition-colors">
+                    <MessageSquare className="h-3.5 w-3.5" /> Send Reminder
+                  </button>
+                  <button onClick={() => markPaid(invoice)} className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Mark Paid
+                  </button>
+                </div>
+              )}
+              {invoice.status === 'Paid' && invoice.paidAt && (
+                <p className="mt-1.5 text-[11px] text-slate-400">Paid on {new Date(invoice.paidAt).toLocaleDateString()}</p>
+              )}
             </div>
           ))}
         </div>
@@ -312,30 +365,70 @@ const Invoices = () => {
                 <th className="px-6 py-4">Issued</th>
                 <th className="px-6 py-4">Due</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Sent</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4">Sent / Paid</th>
+                <th className="px-6 py-4">Next Action</th>
+                <th className="px-4 py-4 text-right">Tools</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {visibleInvoices.length === 0 ? (
-                <tr><td colSpan="8" className="py-8 text-center text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</td></tr>
+                <tr><td colSpan="9" className="py-8 text-center text-slate-500">{statusFilter.length ? 'No invoices match the current filter.' : 'No invoices yet.'}</td></tr>
               ) : visibleInvoices.map((invoice) => (
-                <tr key={invoice.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-2 ${invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/40 dark:bg-rose-900/10' : 'border-transparent'}`}>
+                <tr key={invoice.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-2 ${
+                  invoice.status === 'Overdue' ? 'border-rose-400 bg-rose-50/40 dark:bg-rose-900/10'
+                  : invoice.status === 'Draft' ? 'border-slate-300 bg-slate-50/30 dark:bg-slate-800/20'
+                  : 'border-transparent'
+                }`}>
                   <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{invoice.id}</td>
                   <td className="px-6 py-4 max-w-[160px] truncate">{invoice.client}</td>
                   <td className="px-6 py-4 font-semibold">${Number(invoice.amount).toLocaleString()}</td>
                   <td className="px-6 py-4">{invoice.date}</td>
                   <td className="px-6 py-4">{invoice.due}</td>
                   <td className="px-6 py-4">{getStatusBadge(invoice.status)}</td>
-                  <td className="px-6 py-4 text-xs text-emerald-600">{invoice.sentAt ? `Sent ${new Date(invoice.sentAt).toLocaleDateString()}` : '—'}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => markSent(invoice)} title="Send"><Send className="h-4 w-4" /></Button>
+                  <td className="px-6 py-4 text-xs">
+                    {invoice.status === 'Paid' && invoice.paidAt
+                      ? <span className="text-emerald-600">Paid {new Date(invoice.paidAt).toLocaleDateString()}</span>
+                      : invoice.sentAt
+                        ? <span className="text-blue-600">Sent {new Date(invoice.sentAt).toLocaleDateString()}</span>
+                        : <span className="text-slate-400">—</span>}
+                  </td>
+                  {/* ── Status-aware next-action column ── */}
+                  <td className="px-6 py-4">
+                    {invoice.status === 'Draft' && (
+                      <Button size="sm" variant="primary" onClick={() => markSent(invoice)} className="whitespace-nowrap">
+                        <Send className="mr-1.5 h-3.5 w-3.5" /> Review &amp; Send
+                      </Button>
+                    )}
+                    {(invoice.status === 'Sent' || invoice.status === 'Pending') && (
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="success" onClick={() => markPaid(invoice)} className="whitespace-nowrap">
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Mark Paid
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => sendReminder(invoice)} className="whitespace-nowrap">
+                          <MessageSquare className="mr-1.5 h-3.5 w-3.5" /> Reminder
+                        </Button>
+                      </div>
+                    )}
+                    {invoice.status === 'Overdue' && (
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="danger" onClick={() => sendReminder(invoice)} className="whitespace-nowrap">
+                          <MessageSquare className="mr-1.5 h-3.5 w-3.5" /> Send Reminder
+                        </Button>
+                        <Button size="sm" variant="success" onClick={() => markPaid(invoice)} className="whitespace-nowrap">
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Mark Paid
+                        </Button>
+                      </div>
+                    )}
+                    {invoice.status === 'Paid' && (
+                      <span className="text-xs text-slate-400 italic">No action needed</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} title="Edit"><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => copyInvoiceLink(invoice)} title="Copy link"><Link2 className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => sendInvoiceSmsStub(invoice)} title="SMS stub"><MessageSquare className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => exportInvoicePdfStub(invoice)} title="PDF"><FileText className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="danger" onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="danger" onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} title="Delete"><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </td>
                 </tr>

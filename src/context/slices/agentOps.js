@@ -88,7 +88,7 @@ export function createAgentOps(setData, getData) {
       amount: invoiceAmount,
       date: new Date(nowIso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       due: appointment.date || todayISO,
-      status: 'Pending',
+      status: 'Draft',
       notes: `Auto-drafted by closeout agent for ${appointment.type || 'notary service'}.`,
       sourceAppointmentId: appointment.id,
       createdAt: nowIso,
@@ -141,7 +141,17 @@ export function createAgentOps(setData, getData) {
       confidenceScore,
       draftJournal,
       draftInvoice,
-      diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId}\nFee: $${invoiceAmount}\nState: ${stateCode}`,
+      diffData: {
+        signerName: draftJournal.signerName || appointment.client || 'Unknown',
+        serviceType: draftJournal.documentDescription || appointment.type || 'Notary Appointment',
+        date: draftJournal.date,
+        actType: draftJournal.actType,
+        fee: invoiceAmount,
+        state: stateCode,
+        journalEntry: draftJournal.entryNumber,
+        invoiceId,
+      },
+      diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId} | Fee: $${invoiceAmount} | State: ${stateCode}`,
       wasEdited: false,
     };
 
@@ -242,7 +252,7 @@ export function createAgentOps(setData, getData) {
         amount: invoiceAmount,
         date: new Date(nowIso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         due: apt.date || todayISO,
-        status: 'Pending',
+        status: 'Draft',
         notes: aiDraft?.invoiceNotes || `Notary services rendered for ${apt.type || 'appointment'}.`,
         sourceAppointmentId: apt.id,
         createdAt: nowIso,
@@ -299,7 +309,17 @@ export function createAgentOps(setData, getData) {
         aiGenerated: aiDraft?.aiGenerated || false,
         draftJournal,
         draftInvoice,
-        diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId}\nFee: $${invoiceAmount}\nState: ${sc}`,
+        diffData: {
+          signerName: draftJournal.signerName || apt.client || 'Unknown',
+          serviceType: draftJournal.documentDescription || apt.type || 'Notary Appointment',
+          date: draftJournal.date,
+          actType: draftJournal.actType,
+          fee: invoiceAmount,
+          state: sc,
+          journalEntry: draftJournal.entryNumber,
+          invoiceId,
+        },
+        diff: `Journal ${draftJournal.entryNumber} + Invoice ${invoiceId} | Fee: $${invoiceAmount} | State: ${sc}`,
         wasEdited: false,
       };
 
@@ -356,7 +376,7 @@ export function createAgentOps(setData, getData) {
         createdAt: nowIso,
       };
       const updatedInvoices = (p.invoices || []).map((inv) =>
-        inv.id === suggestion.invoiceId ? { ...inv, status: 'Overdue', reminderSentAt: nowIso } : inv
+        inv.id === suggestion.invoiceId ? { ...inv, status: 'Overdue', lastReminderSentAt: nowIso } : inv
       );
       return _appendAuditLog({
         ...p,
@@ -467,7 +487,7 @@ export function createAgentOps(setData, getData) {
 
     const overdueInvoices = (p.invoices || []).filter((inv) => {
       if (existingARSuggestions.has(inv.id)) return false;
-      if (!['Pending', 'Overdue'].includes(inv.status)) return false;
+      if (!['Sent', 'Overdue'].includes(inv.status)) return false;
       const dueDate = new Date(inv.due);
       return !isNaN(dueDate.getTime()) && dueDate < today;
     });
@@ -490,6 +510,13 @@ export function createAgentOps(setData, getData) {
         invoiceId: inv.id,
         invoiceAmount: inv.amount,
         daysOverdue,
+        diffData: {
+          invoiceId: inv.id,
+          signerName: inv.client,
+          fee: inv.amount,
+          daysOverdue,
+          state: '',
+        },
         diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
         actions: [{ type: 'reminder_drafted', refId: inv.id }],
         confidenceScore: 90,
@@ -546,7 +573,15 @@ export function createAgentOps(setData, getData) {
         notes: parsed.notes || '',
       },
       confidenceScore: parsed.confidence || 70,
-      diff: `Client: ${parsed.clientName || 'Unknown'}\nService: ${parsed.serviceType || 'TBD'}\nDate: ${parsed.suggestedDate || 'TBD'}`,
+      diffData: {
+        signerName: parsed.clientName || 'Unknown',
+        serviceType: parsed.serviceType || 'TBD',
+        date: parsed.suggestedDate || '',
+        actType: '',
+        fee: parsed.estimatedFee || 0,
+        state: '',
+      },
+      diff: `Client: ${parsed.clientName || 'Unknown'} | Service: ${parsed.serviceType || 'TBD'} | Date: ${parsed.suggestedDate || 'TBD'}`,
       actions: [{ type: 'client_drafted', refId: clientId }, { type: 'appointment_drafted', refId: String(apptId) }],
       warnings: [],
       missingFields: [],
@@ -576,7 +611,7 @@ export function createAgentOps(setData, getData) {
       );
       const overdueInvoices = (updated.invoices || []).filter((inv) => {
         if (existingARSuggestions.has(inv.id)) return false;
-        if (!['Pending', 'Overdue'].includes(inv.status)) return false;
+        if (!['Sent', 'Overdue'].includes(inv.status)) return false;
         const dueDate = new Date(inv.due);
         return !isNaN(dueDate.getTime()) && dueDate < todayDate;
       });
@@ -591,7 +626,15 @@ export function createAgentOps(setData, getData) {
           label: `Overdue Invoice — ${inv.client}`,
           appointmentClient: inv.client, ranAt: nowIso, createdAt: nowIso,
           actor: 'Aging AR Agent (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
-          daysOverdue, diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
+          daysOverdue,
+          diffData: {
+            invoiceId: inv.id,
+            signerName: inv.client,
+            fee: inv.amount,
+            daysOverdue,
+            state: '',
+          },
+          diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
           actions: [{ type: 'reminder_drafted', refId: inv.id }],
           confidenceScore: 90, warnings: [], missingFields: [],
         };
