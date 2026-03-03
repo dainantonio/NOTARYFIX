@@ -3,6 +3,47 @@
 // No React imports — pure factory functions that close over setData.
 
 const todayISO = new Date().toISOString().split('T')[0];
+
+// ─── SERVICE TYPE → JOURNAL ACT TYPE ─────────────────────────────────────────
+// Mirrors SERVICE_TYPE_MAP in AppointmentModal.jsx — single source of truth.
+const _ACT_MAP = {
+  'loan signing':               'Acknowledgment',
+  'general notary work (gnw)':  'Acknowledgment',
+  'general notary':             'Acknowledgment',
+  'gnw':                        'Acknowledgment',
+  'jurat':                      'Jurat',
+  'oath / affirmation':         'Oath / Affirmation',
+  'oath/affirmation':           'Oath / Affirmation',
+  'i-9 verification':           'I-9 Verification',
+  'i9 verification':            'I-9 Verification',
+  'apostille':                  'Apostille',
+  'copy certification':         'Copy Certification',
+  'power of attorney':          'Power of Attorney',
+  'poa':                        'Power of Attorney',
+  'signature witnessing':       'Signature Witnessing',
+  'deed of trust':              'Deed of Trust',
+  'remote online notary (ron)': 'Remote Online Notary (RON)',
+  'ron':                        'Remote Online Notary (RON)',
+  'remote online notary':       'Remote Online Notary (RON)',
+  'other':                      'Other',
+};
+
+const _apptTypeToActType = (apptType = '') => {
+  const key = apptType.trim().toLowerCase();
+  if (_ACT_MAP[key]) return _ACT_MAP[key];
+  if (/loan/i.test(apptType))                  return 'Acknowledgment';
+  if (/jurat/i.test(apptType))                 return 'Jurat';
+  if (/oath|affirm/i.test(apptType))           return 'Oath / Affirmation';
+  if (/i-?9/i.test(apptType))                  return 'I-9 Verification';
+  if (/apostille/i.test(apptType))             return 'Apostille';
+  if (/copy cert/i.test(apptType))             return 'Copy Certification';
+  if (/power of attorney|poa/i.test(apptType)) return 'Power of Attorney';
+  if (/signature wit/i.test(apptType))         return 'Signature Witnessing';
+  if (/deed/i.test(apptType))                  return 'Deed of Trust';
+  if (/remote|ron/i.test(apptType))            return 'Remote Online Notary (RON)';
+  if (/gnw|general notary/i.test(apptType))    return 'Acknowledgment';
+  return 'Acknowledgment';
+};
 const DEFAULT_JOURNAL_FEE = 15;
 
 // ── Shared helpers (module-private) ─────────────────────────────────────────
@@ -107,7 +148,7 @@ export function createCrudOps(setData) {
     entryNumber: `JE-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
     date: appointment.date || todayISO,
     time: appointment.time?.replace(' PM', '').replace(' AM', '') || '09:00',
-    actType: 'Acknowledgment',
+    actType: _apptTypeToActType(appointment.type),
     signerName: appointment.client,
     signerAddress: appointment.address || appointment.location || '',
     idType: "Driver's License",
