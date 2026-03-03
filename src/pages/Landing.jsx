@@ -17,16 +17,16 @@ const NAV_LINKS = [
 ];
 
 const STATS = [
-  { val: 'Beta',   label: 'Early Access Open'  },
-  { val: '50',     label: 'States Supported'   },
-  { val: 'Free',   label: 'No Credit Card'     },
-  { val: '14-day', label: 'Full Feature Trial' },
+  { val: '~90 sec', label: 'Avg Closeout Draft' },
+  { val: '24/7',   label: 'Auto Post-Appointment Closeouts' },
+  { val: '50',     label: 'States Supported' },
+  { val: '256',    label: 'Agent Drafts This Week (Beta)' },
 ];
 
 const ROLE_PROFILES = {
-  mobile: { label: 'Mobile Notary',      weekly: 12, avgRevenue: 1450, adminCut: '9.5 hrs saved/wk'  },
-  loan:   { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, adminCut: '14.2 hrs saved/wk' },
-  agency: { label: 'Signing Agency',     weekly: 35, avgRevenue: 6200, adminCut: '32.8 hrs saved/wk' },
+  mobile: { label: 'Mobile Notary',      weekly: 12, avgRevenue: 1450, adminCut: '9.5 agent hrs recovered/wk'  },
+  loan:   { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, adminCut: '14.2 agent hrs recovered/wk' },
+  agency: { label: 'Signing Agency',     weekly: 35, avgRevenue: 6200, adminCut: '32.8 agent hrs recovered/wk' },
 };
 
 const OLD_WAY = [
@@ -35,16 +35,17 @@ const OLD_WAY = [
   { title: 'Admin Overload',   desc: 'Spending hours manually entering journal data after every signing.', icon: Clock3       },
 ];
 const NEW_WAY = [
-  { title: 'Automated Invoicing',    desc: 'Generate professional invoices instantly and track payment status in real-time.', icon: Check },
-  { title: 'Digital Journaling',     desc: 'Compliant on-site data capture with automated prompts and state-specific rules.', icon: Check },
-  { title: 'Compliance Management',  desc: 'AI-powered guidance grounded in 50-state jurisdiction policy records.',           icon: Check },
-  { title: 'Team Dispatch Board',    desc: 'Coordinate multi-notary teams with standardized UI and centralized records.',     icon: Check },
+  { title: 'Agent-Drafted Invoices', desc: 'Your agent drafts professional invoices automatically after each completed appointment.', icon: Check },
+  { title: 'Agent-Assisted Journaling', desc: 'Your agent prepares compliant journal drafts with state-specific prompts ready for review.', icon: Check },
+  { title: 'Active Compliance Guardrails', desc: 'Your agent flags fee, ID, and act-level risks using grounded 50-state policy records.', icon: Check },
+  { title: 'Agent-Ready Team Dispatch', desc: 'Coordinate multi-notary teams while agent drafts keep closeout workflows consistent.', icon: Check },
 ];
 
 const HOW_STEPS = [
-  { step: '01', title: 'Book the Job',   desc: 'Capture client info with Smart Fill and appointment templates.',         icon: CalendarCheck },
-  { step: '02', title: 'Do the Signing', desc: 'Mobile Journal flow for compliant on-site execution and ID capture.',    icon: FileCheck2    },
-  { step: '03', title: 'Get Paid',       desc: 'Auto-generate invoices, track payment status, and close the loop.',      icon: Wallet        },
+  { step: '01', title: 'Book the Job', desc: 'Capture signer details with Smart Fill and templates.', icon: CalendarCheck },
+  { step: '02', title: 'Complete Signing', desc: 'Handle the appointment with guided compliance checks.', icon: FileCheck2 },
+  { step: '03', title: 'Agent Closes Out', desc: 'AI Closeout Agent drafts journal + invoice and flags risks.', icon: Bot },
+  { step: '04', title: 'Approve & Get Paid', desc: 'Review, approve, and send with one click.', icon: Wallet },
 ];
 
 const BUSINESS_MODELS = [
@@ -61,7 +62,7 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Compliance Coach', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    features: ['Unlimited Appointments', 'AI Closeout Agent', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
@@ -75,15 +76,15 @@ const COMPARE_ROWS = [
   { feature: 'Appointments per month', starter: '5',         pro: 'Unlimited',              agency: 'Unlimited + team routing', proHighlight: true  },
   { feature: 'Journal workflows',      starter: 'Basic',     pro: '✓ Advanced + templates', agency: '✓ Team oversight',         proHighlight: true  },
   { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
-  { feature: 'AI compliance coach',    starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
+  { feature: 'AI closeout agent',      starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
   { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
   { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
   { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
 ];
 
 const FAQ = [
-  { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides a unified platform for Appointment Scheduling, Digital Journaling, Automated Invoicing, and Compliance Management. Our Agency plan adds Team Dispatch and Multi-notary coordination.' },
-  { q: 'How does the AI Compliance Coach work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts to ensure every signing is compliant.' },
+  { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides an AI notary agent for appointment closeout, plus scheduling, journaling, invoicing, and compliance controls. Agency adds team dispatch and multi-notary coordination.' },
+  { q: 'How does the AI Closeout Agent work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts, then drafts next-step closeout actions so every signing stays compliant.' },
   { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
   { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
@@ -93,7 +94,7 @@ const FAQ = [
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'AI Compliance Coach'  },
+  { icon: Sparkles,    label: 'AI Closeout Agent'    },
   { icon: BadgeCheck,  label: '50-State Workflows'   },
   { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
@@ -182,6 +183,17 @@ export default function Landing() {
   const [waitlistDone,   setWaitlistDone]   = useState(false);
   const [waitlistLoading,setWaitlistLoading]= useState(false);
 
+  const trackEvent = (eventName, meta = {}) => {
+    try {
+      const key = 'notaryos_landing_events';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const next = [...existing, { eventName, meta, ts: new Date().toISOString() }].slice(-200);
+      localStorage.setItem(key, JSON.stringify(next));
+    } catch (_) {
+      // no-op telemetry fallback
+    }
+  };
+
   const activeProfile = ROLE_PROFILES[profile];
   const painPoints    = beforeAfter === 'old' ? OLD_WAY : NEW_WAY;
 
@@ -198,6 +210,7 @@ export default function Landing() {
   // AI submit
   const submitAI = () => {
     if (!aiInput.trim()) return;
+    trackEvent('landing_ai_query_submitted', { queryLength: aiInput.trim().length });
     setAiTyping(true);
     setAiOutput('');
     setTimeout(() => { setAiOutput(answerAI(aiInput)); setAiTyping(false); }, 650);
@@ -228,6 +241,26 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
+  useEffect(() => {
+    const seen = new Set();
+    const ids = ['features', 'how-it-works', 'pricing', 'waitlist'];
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !seen.has(entry.target.id)) {
+          seen.add(entry.target.id);
+          trackEvent('landing_section_viewed', { section: entry.target.id });
+        }
+      });
+    }, { threshold: 0.35 });
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   // Invoice highlight pulse
   const handleInvoiceClick = (id, amt) => {
     setHlInvoice(id);
@@ -239,6 +272,7 @@ export default function Landing() {
     e.preventDefault();
     if (!waitlistEmail.trim()) return;
     setWaitlistLoading(true);
+    trackEvent('landing_waitlist_submitted', { role: waitlistRole });
     // Store in localStorage so entries survive page refresh during demo
     const existing = JSON.parse(localStorage.getItem('notaryos_waitlist') || '[]');
     existing.push({ email: waitlistEmail.trim(), role: waitlistRole, ts: new Date().toISOString() });
@@ -257,7 +291,7 @@ export default function Landing() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-[#060d1b] shadow-lg shadow-cyan-500/30">N</div>
             <div className="leading-none text-left">
               <p className="text-sm font-bold tracking-tight text-white">NotaryOS</p>
-              <p className="text-[10px] text-slate-400">Enterprise Platform</p>
+              <p className="text-[10px] text-slate-400">AI Notary Agent</p>
             </div>
           </button>
 
@@ -279,9 +313,9 @@ export default function Landing() {
               className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-400/20">
               Join Waitlist
             </button>
-            <Link to="/auth"
+            <Link to="/auth" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
               className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
-              Live Demo
+              Open Live Demo
             </Link>
           </div>
 
@@ -301,7 +335,7 @@ export default function Landing() {
                   {link.label}
                 </button>
               ))}
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}
+              <Link to="/auth" onClick={() => { trackEvent('landing_cta_live_demo', { location: 'mobile_menu' }); setMobileMenuOpen(false); }}
                 className="mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-bold text-white">
                 Open Live Demo
               </Link>
@@ -326,25 +360,25 @@ export default function Landing() {
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
-              Notary Management Platform · 2025
+              AI Notary Agent · 2025
             </span>
           </div>
           <h1 className="mx-auto max-w-5xl text-center text-5xl font-black leading-[1.02] tracking-tight md:text-7xl lg:text-[5.5rem]">
-            Drowning in paperwork?<br />
+            Meet your AI notary agent.<br />
             <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Chasing payments?
+              Appointments close themselves.
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-slate-400 md:text-xl">
-            Stop worrying about state compliance. NotaryOS handles it all — so you can focus on signings, not spreadsheets.
+            After every signing, NotaryOS automatically drafts your journal, generates your invoice, and flags compliance risks in seconds.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => navigate('/auth')}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
-              Open Live Demo
+              See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <button onClick={() => scrollTo('waitlist')}
+            <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'hero' }); scrollTo('waitlist'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
               Join Waitlist
             </button>
@@ -403,7 +437,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Compliance Coach</span>
+            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Closeout Agent</span>
             <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight md:text-5xl">
               Your personal compliance expert,{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">available 24/7.</span>
@@ -687,13 +721,13 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
             <span className="inline-flex rounded-full border border-blue-400/25 bg-blue-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">How It Works</span>
-            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 3 steps.</h2>
+            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 4 steps.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">A streamlined workflow designed for mobile-first notaries.</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => (
               <div key={title} className="relative rounded-2xl border border-white/8 bg-white/[0.03] p-7 transition-all hover:-translate-y-1 hover:border-white/15">
-                {i < 2 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 md:block"><ArrowRight className="h-5 w-5 text-slate-700" /></div>}
+                {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-700" /></div>}
                 <div className="mb-4 flex items-center gap-3">
                   <span className="text-4xl font-black text-white/5">{step}</span>
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/8">
@@ -719,7 +753,7 @@ export default function Landing() {
               <div className={`mb-5 inline-flex rounded-xl p-3 ${bg}`}><Icon className={`h-6 w-6 ${color}`} /></div>
               <h3 className="text-xl font-black text-white">{title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{desc}</p>
-              <button onClick={() => navigate('/auth')}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'business_models' }); navigate('/auth'); }}
                 className={`mt-5 flex items-center gap-1.5 text-sm font-semibold ${color} transition-all group-hover:gap-2.5`}>
                 Get started <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -892,7 +926,7 @@ export default function Landing() {
               <p className="mt-2 text-sm text-slate-400">
                 We&apos;ll reach out personally with your early access link. Expect to hear from us within 48 hours.
               </p>
-              <button onClick={() => navigate('/auth')}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'waitlist_success' }); navigate('/auth'); }}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
                 Try the demo now <ArrowRight className="h-4 w-4" />
               </button>
@@ -958,12 +992,12 @@ export default function Landing() {
             No signup required. Click in and see the full platform — schedule, journal, invoices, compliance, mileage, and more.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => navigate('/auth')}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 active:scale-[.98]">
-              Open Live Demo
+              See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <button onClick={() => scrollTo('waitlist')}
+            <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'final_cta' }); scrollTo('waitlist'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
               Join Waitlist
             </button>

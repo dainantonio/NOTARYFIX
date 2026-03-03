@@ -151,19 +151,23 @@ export default function Onboarding() {
   const [form, setForm] = useState({
     name:                 data.settings?.name          || '',
     businessName:         data.settings?.businessName  || '',
+    businessLogo:         data.settings?.businessLogo || '',
+    businessLogoName:     data.settings?.businessLogoName || '',
     stateCode:            data.settings?.currentStateCode || 'OH',
+    commissionedStates:    Array.isArray(data.settings?.commissionedStates) && data.settings.commissionedStates.length ? data.settings.commissionedStates : [data.settings?.currentStateCode || 'OH'],
     monthlyGoal:          data.settings?.monthlyGoal   || 10000,
     selectedPlan:         data.settings?.planTier      || 'pro',
     licenseNumber:        '',
     commissionExpiryDate: data.settings?.commissionExpiryDate || '',
     notaryType:           data.settings?.notaryType || 'Traditional',
+    autonomyMode:         data.settings?.autonomyMode || 'supervised',
     feeSchedule:          data.settings?.feeSchedule || { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
   });
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
   const canAdvance = () => {
-    if (step === 1) return form.name.trim().length > 1;
+    if (step === 1) return form.name.trim().length > 1 && (form.commissionedStates || []).length > 0;
     if (step === 2) return form.businessName.trim().length > 1;
     if (step === 3) return form.licenseNumber.trim().length > 3;
     if (step === 4) return true;
@@ -178,12 +182,16 @@ export default function Onboarding() {
     updateSettings({
       name:                 form.name,
       businessName:         form.businessName,
+      businessLogo:         form.businessLogo || '',
+      businessLogoName:     form.businessLogoName || '',
       currentStateCode:     form.stateCode,
+      commissionedStates:    Array.from(new Set([form.stateCode, ...(form.commissionedStates || [])])),
       monthlyGoal:          Number(form.monthlyGoal),
       planTier:             form.selectedPlan,
       licenseNumber:        form.licenseNumber,
       commissionExpiryDate: form.commissionExpiryDate,
       notaryType:           form.notaryType,
+      autonomyMode:         form.autonomyMode,
       feeSchedule:          form.feeSchedule,
       onboardingComplete:   true,
     });
@@ -341,6 +349,40 @@ export default function Onboarding() {
                   </div>
                   <p className="text-xs text-slate-500">We'll load the right fee limits and ID requirements.</p>
                 </Field>
+                <Field label="Commissioned States (multi-select)">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="mb-2 flex flex-wrap gap-2">
+                      {(form.commissionedStates || []).map(code => (
+                        <span key={code} className="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-1 text-[11px] font-semibold text-blue-300">{code}</span>
+                      ))}
+                      {(!form.commissionedStates || form.commissionedStates.length === 0) && (
+                        <span className="text-xs text-slate-500">Select at least one state</span>
+                      )}
+                    </div>
+                    <div className="grid max-h-40 grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-7">
+                      {US_STATES.map(code => {
+                        const active = (form.commissionedStates || []).includes(code);
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => {
+                              const setStates = new Set(form.commissionedStates || []);
+                              if (active) setStates.delete(code); else setStates.add(code);
+                              const next = Array.from(setStates);
+                              set('commissionedStates', next);
+                              if (!next.includes(form.stateCode)) set('stateCode', next[0] || 'OH');
+                            }}
+                            className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-all ${active ? 'border-blue-500 bg-blue-600/20 text-blue-300' : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'}`}
+                          >
+                            {code}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500">Primary state drives defaults. Additional states are stored for multi-state commissions.</p>
+                </Field>
               </div>
             )}
 
@@ -358,6 +400,35 @@ export default function Onboarding() {
                     onChange={e => set('businessName', e.target.value)}
                     autoFocus
                   />
+                </Field>
+                <Field label="Business Logo (optional)">
+                  <div className="flex items-center gap-3">
+                    {form.businessLogo ? (
+                      <img src={form.businessLogo} alt="Business logo" className="h-14 w-14 rounded-xl border border-white/15 object-cover" />
+                    ) : (
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 text-xs font-bold text-slate-400">LOGO</div>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/10">
+                        Upload logo
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            if (typeof reader.result === 'string') {
+                              set('businessLogo', reader.result);
+                              set('businessLogoName', file.name);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }} />
+                      </label>
+                      {form.businessLogo && (
+                        <button type="button" onClick={() => { set('businessLogo', ''); set('businessLogoName', ''); }} className="text-xs text-rose-400 hover:text-rose-300">Remove logo</button>
+                      )}
+                    </div>
+                  </div>
                 </Field>
                 <Field label="Monthly Revenue Goal">
                   <div className="relative">
@@ -509,9 +580,11 @@ export default function Onboarding() {
                   {[
                     { label: 'Name',       val: form.name          || '—' },
                     { label: 'Business',   val: form.businessName  || '—' },
-                    { label: 'State',      val: form.stateCode              },
+                    { label: 'Primary State', val: form.stateCode },
+                    { label: 'Commissioned States', val: (form.commissionedStates || []).join(', ') || '—' },
                     { label: 'License',    val: form.licenseNumber || '—' },
                     { label: 'Notary Type', val: form.notaryType },
+                    { label: 'Autonomy Mode', val: form.autonomyMode.charAt(0).toUpperCase() + form.autonomyMode.slice(1) },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                     { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
                   ].map(row => (
@@ -526,6 +599,38 @@ export default function Onboarding() {
                   <p className="text-xs text-emerald-300 leading-relaxed">
                     You can change anything in Settings at any time. Your first 30 days are fully unlocked — explore every feature.
                   </p>
+                </div>
+
+                <div className="space-y-3 rounded-xl border border-blue-500/25 bg-blue-500/10 p-4">
+                  <p className="text-sm font-semibold text-blue-200">Your AI closeout agent is now active.</p>
+                  <p className="text-xs text-blue-100/90 leading-relaxed">
+                    After each appointment, your agent drafts the journal + invoice and runs compliance checks so you can approve, edit, or reject.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Autonomy Mode</p>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      { value: 'assistive', label: 'Assistive', desc: 'Drafts only' },
+                      { value: 'supervised', label: 'Supervised', desc: 'Suggests actions, you review before commit' },
+                      { value: 'autonomous', label: 'Autonomous', desc: 'Auto-commits safe actions' },
+                    ].map(({ value, label, desc }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => set('autonomyMode', value)}
+                        className={`rounded-xl border p-3 text-left transition-all ${
+                          form.autonomyMode === value
+                            ? 'border-blue-400 bg-blue-500/15'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <p className="text-sm font-semibold text-white">{label}</p>
+                        <p className="mt-1 text-xs text-slate-400">{desc}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
