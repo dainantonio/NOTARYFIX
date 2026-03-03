@@ -3,7 +3,7 @@
 // No React imports — pure factory function.
 // getData() is passed as second param to read current state snapshot.
 
-// ─── SERVICE TYPE → ACT TYPE MAPPING ─────────────────────────────────────────
+// ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
 // Now uses centralized mapping from notaryTypes.js — single source of truth.
 const apptTypeToActType = (apptType = '', aiHint = '') => {
   // Use AI hint if present and valid, otherwise use appointment type

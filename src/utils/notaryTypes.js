@@ -1,11 +1,11 @@
 /**
- * notaryTypes.js — Single Source of Truth for Service Types and Act Types
+ * notaryTypes.js — Single Source of Truth for Service Types
  *
  * This module defines the canonical lists and mappings for notary service types
- * (used in Schedule/Appointments) and journal act types (used in Journal entries).
+ * used across Schedule, Appointments, Journal, and Invoices.
  *
- * Per user request: Service Type and Act Type MUST match exactly (1:1).
- * If "Loan Signing" is selected in an appointment, it must be "Loan Signing" in the journal.
+ * Per user request: "Act Type" in the Journal has been renamed to "Service Type"
+ * to match the Schedule/Appointment form terminology.
  */
 
 // ─── CANONICAL TYPES (Schedule, Journal, Invoices) ───────────────────────────
@@ -26,8 +26,10 @@ export const CANONICAL_TYPES = [
   'Other',
 ];
 
-// For backward compatibility with existing code expecting these specific exports
+// Exported as SERVICE_TYPES for clarity
 export const SERVICE_TYPES = [...CANONICAL_TYPES];
+
+// Exported as ACT_TYPES for backward compatibility with existing code
 export const ACT_TYPES = [...CANONICAL_TYPES];
 
 // ─── FUZZY FALLBACK MAPPING ──────────────────────────────────────────────────
@@ -100,8 +102,8 @@ export function normalizeServiceType(type = '') {
 }
 
 /**
- * Convert a service type to its corresponding journal act type.
- * Per user request: This is now an exact 1:1 match.
+ * Convert a service type to its corresponding journal entry type.
+ * Per user request: This is an exact 1:1 match.
  */
 export function serviceTypeToActType(serviceType = '') {
   return normalizeServiceType(serviceType);

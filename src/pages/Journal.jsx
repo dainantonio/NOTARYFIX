@@ -270,7 +270,7 @@ const validateForm = (form, journalSettings) => {
 
 const exportCSV = (entries) => {
   const cols = [
-    'Entry #', 'Date', 'Time', 'Act Type', 'Signer Name', 'Signer Address',
+    'Entry #', 'Date', 'Time', 'Service Type', 'Signer Name', 'Signer Address',
     'ID Type', 'ID State', 'ID Last 4', 'ID Expiration', 'ID Scan Confirmed',
     'Fee ($)', 'Thumbprint Taken', 'Witness Required', 'Document Description',
     'Notes', 'Linked Appt ID', 'Linked Invoice ID', 'Completeness %', 'Content Hash',
@@ -945,7 +945,7 @@ const EntryModal = ({ isOpen, onClose, onSave, initial, appointments, invoices, 
                       <Input required type="time" value={form.time} onChange={(e) => set('time', e.target.value)} />
                     </div>
                     <div className="col-span-2 sm:col-span-1">
-                      <Label>Act Type <span className="text-red-500">*</span></Label>
+                      <Label>Service Type <span className="text-red-500">*</span></Label>
                       <Select
                         value={form.actType}
                         onChange={(e) => set('actType', e.target.value)}
@@ -1914,7 +1914,7 @@ const Journal = () => {
                 onChange={(e) => setFilterActType(e.target.value)}
                 className="h-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Act Types</option>
+                <option value="">All Service Types</option>
                 {ACT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
               <select
@@ -1974,7 +1974,7 @@ const Journal = () => {
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 w-10"></th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Entry #</th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Date / Time</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Act Type</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Service Type</th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Signer</th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">ID</th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Fee</th>
