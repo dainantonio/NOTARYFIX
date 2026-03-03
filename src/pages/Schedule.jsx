@@ -129,6 +129,8 @@ const Schedule = () => {
         address: formData.address || '',
         location: formData.location || 'TBD',
         notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
+        receiptName: formData.receiptName || '',
+        receiptImage: formData.receiptImage || '',
       });
       toast.success('Appointment updated');
       setEditingAppointment(null);
@@ -150,6 +152,8 @@ const Schedule = () => {
       address: formData.address || '',
       location: formData.location || 'TBD',
       notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
+      receiptName: formData.receiptName || '',
+      receiptImage: formData.receiptImage || '',
     });
     toast.success('Appointment created');
   };
@@ -190,7 +194,7 @@ const Schedule = () => {
     if (!smartPreview) return;
     addAppointment({
       id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
-      amount: smartPreview.amount, phone: '', email: '', address: '', location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`,
+      amount: smartPreview.amount, phone: '', email: '', address: '', location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`, receiptName: '', receiptImage: '',
     });
     toast.success('Smart appointment added');
     setSmartCalendarInput('');
@@ -243,6 +247,8 @@ const Schedule = () => {
         address: '',
         location,
         notes: 'Imported from calendar file',
+        receiptName: '',
+        receiptImage: '',
       });
     });
     toast.success(`Imported ${blocks.length} calendar event${blocks.length === 1 ? '' : 's'}`);
@@ -370,7 +376,7 @@ const Schedule = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => setCurrentDate(new Date())}>Today</Button>
-            <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Appointment</Button>
+            <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Event</Button>
             <div className="rounded-lg border border-slate-300/40 bg-white/10 p-0.5 flex items-center gap-0.5">
               <button onClick={() => setViewMode('agenda')} className={`rounded px-2 py-1 text-xs ${viewMode === 'agenda' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><LayoutList className="h-3.5 w-3.5" /></button>
               <button onClick={() => setViewMode('calendar')} className={`rounded px-2 py-1 text-xs ${viewMode === 'calendar' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><CalendarDays className="h-3.5 w-3.5" /></button>
