@@ -1,6 +1,7 @@
 // File: src/context/slices/crudOps.js
 // Simple CRUD, journal helpers, admin data management, and audit utilities.
 // No React imports — pure factory functions that close over setData.
+import { mapServiceTypeToJournalActType } from '../../utils/notaryMappings';
 
 const todayISO = new Date().toISOString().split('T')[0];
 const DEFAULT_JOURNAL_FEE = 15;
@@ -107,9 +108,9 @@ export function createCrudOps(setData) {
     entryNumber: `JE-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
     date: appointment.date || todayISO,
     time: appointment.time?.replace(' PM', '').replace(' AM', '') || '09:00',
-    actType: 'Acknowledgment',
+    actType: mapServiceTypeToJournalActType(appointment.type),
     signerName: appointment.client,
-    signerAddress: '',
+    signerAddress: appointment.address || appointment.location || '',
     idType: "Driver's License",
     idIssuingState: '',
     idLast4: '',
