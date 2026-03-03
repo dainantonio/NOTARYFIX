@@ -231,13 +231,40 @@ export default function Landing() {
   const nosCost     = billing === 'monthly' ? 29 : 23;
   const savings     = Math.max(0, stackCost - nosCost);
 
-  // AI submit
-  const submitAI = () => {
+  // AI submit — source: 'ai_demo' | 'ai_demo_quick' | 'faq_guide' | 'faq_guide_starter'
+  const submitAI = (source = 'ai_demo') => {
     if (!aiInput.trim()) return;
-    track('ai_query_submitted', { query: aiInput.trim().slice(0, 120) });
+    track('ai_query_submitted', { query: aiInput.trim().slice(0, 120), source });
     setAiTyping(true);
     setAiOutput('');
     setTimeout(() => { setAiOutput(answerAI(aiInput)); setAiTyping(false); }, 650);
+  };
+
+  // FAQ Guide state
+  const [faqInput,   setFaqInput]   = useState('');
+  const [faqOutput,  setFaqOutput]  = useState('');
+  const [faqTyping,  setFaqTyping]  = useState(false);
+
+  const FAQ_STARTER_CHIPS = [
+    'How does the AI closeout agent work?',
+    'Can I manage a team of notaries?',
+    'What states are supported?',
+    'How much time does the agent save?',
+    'Is my signer data secure?',
+    'Can I cancel anytime?',
+  ];
+
+  const submitFaqGuide = (q, source = 'faq_guide') => {
+    const query = (q || faqInput).trim();
+    if (!query) return;
+    if (q) setFaqInput(q);
+    track('ai_query_submitted', { query: query.slice(0, 120), source });
+    setFaqTyping(true);
+    setFaqOutput('');
+    // Match against FAQ data first, then fall back to answerAI
+    const match = FAQ.find(item => item.q.toLowerCase() === query.toLowerCase());
+    const answer = match ? match.a : answerAI(query);
+    setTimeout(() => { setFaqOutput(answer); setFaqTyping(false); }, 600);
   };
 
   // Smooth scroll + close mobile menu
@@ -577,13 +604,13 @@ export default function Landing() {
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && submitAI()}
+                onKeyDown={e => e.key === 'Enter' && submitAI('ai_demo')}
                 placeholder="Ask anything about notary compliance..." />
-              <button onClick={submitAI} className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-white">Ask AI</button>
+              <button onClick={() => submitAI('ai_demo')} className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-white">Ask AI</button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {["California jurat fee", "Texas expired ID rule", "Ohio red flags", "Dataset source?"].map(q => (
-                <button key={q} onClick={() => { setAiInput(q); setTimeout(submitAI, 50); }}
+                <button key={q} onClick={() => { setAiInput(q); setTimeout(() => submitAI('ai_demo_quick'), 50); }}
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-slate-400 transition-colors hover:border-cyan-400/30 hover:text-cyan-300">
                   {q}
                 </button>
@@ -1039,28 +1066,101 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══ FAQ ═══════════════════════════════════════════════════════════════ */}
-      <section id="faq" className="mx-auto max-w-3xl px-6 py-24">
-        <div className="mb-12 text-center">
-          <h2 className="text-4xl font-black tracking-tight md:text-5xl">Questions? Answered.</h2>
-          <p className="mx-auto mt-4 text-lg text-slate-400">Everything you need to know before getting started.</p>
-        </div>
-        <div className="space-y-3">
-          {FAQ.map((item, i) => {
-            const isOpen = openFaq === i;
-            return (
-              <div key={item.q} className={`overflow-hidden rounded-2xl border transition-all ${isOpen ? 'border-white/15 bg-white/5' : 'border-white/8 bg-white/[0.02]'}`}>
-                <button className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left"
-                  onClick={() => setOpenFaq(isOpen ? -1 : i)}>
-                  <span className="font-semibold text-white">{item.q}</span>
-                  <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-cyan-400' : ''}`} />
-                </button>
-                {isOpen && (
-                  <div className="border-t border-white/8 px-6 pb-5 pt-4 text-sm leading-relaxed text-slate-400">{item.a}</div>
-                )}
+      {/* ══ FAQ / AI GUIDE ════════════════════════════════════════════════ */}
+      <section id="faq" className="bg-[#060d1b] py-24">
+        <div className="mx-auto max-w-3xl px-6">
+          <div className="mb-10 text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-300">
+              <Sparkles className="h-3 w-3" /> AI Guide
+            </span>
+            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">Ask anything.</h2>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-slate-400">
+              Get instant answers about features, compliance, pricing, and how NotaryOS works — powered by the same AI agent that runs inside the platform.
+            </p>
+          </div>
+
+          {/* Starter chips */}
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            {FAQ_STARTER_CHIPS.map(q => (
+              <button
+                key={q}
+                onClick={() => submitFaqGuide(q, 'faq_guide_starter')}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                  faqInput === q && faqOutput
+                    ? 'border-violet-400/50 bg-violet-400/15 text-violet-200'
+                    : 'border-white/10 bg-white/4 text-slate-300 hover:border-violet-400/30 hover:bg-violet-400/8 hover:text-violet-200'
+                }`}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+
+          {/* Live response panel */}
+          <div className="rounded-2xl border border-white/10 bg-[#0d1a2e] overflow-hidden shadow-2xl">
+            {/* Panel header */}
+            <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-400/15">
+                <Sparkles className="h-4 w-4 text-violet-400" />
               </div>
-            );
-          })}
+              <div>
+                <p className="text-sm font-bold text-white">NotaryOS AI Guide</p>
+                <p className="flex items-center gap-1.5 text-xs text-emerald-400">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  Ready to answer
+                </p>
+              </div>
+            </div>
+
+            {/* Response area */}
+            <div className="min-h-[120px] px-5 py-5">
+              {!faqOutput && !faqTyping && (
+                <p className="text-sm text-slate-500 italic">
+                  Tap a question above or type your own below to get started.
+                </p>
+              )}
+              {faqTyping && (
+                <span className="flex gap-1 py-1">
+                  {[0, 150, 300].map(d => (
+                    <span key={d} className="h-2 w-2 animate-bounce rounded-full bg-slate-500" style={{ animationDelay: `${d}ms` }} />
+                  ))}
+                </span>
+              )}
+              {faqOutput && !faqTyping && (
+                <div className="space-y-2">
+                  {faqInput && (
+                    <p className="text-xs font-semibold text-violet-400/80 mb-3">
+                      ↳ {faqInput}
+                    </p>
+                  )}
+                  <p className="text-sm leading-relaxed text-slate-200">{faqOutput}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Input row */}
+            <div className="border-t border-white/[0.06] px-4 pb-4 pt-3">
+              <div className="flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
+                <input
+                  className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
+                  value={faqInput}
+                  onChange={e => setFaqInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && submitFaqGuide(null, 'faq_guide')}
+                  placeholder="Ask anything about NotaryOS..."
+                />
+                <button
+                  onClick={() => submitFaqGuide(null, 'faq_guide')}
+                  disabled={!faqInput.trim()}
+                  className="shrink-0 rounded-lg bg-gradient-to-r from-violet-500 to-blue-600 px-4 py-2 text-xs font-bold text-white transition-opacity disabled:opacity-40"
+                >
+                  Ask
+                </button>
+              </div>
+              <p className="mt-2 text-center text-[11px] text-slate-600">
+                Powered by the same AI agent that runs your closeouts — grounded in 50-state policy records.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
