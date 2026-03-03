@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Phone, Mail, Mic, MicOff } from 'lucide-react';
 import { Button } from './UI';
+import { getServiceTypeMapping, serviceTypeToActType } from '../utils/notaryTypes';
 
 const DEFAULT_FORM = {
   client: '',
@@ -16,46 +17,12 @@ const DEFAULT_FORM = {
 };
 
 // ─── SERVICE TYPE → JOURNAL ACT TYPE MAP ──────────────────────────────────────
-// Schedule uses business-level service names; Journal uses legal act type names.
-// This canonical map keeps them in sync across the app.
-export const SERVICE_TYPE_MAP = [
-  { label: 'Loan Signing',               actType: 'Acknowledgment'            },
-  { label: 'General Notary Work (GNW)',   actType: 'Acknowledgment'            },
-  { label: 'Jurat',                       actType: 'Jurat'                     },
-  { label: 'Oath / Affirmation',          actType: 'Oath / Affirmation'        },
-  { label: 'I-9 Verification',            actType: 'I-9 Verification'          },
-  { label: 'Apostille',                   actType: 'Apostille'                 },
-  { label: 'Copy Certification',          actType: 'Copy Certification'        },
-  { label: 'Power of Attorney',           actType: 'Power of Attorney'         },
-  { label: 'Signature Witnessing',        actType: 'Signature Witnessing'      },
-  { label: 'Deed of Trust',               actType: 'Deed of Trust'             },
-  { label: 'Remote Online Notary (RON)',  actType: 'Remote Online Notary (RON)'},
-  { label: 'Other',                       actType: 'Other'                     },
-];
-
-// Flat list for dropdowns
+// Imported from centralized notaryTypes.js — single source of truth.
+const SERVICE_TYPE_MAP = getServiceTypeMapping();
 const serviceTypes = SERVICE_TYPE_MAP.map((s) => s.label);
 
 // Helper: given an appointment type label, return the matching journal actType
-export const appointmentTypeToActType = (apptType = '') => {
-  const match = SERVICE_TYPE_MAP.find(
-    (s) => s.label.toLowerCase() === apptType.trim().toLowerCase()
-  );
-  if (match) return match.actType;
-  // Fuzzy fallbacks for free-text / smart-parse values
-  if (/loan/i.test(apptType))                      return 'Acknowledgment';
-  if (/jurat/i.test(apptType))                     return 'Jurat';
-  if (/oath|affirm/i.test(apptType))               return 'Oath / Affirmation';
-  if (/i-?9/i.test(apptType))                      return 'I-9 Verification';
-  if (/apostille/i.test(apptType))                 return 'Apostille';
-  if (/copy cert/i.test(apptType))                 return 'Copy Certification';
-  if (/power of attorney|poa/i.test(apptType))     return 'Power of Attorney';
-  if (/signature wit/i.test(apptType))             return 'Signature Witnessing';
-  if (/deed/i.test(apptType))                      return 'Deed of Trust';
-  if (/remote|ron|electronic/i.test(apptType))     return 'Remote Online Notary (RON)';
-  if (/gnw|general notary/i.test(apptType))        return 'Acknowledgment';
-  return 'Acknowledgment'; // safe default
-};
+export const appointmentTypeToActType = (apptType = '') => serviceTypeToActType(apptType);
 
 const normalizeTimeInput = (value) => {
   if (!value) return '';

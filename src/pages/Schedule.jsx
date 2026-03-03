@@ -5,7 +5,7 @@ import AppointmentModal, { appointmentTypeToActType } from '../components/Appoin
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';
-import { normalizeServiceType } from '../utils/notaryMappings';
+import { normalizeServiceType, serviceTypeToActType } from '../utils/notaryTypes';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 

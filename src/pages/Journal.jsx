@@ -36,13 +36,10 @@ import { useData } from '../context/DataContext';
 import { useLocation } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';
 import { isJournalAtLimit } from '../utils/gates';
+import { getActTypes } from '../utils/notaryTypes';
 
-// ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const ACT_TYPES = [
-  'Acknowledgment', 'Jurat', 'Oath / Affirmation', 'Copy Certification',
-  'Signature Witnessing', 'I-9 Verification', 'Apostille', 'Protest',
-  'Deed of Trust', 'Power of Attorney', 'Remote Online Notary (RON)', 'Other',
-];
+// ─── CONSTANTS ──────────────────────────────────────
+const ACT_TYPES = getActTypes();
 
 const ID_TYPES = [
   "Driver's License", 'Passport', 'Passport Card', 'State ID Card',
