@@ -7,7 +7,7 @@ import Clients from './pages/Clients';
 import Invoices from './pages/Invoices';
 import Settings from './pages/Settings';
 import Mileage from './pages/mileage';
-import Landing from './pages/Landing';
+// import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding';
 import Compliance from './pages/Legal';
@@ -64,7 +64,7 @@ function App() {
             <AppLayout>
               <Routes>
                 {/* Public */}
-                <Route path="/"            element={<Landing />} />
+                <Route path="/"            element={<Auth />} />
                 <Route path="/auth"        element={<Auth />} />
                 <Route path="/onboarding"  element={<Onboarding />} />
                 <Route path="/legal"       element={<Compliance />} />
