@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLinker } from '../hooks/useLinker';
+import { mapServiceTypeToJournalActType } from '../utils/notaryMappings';
 
 // ─── Colour palette helpers ──────────────────────────────────────────────────
 
@@ -796,7 +797,7 @@ export default function ArriveMode() {
                   state: {
                     prefillAppointmentId: appt.id,
                     prefillClient: appt.client,
-                    prefillActType: appt.type === 'Loan Signing' ? 'Acknowledgment' : '',
+                    prefillActType: mapServiceTypeToJournalActType(appt.type),
                   },
                 });
               }}

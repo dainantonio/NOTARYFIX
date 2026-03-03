@@ -102,7 +102,6 @@ const LayoutInner = ({ children }) => {
     } catch (_) {}
   };
 
-
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

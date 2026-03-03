@@ -49,6 +49,7 @@ const apptTypeToActType = (apptType = '', aiHint = '') => {
 
 import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
 import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
+import { mapServiceTypeToJournalActType } from '../../utils/notaryMappings';
 
 // ── Internal helpers (module-private) ────────────────────────────────────────
 
@@ -98,7 +99,7 @@ export function createAgentOps(setData, getData) {
       entryNumber: `JE-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
       date: appointment.date || todayISO,
       time: appointment.time?.replace(' PM', '').replace(' AM', '') || '09:00',
-      actType: apptTypeToActType(appointment.type),
+      actType: mapServiceTypeToJournalActType(appointment.type),
       signerName: appointment.client || 'Unknown Signer',
       signerAddress: '',
       idType: "Driver's License",
