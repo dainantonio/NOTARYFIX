@@ -228,17 +228,6 @@ export default function Landing() {
     }
   };
 
-  const trackEvent = (eventName, meta = {}) => {
-    try {
-      const key = 'notaryos_landing_events';
-      const existing = JSON.parse(localStorage.getItem(key) || '[]');
-      const next = [...existing, { eventName, meta, ts: new Date().toISOString() }].slice(-200);
-      localStorage.setItem(key, JSON.stringify(next));
-    } catch (_) {
-      // no-op telemetry fallback
-    }
-  };
-
   const activeProfile = ROLE_PROFILES[profile];
   const painPoints    = beforeAfter === 'old' ? OLD_WAY : NEW_WAY;
 
