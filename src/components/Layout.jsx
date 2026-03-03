@@ -136,7 +136,7 @@ const LayoutInner = ({ children }) => {
     { icon: ScrollText, label: 'Audit Log', path: '/audit' },
     { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
-    { icon: Scale, label: 'Act Library', path: '/form-guide' },
+    { icon: Scale, label: 'Notarial Act Advisor', path: '/form-guide' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -314,7 +314,7 @@ const LayoutInner = ({ children }) => {
             { Icon: LayoutDashboard, label: 'Home',     path: '/dashboard' },
             { Icon: Calendar,        label: 'Schedule', path: '/schedule'  },
             { Icon: ScrollText,      label: 'Journal',  path: '/journal'   },
-            { Icon: Scale,           label: 'Forms',    path: '/form-guide'  },
+            { Icon: Scale,           label: 'Acts',     path: '/form-guide'  },
             { Icon: Wallet,          label: 'Finances', path: '/invoices'  },
           ].map(item => {
             const active = location.pathname === item.path;

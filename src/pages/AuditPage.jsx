@@ -14,7 +14,7 @@ const DATE_FILTERS = [
 
 const RESOURCE_TYPES = [
   { value: 'all', label: 'All types' },
-  { value: 'closeoutAgent', label: 'Closeout Agent' },
+  { value: 'Auto-Closeout', label: 'Auto-Closeout' },
   { value: 'agentSuggestion', label: 'Agent Suggestion' },
   { value: 'journalEntry', label: 'Journal Entry' },
   { value: 'invoice', label: 'Invoice' },

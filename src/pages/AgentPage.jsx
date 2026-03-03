@@ -291,7 +291,7 @@ const AgentPage = () => {
             {/* Post-Appointment Closeout */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Closeout Agent</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Auto-Closeout</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Auto-draft journal + invoice from completed appointment</p>
               </div>
               <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -331,7 +331,7 @@ const AgentPage = () => {
             {/* AR Check */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Collections Agent</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Aging AR Agent</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scan for unpaid invoices and draft reminders</p>
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
@@ -350,7 +350,7 @@ const AgentPage = () => {
             {/* Lead Intake */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Parser</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Intake Agent</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Parse text or emails into appointment drafts</p>
               </div>
               <p className="text-xs text-slate-400">
