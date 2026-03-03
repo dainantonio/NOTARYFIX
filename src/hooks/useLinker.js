@@ -56,11 +56,11 @@ export const useLinker = () => {
     if (!alreadyRan && autoCloseoutEnabled) {
       // Phase 2: Use AI-enhanced async closeout agent
       runCloseoutAgentWithAI(apt.id, 'Closeout Agent')
-        .then(() => toast.info('✦ AI drafted journal + invoice — review in AI Agent.'))
+        .then(() => toast.info('✦ AI drafted journal + invoice — review in Command Center.'))
         .catch(() => {
           // Fallback to sync agent if AI call fails
           runCloseoutAgent(apt.id, 'Closeout Agent');
-          toast.info('Agent drafted journal + invoice — review in AI Agent.');
+          toast.info('Agent drafted journal + invoice — review in Command Center.');
           // Re-enable manual prompts only if agent fails and we're in assistive mode
           if (autonomyMode === 'assistive') {
             showManualPrompts();

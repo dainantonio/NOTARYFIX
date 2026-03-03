@@ -164,7 +164,7 @@ export function createAgentOps(setData, getData) {
         agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
         agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
       }, {
-        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent',
+        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
         resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
         diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
       });
@@ -176,7 +176,7 @@ export function createAgentOps(setData, getData) {
       agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
       agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
     }, {
-      actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent',
+      actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
       resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
       diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval`,
     });
@@ -351,7 +351,7 @@ export function createAgentOps(setData, getData) {
         appointments: nextAppointments,
         agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
         agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
-      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'closeoutAgent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
+      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
     });
   };
 
@@ -506,7 +506,7 @@ export function createAgentOps(setData, getData) {
         appointmentClient: inv.client,
         ranAt: nowIso,
         createdAt: nowIso,
-        actor: 'Aging AR Agent',
+        actor: 'Collections Agent',
         invoiceId: inv.id,
         invoiceAmount: inv.amount,
         daysOverdue,
@@ -551,7 +551,7 @@ export function createAgentOps(setData, getData) {
       appointmentClient: parsed.clientName || 'Unknown',
       ranAt: nowIso,
       createdAt: nowIso,
-      actor: 'Lead Intake Agent',
+          actor: 'Lead Parser',
       rawText,
       draftClient: {
         id: clientId,
@@ -625,7 +625,7 @@ export function createAgentOps(setData, getData) {
           type: 'aging_ar', status: 'pending',
           label: `Overdue Invoice — ${inv.client}`,
           appointmentClient: inv.client, ranAt: nowIso, createdAt: nowIso,
-          actor: 'Aging AR Agent (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
+          actor: 'Collections Agent (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
           daysOverdue,
           diffData: {
             invoiceId: inv.id,

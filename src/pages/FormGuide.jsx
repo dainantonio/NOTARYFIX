@@ -659,9 +659,9 @@ export default function FormGuide() {
   const [messages, setMessages] = useState([{
     id: 'welcome',
     role: 'assistant',
-    response: {
+      response: {
       type: 'welcome',
-      title: 'Notarial Act Advisor',
+      title: 'Compliance Check',
       body: stateRule
         ? `State policies for **${stateRule.state}** are loaded from your Admin configuration — answers are state-aware. Ask me anything: "What act for an affidavit?" or "Deed of trust, signer already signed."`
         : `Ask me anything about notarial acts: "What act do I use for an affidavit?" or "Signer already signed the deed — now what?" Configure your state in Admin Settings to get state-specific fee caps and requirements.`,
@@ -723,7 +723,7 @@ export default function FormGuide() {
       role: 'assistant',
       response: {
         type: 'welcome',
-        title: 'Notarial Act Advisor',
+        title: 'Compliance Check',
         body: 'Chat cleared. Ask me anything.',
         act: null, actData: null, stateEnrichment: null,
       },

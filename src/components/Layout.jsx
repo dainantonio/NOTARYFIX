@@ -131,12 +131,12 @@ const LayoutInner = ({ children }) => {
     { icon: BadgeCheck, label: 'Credentials', path: '/compliance' },
     { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', locked: !teamDispatchGate.allowed },
     { icon: Brain, label: 'AI Trainer', path: '/ai-trainer', badge: 'PRO', locked: !aiTrainerGate.allowed },
-    { icon: Sparkles, label: 'AI Agent', path: '/agent' },
+    { icon: Sparkles, label: 'Command Center', path: '/agent' },
     { icon: ClipboardList, label: 'Review Queue', path: '/review', pendingCount: pendingReviewCount },
     { icon: ScrollText, label: 'Audit Log', path: '/audit' },
     { icon: Wrench, label: 'Admin', path: '/admin', locked: !adminGate.allowed, adminOnly: true },
     { icon: MapPin, label: 'Mileage', path: '/mileage' },
-    { icon: Scale, label: 'Form Guide', path: '/form-guide' },
+    { icon: Scale, label: 'Act Library', path: '/form-guide' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

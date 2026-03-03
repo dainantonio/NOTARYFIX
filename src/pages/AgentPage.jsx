@@ -1,4 +1,3 @@
-// src/pages/AgentPage.jsx
 // Phase 3 — Agent command center: weekly digest, playbooks, pending suggestions, run history, KPIs
 import React, { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -98,7 +97,7 @@ const RunRow = ({ run }) => {
 const AgentPage = () => {
   const navigate = useNavigate();
   const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion, runAgingARAgent, runARScan, runLeadIntakeAgent, updateReminderStatus, runCloseoutAgentWithAI, generateWeeklySummary } = useData();
-  const [historyTab, setHistoryTab] = useState('all');
+  const [historyTab, setHistoryTab] = useState('all'); // all, approved, rejected, pending
   const [leadText, setLeadText] = useState('');
   const [leadParsing, setLeadParsing] = useState(false);
 
@@ -190,7 +189,7 @@ const AgentPage = () => {
             <p className="text-xs uppercase tracking-[0.18em] text-violet-200">Agentic Operations</p>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Sparkles className="h-7 w-7 text-violet-300" />
-              AI Agent
+              Command Center
             </h1>
             <p className="mt-1 text-sm text-slate-200">Review AI drafts, approve actions, and track agent performance.</p>
           </div>
@@ -278,7 +277,7 @@ const AgentPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-amber-500" />
-              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Playbooks</p>
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Agent Library</p>
             </div>
             <button
               onClick={() => navigate('/audit')}
@@ -292,7 +291,7 @@ const AgentPage = () => {
             {/* Post-Appointment Closeout */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Post-Appointment Closeout</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Closeout Agent</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Auto-draft journal + invoice from completed appointment</p>
               </div>
               <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -332,11 +331,11 @@ const AgentPage = () => {
             {/* AR Check */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">AR Check</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scan all overdue invoices and queue reminder suggestions</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Collections Agent</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scan for unpaid invoices and draft reminders</p>
               </div>
-              <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
-                {(data.invoices || []).filter(i => ['Pending', 'Overdue'].includes(i.status)).length} overdue invoice{(data.invoices || []).filter(i => ['Pending', 'Overdue'].includes(i.status)).length !== 1 ? 's' : ''}
+              <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                {data.invoices?.filter(i => i.status === 'Overdue').length || 0} overdue invoices
               </p>
               <Button
                 size="sm"
@@ -351,179 +350,115 @@ const AgentPage = () => {
             {/* Lead Intake */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Intake</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Parse a text snippet into a client + appointment</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Parser</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Parse text or emails into appointment drafts</p>
               </div>
-              <textarea
-                value={leadText}
-                onChange={(e) => setLeadText(e.target.value)}
-                rows={3}
-                placeholder="Paste SMS, email, or voicemail text..."
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              />
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={async () => {
-                  if (!leadText.trim()) return;
-                  setLeadParsing(true);
-                  try { await runLeadIntakeAgent?.(leadText); setLeadText(''); toast.success('Lead parsed — review the draft below'); }
-                  finally { setLeadParsing(false); }
-                }}
-                disabled={!leadText.trim() || leadParsing}
-              >
-                {leadParsing ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Parsing…</> : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Parse Lead</>}
-              </Button>
+              <p className="text-xs text-slate-400">
+                Paste text below to parse
+              </p>
+              <div className="space-y-2">
+                <textarea
+                  value={leadText}
+                  onChange={(e) => setLeadText(e.target.value)}
+                  placeholder="Paste lead text here..."
+                  className="w-full h-20 text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-full"
+                  disabled={leadParsing || !leadText.trim()}
+                  onClick={async () => {
+                    setLeadParsing(true);
+                    try {
+                      await runLeadIntakeAgent?.(leadText);
+                      setLeadText('');
+                      toast.success('Lead parsed — check pending suggestions');
+                    } finally {
+                      setLeadParsing(false);
+                    }
+                  }}
+                >
+                  {leadParsing ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Parsing…</> : <><UserPlus className="h-3.5 w-3.5 mr-1.5" /> Parse Lead</>}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Reminder Queue */}
-      {pendingReminders.length > 0 && (
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <BellRing className="h-4 w-4 text-amber-500" />
-              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Payment Reminders</p>
-              <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
-                {pendingReminders.length}
-              </span>
-            </div>
-            <div className="space-y-2">
-              {pendingReminders.map((r) => (
-                <div key={r.id} className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${r.isSoon ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Bell className="h-4 w-4 text-amber-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{r.clientName}</p>
-                      <p className="text-xs text-slate-400">
-                        {r.type === 'initial_followup' ? '7-day follow-up' : 'Overdue notice'} · ${r.amount} · Due {new Date(r.scheduledFor).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => updateReminderStatus?.(r.id, 'sent')}
-                      className="flex items-center gap-1 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 transition-colors"
-                    >
-                      <Send className="h-3 w-3" />
-                      Sent
-                    </button>
-                    <button
-                      onClick={() => updateReminderStatus?.(r.id, 'dismissed')}
-                      className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Pending Suggestions */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Activity className="h-5 w-5 text-blue-500" />
+            Pending Review
+          </h2>
+          <Badge variant="secondary">{suggestions.length} Drafts</Badge>
+        </div>
 
-      {/* Pending suggestions */}
-      {suggestions.length > 0 ? (
-        <Card>
-          <CardContent className="p-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-violet-500" />
-              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Pending Agent Drafts</p>
-              <span className="rounded-full bg-violet-100 dark:bg-violet-900/30 px-2 py-0.5 text-[11px] font-bold text-violet-700 dark:text-violet-300">
-                {suggestions.length}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {suggestions.map((s) => (
-                <AgentSuggestionCard
-                  key={s.id}
-                  suggestion={s}
-                  onApprove={handleApprove}
-                  onEdit={handleEdit}
-                  onReject={handleReject}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-            <p className="font-semibold text-slate-700 dark:text-slate-200">All caught up</p>
-            <p className="text-sm text-slate-400 max-w-xs">No pending agent drafts. Complete an appointment to trigger the closeout agent.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Autonomy mode info */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-slate-400" />
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Autonomy Controls</p>
+        {suggestions.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {suggestions.map((s) => (
+              <AgentSuggestionCard
+                key={s.id}
+                suggestion={s}
+                onApprove={() => handleApprove(s)}
+                onReject={() => handleReject(s)}
+                onEdit={() => handleEdit(s)}
+              />
+            ))}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { mode: 'assistive', label: 'Assist', desc: 'Agent drafts — you approve everything', icon: '🤝' },
-              { mode: 'supervised', label: 'Supervised', desc: 'Agent acts — you review before commit', icon: '👁' },
-              { mode: 'autonomous', label: 'Autonomous', desc: 'Agent auto-commits safe actions', icon: '⚡' },
-            ].map(({ mode, label, desc, icon }) => (
+        ) : (
+          <Card className="border-dashed">
+            <CardContent className="p-12 text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                <CheckCircle2 className="h-6 w-6 text-slate-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">All caught up!</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">No pending agent suggestions to review.</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Run History */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Clock className="h-5 w-5 text-slate-400" />
+            Run History
+          </h2>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            {['all', 'approved', 'rejected', 'pending'].map((t) => (
               <button
-                key={mode}
-                onClick={() => { updateSettings({ autonomyMode: mode }); toast.success(`Switched to ${label} mode`); }}
-                className={`rounded-xl border p-3 text-left transition-all ${
-                  autonomyMode === mode
-                    ? 'border-violet-400 bg-violet-50 dark:bg-violet-900/20 ring-1 ring-violet-300 dark:ring-violet-700'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                }`}
+                key={t}
+                onClick={() => setHistoryTab(t)}
+                className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${historyTab === t ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               >
-                <p className="text-base mb-0.5">{icon}</p>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{desc}</p>
+                {t}
               </button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Run history */}
-      {allRuns.length > 0 && (
-        <Card>
-          <CardContent className="p-0">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-slate-400" />
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Agent Run History</p>
-              </div>
-              <div className="flex gap-1 text-xs">
-                {['all', 'pending', 'approved', 'rejected'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setHistoryTab(tab)}
-                    className={`rounded-md px-2.5 py-1 capitalize transition-colors ${
-                      historyTab === tab
-                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold'
-                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+        <Card className="overflow-hidden">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {filteredRuns.length > 0 ? (
+              filteredRuns.slice(0, 10).map((run) => (
+                <RunRow key={run.id} run={run} />
+              ))
+            ) : (
+              <div className="p-8 text-center text-slate-400 text-sm">No history found for this filter.</div>
+            )}
+          </div>
+          {filteredRuns.length > 10 && (
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
+              <button onClick={() => navigate('/audit')} className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">View full history in Audit Log →</button>
             </div>
-            <div>
-              {filteredRuns.length === 0 ? (
-                <p className="text-center text-sm text-slate-400 py-8">No runs to show</p>
-              ) : (
-                filteredRuns.slice(0, 20).map((run) => <RunRow key={run.id} run={run} />)
-              )}
-            </div>
-          </CardContent>
+          )}
         </Card>
-      )}
+      </div>
     </div>
   );
 };
