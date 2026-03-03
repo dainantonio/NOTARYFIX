@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Mic, MicOff, ScanLine, CheckCircle2 } from 'lucide-react';
+import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Phone, Mail, Mic, MicOff, ScanLine, CheckCircle2 } from 'lucide-react';
 import { Button } from './UI';
 
 const DEFAULT_FORM = {
@@ -7,6 +7,8 @@ const DEFAULT_FORM = {
   type: 'Loan Signing',
   date: '',
   time: '',
+  phone: '',
+  email: '',
   fee: '',
   address: '',
   location: '',
@@ -42,6 +44,12 @@ const parseQuickEntry = (text) => {
   const timeMatch = text.match(/(\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)?)/);
   if (timeMatch) next.time = normalizeTimeInput(timeMatch[1]) || timeMatch[1];
 
+  const phoneMatch = text.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);
+  if (phoneMatch) next.phone = phoneMatch[0];
+
+  const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
+  if (emailMatch) next.email = emailMatch[0];
+
   const zipMatch = text.match(/\b(\d{5})\b/);
   if (zipMatch) next.location = zipMatch[1];
 
@@ -76,6 +84,8 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
       date: initialData.date && /^\d{4}-\d{2}-\d{2}$/.test(initialData.date) ? initialData.date : '',
       time: normalizeTimeInput(initialData.time),
       fee: initialData.amount?.toString?.() || initialData.fee || '',
+      phone: initialData.phone || '',
+      email: initialData.email || '',
       address: initialData.address || '',
       location: initialData.location || '',
       notes: initialData.notes || '',
@@ -172,6 +182,22 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
               <div className="relative">
                 <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input required type="text" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Client Phone (optional)</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="tel" placeholder="(555) 123-4567" autoComplete="tel" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Client Email (optional)</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input type="email" placeholder="client@email.com" autoComplete="email" className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
               </div>
             </div>
 

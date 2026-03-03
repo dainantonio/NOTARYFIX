@@ -544,6 +544,8 @@ const Dashboard = () => {
       date: fd.date || todayISO(),
       time: fd.time, status: 'upcoming',
       amount: parseFloat(fd.fee) || 0,
+      phone: fd.phone || '',
+      email: fd.email || '',
       address: fd.address || '',
       location: fd.location || 'TBD',
       notes: fd.notes || '',
