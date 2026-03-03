@@ -68,7 +68,7 @@ Output a JSON object with exactly these keys (no extra text, just JSON):
   "journalNotes": "2-3 sentence professional journal notes describing the notarization performed, signer appeared, acts performed, and any relevant observations. Do not include name or fee (those are separate fields).",
   "documentDescription": "Brief description of the document type notarized based on the service type. 5-10 words.",
   "invoiceNotes": "One professional sentence for the invoice describing services rendered.",
-  "documentType": "The most likely notary act type: Acknowledgment, Jurat, Oath, Copy Certification, or Signature Witnessing"
+  "documentType": "The exact service type for this appointment: ${apptType}"
 }`;
 
   const raw = await callGemini(prompt);
@@ -78,7 +78,7 @@ Output a JSON object with exactly these keys (no extra text, just JSON):
       journalNotes: `Signer appeared in person and presented valid government-issued identification. Notarization performed for ${apptType} on ${apptDate}.${apptNotes ? ` Notes: ${apptNotes}` : ''}`,
       documentDescription: apptType || 'Notary appointment',
       invoiceNotes: `Notary services rendered for ${apptType} on ${apptDate}.`,
-      documentType: /jurat/i.test(apptType) ? 'Jurat' : 'Acknowledgment',
+      documentType: apptType || 'General Notary Work (GNW)',
       aiGenerated: false,
       aiConfidenceBoost: 0,
     };
@@ -91,7 +91,7 @@ Output a JSON object with exactly these keys (no extra text, just JSON):
       journalNotes:        parsed.journalNotes        || '',
       documentDescription: parsed.documentDescription || apptType,
       invoiceNotes:        parsed.invoiceNotes        || `Notary services for ${apptType}.`,
-      documentType:        parsed.documentType        || 'Acknowledgment',
+      documentType:        parsed.documentType        || apptType || 'General Notary Work (GNW)',
       aiGenerated:         true,
       aiConfidenceBoost:   10,
     };
@@ -101,7 +101,7 @@ Output a JSON object with exactly these keys (no extra text, just JSON):
       journalNotes:        raw.slice(0, 300),
       documentDescription: apptType,
       invoiceNotes:        `Notary services rendered for ${apptType} on ${apptDate}.`,
-      documentType:        /jurat/i.test(apptType) ? 'Jurat' : 'Acknowledgment',
+      documentType:        apptType || 'General Notary Work (GNW)',
       aiGenerated:         true,
       aiConfidenceBoost:   5,
     };
