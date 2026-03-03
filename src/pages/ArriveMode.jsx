@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLinker } from '../hooks/useLinker';
-import { mapServiceTypeToJournalActType } from '../utils/notaryMappings';
+import { serviceTypeToActType } from '../utils/notaryTypes';
 
 // ─── Colour palette helpers ──────────────────────────────────────────────────
 
@@ -797,7 +797,7 @@ export default function ArriveMode() {
                   state: {
                     prefillAppointmentId: appt.id,
                     prefillClient: appt.client,
-                    prefillActType: mapServiceTypeToJournalActType(appt.type),
+                    prefillActType: serviceTypeToActType(appt.type),
                   },
                 });
               }}

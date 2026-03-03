@@ -4,47 +4,11 @@
 // getData() is passed as second param to read current state snapshot.
 
 // ─── SERVICE TYPE → ACT TYPE MAPPING ─────────────────────────────────────────
-// Mirrors SERVICE_TYPE_MAP in AppointmentModal.jsx — keep in sync.
-const _SERVICE_ACT_MAP = {
-  'loan signing':               'Acknowledgment',
-  'general notary work (gnw)':  'Acknowledgment',
-  'general notary':             'Acknowledgment',
-  'gnw':                        'Acknowledgment',
-  'jurat':                      'Jurat',
-  'oath / affirmation':         'Oath / Affirmation',
-  'oath/affirmation':           'Oath / Affirmation',
-  'i-9 verification':           'I-9 Verification',
-  'i9 verification':            'I-9 Verification',
-  'apostille':                  'Apostille',
-  'copy certification':         'Copy Certification',
-  'power of attorney':          'Power of Attorney',
-  'poa':                        'Power of Attorney',
-  'signature witnessing':       'Signature Witnessing',
-  'deed of trust':              'Deed of Trust',
-  'remote online notary (ron)': 'Remote Online Notary (RON)',
-  'ron':                        'Remote Online Notary (RON)',
-  'remote online notary':       'Remote Online Notary (RON)',
-  'other':                      'Other',
-};
-
+// Now uses centralized mapping from notaryTypes.js — single source of truth.
 const apptTypeToActType = (apptType = '', aiHint = '') => {
-  const key = (apptType || '').trim().toLowerCase();
-  if (_SERVICE_ACT_MAP[key]) return _SERVICE_ACT_MAP[key];
-  // Fuzzy fallbacks
-  if (/loan/i.test(apptType))                     return 'Acknowledgment';
-  if (/jurat/i.test(apptType))                    return 'Jurat';
-  if (/oath|affirm/i.test(apptType))              return 'Oath / Affirmation';
-  if (/i-?9/i.test(apptType))                     return 'I-9 Verification';
-  if (/apostille/i.test(apptType))                return 'Apostille';
-  if (/copy cert/i.test(apptType))                return 'Copy Certification';
-  if (/power of attorney|poa/i.test(apptType))    return 'Power of Attorney';
-  if (/signature wit/i.test(apptType))            return 'Signature Witnessing';
-  if (/deed/i.test(apptType))                     return 'Deed of Trust';
-  if (/remote|ron|electronic/i.test(apptType))    return 'Remote Online Notary (RON)';
-  if (/gnw|general notary/i.test(apptType))       return 'Acknowledgment';
-  // Use AI hint if present
-  if (aiHint && _SERVICE_ACT_MAP[aiHint.trim().toLowerCase()]) return _SERVICE_ACT_MAP[aiHint.trim().toLowerCase()];
-  return 'Acknowledgment'; // safe default
+  // Use AI hint if present and valid, otherwise use appointment type
+  const typeToUse = aiHint || apptType;
+  return serviceTypeToActType(typeToUse);
 };
 
 import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
@@ -84,7 +48,7 @@ export function createAgentOps(setData, getData) {
     const autonomyMode = p.settings?.autonomyMode || 'assistive';
 
     const stateCode = p.settings?.currentStateCode || 'WA';
-    const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === stateCode && fee.actType === 'Acknowledgment');
+    const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === stateCode && fee.actType === serviceTypeToActType(appointment.type));
     const suggestedAmount = parseMoneyLike(appointment.amount) ?? 0;
     const maxFee = parseMoneyLike(schedule?.maxFee);
     const invoiceAmount = maxFee == null ? suggestedAmount : Math.min(suggestedAmount, maxFee);
@@ -234,7 +198,7 @@ export function createAgentOps(setData, getData) {
       if (!autoCloseoutEnabled) return p;
       let autonomyMode = p.settings?.autonomyMode || 'assistive';
       const sc = p.settings?.currentStateCode || 'WA';
-      const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === sc && fee.actType === 'Acknowledgment');
+      const schedule = (p.feeSchedules || []).find((fee) => fee.stateCode === sc && fee.actType === serviceTypeToActType(apt.type));
       const suggestedAmount = parseMoneyLike(apt.amount) ?? 0;
       const maxFee = parseMoneyLike(schedule?.maxFee);
       const invoiceAmount = maxFee == null ? suggestedAmount : Math.min(suggestedAmount, maxFee);
