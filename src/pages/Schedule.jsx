@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus, LayoutList, CalendarDays } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
-import AppointmentModal from '../components/AppointmentModal';
+import AppointmentModal, { appointmentTypeToActType } from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';
@@ -176,7 +176,7 @@ const Schedule = () => {
     const date = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || new Date().toISOString().split('T')[0];
     const time = input.match(/\b\d{1,2}:\d{2}\s?(?:AM|PM)?\b/i)?.[0] || '10:00 AM';
     const amount = input.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
-    const type = /i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : 'General Notary';
+    const type = /i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : /jurat/i.test(input) ? 'Jurat' : /oath|affirm/i.test(input) ? 'Oath / Affirmation' : /copy cert/i.test(input) ? 'Copy Certification' : /power of attorney|poa/i.test(input) ? 'Power of Attorney' : /deed/i.test(input) ? 'Deed of Trust' : /remote|ron/i.test(input) ? 'Remote Online Notary (RON)' : 'General Notary Work (GNW)';
     const client = input.match(/(?:for|client)\s+([A-Za-z0-9 .'-]+)/i)?.[1]?.replace(/\s+on$/i, '').trim() || input.split(' on ')[0].slice(0, 40) || 'New Client';
     const parsedLocation = input.match(/(?:at|in)\s+([A-Za-z0-9 .,'#-]+)/i)?.[1]?.trim() || 'TBD';
     const durationMinutes = parseDurationMinutes(input, type);
