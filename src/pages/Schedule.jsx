@@ -376,7 +376,7 @@ const Schedule = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => setCurrentDate(new Date())}>Today</Button>
-            <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Event</Button>
+            <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Appointment</Button>
             <div className="rounded-lg border border-slate-300/40 bg-white/10 p-0.5 flex items-center gap-0.5">
               <button onClick={() => setViewMode('agenda')} className={`rounded px-2 py-1 text-xs ${viewMode === 'agenda' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><LayoutList className="h-3.5 w-3.5" /></button>
               <button onClick={() => setViewMode('calendar')} className={`rounded px-2 py-1 text-xs ${viewMode === 'calendar' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><CalendarDays className="h-3.5 w-3.5" /></button>
