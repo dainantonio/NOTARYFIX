@@ -27,16 +27,16 @@ const AGENT_STEPS = [
 ];
 
 const STATS = [
-  { val: 'Auto',   label: 'Post-Appt Closeouts'     },
-  { val: '50',     label: 'States Supported'        },
-  { val: 'Free',   label: 'No Credit Card'          },
-  { val: '~90s',   label: 'Avg Agent Closeout Time' },
+  { val: '<90s',    label: 'Closeout Draft Speed'      },
+  { val: '100%',    label: 'Auto Closeouts'            },
+  { val: '14+ hrs', label: 'Agent Hrs Recovered / Wk' },
+  { val: '50',      label: 'States Supported'         },
 ];
 
 const ROLE_PROFILES = {
-  mobile: { label: 'Mobile Notary',      weekly: 12, avgRevenue: 1450, agentRecovery: '9.5 hrs / wk recovered'  },
-  loan:   { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, agentRecovery: '14.2 hrs / wk recovered' },
-  agency: { label: 'Signing Agency',     weekly: 35, avgRevenue: 6200, agentRecovery: '32.8 hrs / wk recovered' },
+  mobile: { label: 'Mobile Notary',      weekly: 12, avgRevenue: 1450, agentRecovery: '9.5 agent hrs / wk'  },
+  loan:   { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, agentRecovery: '14.2 agent hrs / wk' },
+  agency: { label: 'Signing Agency',     weekly: 35, avgRevenue: 6200, agentRecovery: '32.8 agent hrs / wk' },
 };
 
 const OLD_WAY = [
@@ -93,13 +93,13 @@ const COMPARE_ROWS = [
 ];
 
 const FAQ = [
-  { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides a unified platform for Appointment Scheduling, Digital Journaling, Automated Invoicing, and Compliance Management. Our Agency plan adds Team Dispatch and Multi-notary coordination.' },
-  { q: 'How does the AI Closeout Agent work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts, then drafts next-step closeout actions so every signing stays compliant.' },
+  { q: 'What does the AI Notary Agent actually do?', a: 'After every signing, your AI Notary Agent automatically drafts the journal entry, generates the invoice, and runs a compliance check — all in under 90 seconds. You review and approve in one tap. No manual entry, no missed steps.' },
+  { q: 'How does the Agent Closeout flow work?', a: 'The moment you mark an appointment complete, the agent triggers automatically: it drafts your journal, generates a compliant invoice, flags any fee or ID-level risks, and queues everything for your approval. Supervised Mode by default — flip to Autonomous when you\'re ready to go hands-free.' },
   { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
   { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
   { q: 'Can I switch plans or cancel anytime?', a: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.' },
-  { q: 'Why is the interface standardized across modules?', a: 'We use a unified design system (Standardized UI) so that switching between Admin, Dispatch, and Journaling feels predictable, reducing training time and operational errors.' },
+  { q: 'How much time does the agent actually save?', a: 'Based on role profiles: Mobile Notaries recover ~9.5 agent hours per week, Loan Signing Agents recover ~14.2 hrs, and Signing Agencies recover 32+ hrs across their team. That\'s time the agent spends on closeouts, journaling, and invoicing — not you.' },
 ];
 
 const TRUST_ITEMS = [
@@ -167,6 +167,17 @@ const answerAI = (q) => {
   return 'Ask a state-specific question like “California jurat fee”, “Texas expired ID rule”, or “Ohio red flags” to see grounded answers.';
 };
 
+// ─── TELEMETRY ──────────────────────────────────────────────────────────────────
+// Lightweight phase-3 telemetry — persisted to localStorage only (no network calls)
+const TELEMETRY_KEY = 'notaryos_landing_events';
+const track = (event, props = {}) => {
+  try {
+    const existing = JSON.parse(localStorage.getItem(TELEMETRY_KEY) || '[]');
+    existing.push({ event, ts: new Date().toISOString(), ...props });
+    localStorage.setItem(TELEMETRY_KEY, JSON.stringify(existing));
+  } catch (_) { /* fail silently */ }
+};
+
 // ─── COMPONENT ─────────────────────────────────────────────────────────────────
 
 export default function Landing() {
@@ -223,6 +234,7 @@ export default function Landing() {
   // AI submit
   const submitAI = () => {
     if (!aiInput.trim()) return;
+    track('ai_query_submitted', { query: aiInput.trim().slice(0, 120) });
     setAiTyping(true);
     setAiOutput('');
     setTimeout(() => { setAiOutput(answerAI(aiInput)); setAiTyping(false); }, 650);
@@ -253,6 +265,25 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
+  // Section impression telemetry
+  useEffect(() => {
+    const sections = ['hero', 'features', 'how-it-works', 'pricing', 'faq', 'waitlist'];
+    const seen = new Set();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !seen.has(e.target.id)) {
+          seen.add(e.target.id);
+          track('landing_section_viewed', { section: e.target.id });
+        }
+      });
+    }, { threshold: 0.25 });
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
   // Invoice highlight pulse
   const handleInvoiceClick = (id, amt) => {
     setHlInvoice(id);
@@ -264,6 +295,7 @@ export default function Landing() {
     e.preventDefault();
     if (!waitlistEmail.trim()) return;
     setWaitlistLoading(true);
+    track('waitlist_submitted', { role: waitlistRole });
     // Store in localStorage so entries survive page refresh during demo
     const existing = JSON.parse(localStorage.getItem('notaryos_waitlist') || '[]');
     existing.push({ email: waitlistEmail.trim(), role: waitlistRole, ts: new Date().toISOString() });
@@ -373,14 +405,14 @@ export default function Landing() {
           {/* CTAs — agent demo primary */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => { track('cta_clicked', { label: 'See Agent Closeout', location: 'hero' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
               <Sparkles className="h-4 w-4" />
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => { track('cta_clicked', { label: 'Open Live Demo', location: 'hero' }); navigate('/auth'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
               Open Live Demo
             </button>
@@ -1126,13 +1158,13 @@ export default function Landing() {
             No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => navigate('/auth')}
+            <button onClick={() => { track('cta_clicked', { label: 'See Agent Closeout', location: 'final_cta' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 active:scale-[.98]">
               <Sparkles className="h-4 w-4" />
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <button onClick={() => scrollTo('waitlist')}
+            <button onClick={() => { track('cta_clicked', { label: 'Join Waitlist', location: 'final_cta' }); scrollTo('waitlist'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
               Join Waitlist
             </button>
