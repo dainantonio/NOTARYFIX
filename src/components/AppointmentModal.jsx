@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Phone, Mail, Mic, MicOff } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Phone, Mail, Mic, MicOff, ScanLine, CheckCircle2 } from 'lucide-react';
 import { Button } from './UI';
 
 const DEFAULT_FORM = {
@@ -13,6 +13,8 @@ const DEFAULT_FORM = {
   address: '',
   location: '',
   notes: '',
+  receiptName: '',
+  receiptImage: '',
 };
 
 const serviceTypes = ['Loan Signing', 'General Notary Work (GNW)', 'I-9 Verification', 'Apostille', 'Remote Online Notary (RON)'];
@@ -87,8 +89,12 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
       address: initialData.address || '',
       location: initialData.location || '',
       notes: initialData.notes || '',
+      receiptName: initialData.receiptName || '',
+      receiptImage: initialData.receiptImage || '',
     });
   }, [isOpen, initialData]);
+
+  const receiptSaved = useMemo(() => Boolean(formData.receiptName), [formData.receiptName]);
 
   if (!isOpen) return null;
 
@@ -123,6 +129,15 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
+  };
+
+  const handleReceipt = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((prev) => ({ ...prev, receiptName: file.name, receiptImage: typeof reader.result === 'string' ? reader.result : '' }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e) => {
@@ -243,7 +258,14 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
             <textarea rows={2} className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
           </div>
 
-
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+            <label className="mb-2 block text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Scan Receipt</label>
+            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+              <ScanLine className="h-4 w-4" /> Upload / Scan Receipt
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleReceipt(e.target.files?.[0])} />
+            </label>
+            {receiptSaved && <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Saved: {formData.receiptName}</div>}
+          </div>
 
           <div className="sticky bottom-0 bg-white dark:bg-slate-800 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-4">
             <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>

@@ -549,6 +549,8 @@ const Dashboard = () => {
       address: fd.address || '',
       location: fd.location || 'TBD',
       notes: fd.notes || '',
+      receiptName: fd.receiptName || '',
+      receiptImage: fd.receiptImage || '',
     });
     setIsModalOpen(false);
   };
