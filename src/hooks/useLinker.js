@@ -51,6 +51,8 @@ export const useLinker = () => {
 
     const alreadyRan = (data.agentSuggestions || []).some((s) => String(s.appointmentId) === String(apt.id));
     const autoCloseoutEnabled = data.settings?.enableAutoCloseoutAgent !== false;
+    const autonomyMode = data.settings?.autonomyMode || 'assistive';
+
     if (!alreadyRan && autoCloseoutEnabled) {
       // Phase 2: Use AI-enhanced async closeout agent
       runCloseoutAgentWithAI(apt.id, 'Closeout Agent')
@@ -59,6 +61,10 @@ export const useLinker = () => {
           // Fallback to sync agent if AI call fails
           runCloseoutAgent(apt.id, 'Closeout Agent');
           toast.info('Agent drafted journal + invoice — review in AI Agent.');
+          // Re-enable manual prompts only if agent fails and we're in assistive mode
+          if (autonomyMode === 'assistive') {
+            showManualPrompts();
+          }
         });
     }
 
@@ -83,21 +89,28 @@ export const useLinker = () => {
       }, hasJournal ? 0 : 350);
     };
 
-    if (!hasJournal) {
-      promptBus.show({
-        type: 'journalPrompt',
-        title: 'Log in Journal?',
-        body: `Create a journal entry for "${apt.client} — ${apt.type}"?`,
-        confirmLabel: 'Open Journal',
-        cancelLabel: 'Skip',
-        onConfirm: () => {
-          promptBus.dismiss();
-          navigate('/journal', { state: { prefillFromAppointment: apt.id } });
-        },
-        onDismiss: () => { promptBus.dismiss(); showInvoicePrompt(); },
-      });
-    } else {
-      showInvoicePrompt();
+    const showManualPrompts = () => {
+      if (!hasJournal) {
+        promptBus.show({
+          type: 'journalPrompt',
+          title: 'Log in Journal?',
+          body: `Create a journal entry for "${apt.client} — ${apt.type}"?`,
+          confirmLabel: 'Open Journal',
+          cancelLabel: 'Skip',
+          onConfirm: () => {
+            promptBus.dismiss();
+            navigate('/journal', { state: { prefillFromAppointment: apt.id } });
+          },
+          onDismiss: () => { promptBus.dismiss(); showInvoicePrompt(); },
+        });
+      } else {
+        showInvoicePrompt();
+      }
+    };
+
+    // Only show manual prompts in assistive mode OR if agent is disabled
+    if (autonomyMode === 'assistive' || !autoCloseoutEnabled) {
+      showManualPrompts();
     }
   }, [data.agentSuggestions, data.settings, data.journalEntries, data.invoices, updateAppointment, navigate, runCloseoutAgent, runCloseoutAgentWithAI]);
 

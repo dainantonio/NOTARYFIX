@@ -106,6 +106,10 @@ const AgentPage = () => {
   const [digest, setDigest] = useState(null);
   const [digestLoading, setDigestLoading] = useState(false);
 
+  // Closeout playbook state
+  const [closeoutRunning, setCloseoutRunning] = useState(false);
+  const closeoutRunningRef = useRef(false);
+
   const handleGenerateDigest = async () => {
     setDigestLoading(true);
     try {
@@ -298,20 +302,30 @@ const AgentPage = () => {
                 size="sm"
                 variant="secondary"
                 className="w-full"
+                disabled={closeoutRunning}
                 onClick={async () => {
-                  // Find most recent completed appointment without a pending suggestion
-                  const pendingApptIds = new Set((data.agentSuggestions || []).filter(s => s.status === 'pending' && s.type === 'closeout').map(s => String(s.appointmentId)));
-                  const target = [...(data.appointments || [])]
-                    .filter(a => a.status === 'completed' && !pendingApptIds.has(String(a.id)))
-                    .sort((a, b) => new Date(b.closeoutCompletedAt || b.date) - new Date(a.closeoutCompletedAt || a.date))[0]
-                    || [...(data.appointments || [])].filter(a => a.status !== 'completed').sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-                  if (!target) { toast.error('No eligible appointments found'); return; }
-                  toast.info(`Running closeout for ${target.client}…`);
-                  await runCloseoutAgentWithAI?.(target.id);
-                  toast.success('Closeout draft created — check pending suggestions');
+                  // Prevent double-fire
+                  if (closeoutRunningRef.current) return;
+                  closeoutRunningRef.current = true;
+                  setCloseoutRunning(true);
+                  try {
+                    // Find most recent completed appointment without a pending suggestion
+                    const pendingApptIds = new Set((data.agentSuggestions || []).filter(s => s.status === 'pending' && s.type === 'closeout').map(s => String(s.appointmentId)));
+                    const target = [...(data.appointments || [])]
+                      .filter(a => a.status === 'completed' && !pendingApptIds.has(String(a.id)))
+                      .sort((a, b) => new Date(b.closeoutCompletedAt || b.date) - new Date(a.closeoutCompletedAt || a.date))[0]
+                      || [...(data.appointments || [])].filter(a => a.status !== 'completed').sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                    if (!target) { toast.error('No eligible appointments found'); return; }
+                    toast.info(`Running closeout for ${target.client}…`);
+                    await runCloseoutAgentWithAI?.(target.id);
+                    toast.success('Closeout draft created — check pending suggestions');
+                  } finally {
+                    closeoutRunningRef.current = false;
+                    setCloseoutRunning(false);
+                  }
                 }}
               >
-                <Zap className="h-3.5 w-3.5 mr-1.5" /> Run on Latest
+                {closeoutRunning ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Running…</> : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Run on Latest</>}
               </Button>
             </div>
 

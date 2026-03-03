@@ -1,7 +1,7 @@
 // src/components/AgentSuggestionCard.jsx
 // Phase 1 — Suggestion card: Approve / Edit / Reject with confidence + missing fields
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt, UserPlus, DollarSign, Bell, Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt, UserPlus, DollarSign, Bell, Phone, Mail, MapPin, Calendar, Save, X } from 'lucide-react';
 
 const CONFIDENCE_COLORS = {
   high:   { bar: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800' },
@@ -44,6 +44,14 @@ const ActionLabel = ({ type }) => {
 export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject }) => {
   const [expanded, setExpanded] = useState(false);
   const [sourceExpanded, setSourceExpanded] = useState(false);
+  const [isEditingInline, setIsEditingInline] = useState(false);
+  const [editedFields, setEditedFields] = useState({
+    actType: suggestion.draftJournal?.actType || '',
+    fee: suggestion.draftJournal?.fee || '',
+    notes: suggestion.draftJournal?.notes || '',
+    documentDescription: suggestion.draftJournal?.documentDescription || '',
+  });
+
   const score = suggestion.confidenceScore ?? 65;
   const tier = confidenceTier(score);
   const colors = CONFIDENCE_COLORS[tier];
@@ -52,6 +60,29 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
 
   const isAgingAR = suggestion.type === 'aging_ar';
   const isLeadIntake = suggestion.type === 'lead_intake';
+
+  const handleSaveEdits = () => {
+    onEdit?.(suggestion.id, {
+      draftJournal: {
+        ...suggestion.draftJournal,
+        actType: editedFields.actType,
+        fee: parseFloat(editedFields.fee) || suggestion.draftJournal?.fee,
+        notes: editedFields.notes,
+        documentDescription: editedFields.documentDescription,
+      },
+    });
+    setIsEditingInline(false);
+  };
+
+  const handleCancelEdits = () => {
+    setEditedFields({
+      actType: suggestion.draftJournal?.actType || '',
+      fee: suggestion.draftJournal?.fee || '',
+      notes: suggestion.draftJournal?.notes || '',
+      documentDescription: suggestion.draftJournal?.documentDescription || '',
+    });
+    setIsEditingInline(false);
+  };
 
   // Aging AR card
   if (isAgingAR) {
@@ -211,7 +242,7 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
               className="flex items-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 transition-colors"
             >
               <XCircle className="h-3.5 w-3.5" />
-              Discard
+              Reject
             </button>
             <button
               onClick={() => onEdit?.(suggestion)}
@@ -325,8 +356,69 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
         </div>
       )}
 
+      {/* Inline editing section */}
+      {isEditingInline && (
+        <div className="mx-4 mb-2 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 space-y-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Edit Draft</p>
+          <div className="space-y-2">
+            <div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Service Type</label>
+              <input
+                type="text"
+                value={editedFields.actType}
+                onChange={(e) => setEditedFields({...editedFields, actType: e.target.value})}
+                className="w-full mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Fee</label>
+              <input
+                type="number"
+                value={editedFields.fee}
+                onChange={(e) => setEditedFields({...editedFields, fee: e.target.value})}
+                className="w-full mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Document Description</label>
+              <input
+                type="text"
+                value={editedFields.documentDescription}
+                onChange={(e) => setEditedFields({...editedFields, documentDescription: e.target.value})}
+                className="w-full mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Notes</label>
+              <textarea
+                value={editedFields.notes}
+                onChange={(e) => setEditedFields({...editedFields, notes: e.target.value})}
+                rows={2}
+                className="w-full mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSaveEdits}
+              className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+            >
+              <Save className="h-3.5 w-3.5" />
+              Save
+            </button>
+            <button
+              onClick={handleCancelEdits}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Expandable diff / details */}
-      {expanded && (
+      {expanded && !isEditingInline && (
         <div className="mx-4 mb-2 space-y-2">
           {suggestion.diff && (
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3">
@@ -369,11 +461,11 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
             Reject
           </button>
           <button
-            onClick={() => onEdit?.(suggestion)}
+            onClick={() => setIsEditingInline(!isEditingInline)}
             className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
           >
             <Pencil className="h-3.5 w-3.5" />
-            Edit
+            {isEditingInline ? 'Cancel Edit' : 'Edit'}
           </button>
           <button
             onClick={() => onApprove?.(suggestion)}
