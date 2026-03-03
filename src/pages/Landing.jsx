@@ -393,7 +393,7 @@ export default function Landing() {
               className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-400/20">
               Join Waitlist
             </button>
-            <Link to="/auth" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
+            <Link to="/onboarding" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
               className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
               Open Live Demo
             </Link>
@@ -415,7 +415,7 @@ export default function Landing() {
                   {link.label}
                 </button>
               ))}
-              <Link to="/auth" onClick={() => { trackEvent('landing_cta_live_demo', { location: 'mobile_menu' }); setMobileMenuOpen(false); }}
+              <Link to="/onboarding" onClick={() => { trackEvent('landing_cta_live_demo', { location: 'mobile_menu' }); setMobileMenuOpen(false); }}
                 className="mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-bold text-white">
                 See Agent Closeout
               </Link>
@@ -461,7 +461,7 @@ export default function Landing() {
 
           {/* CTAs — agent demo primary */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/auth'); }}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/onboarding'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -552,17 +552,17 @@ export default function Landing() {
               {/* Approve / Edit row */}
               <div className="mt-4 flex items-center gap-3 border-t border-white/[0.06] pt-4">
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/onboarding')}
                   className="flex-1 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-2.5 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
                   Approve &amp; Close Job
                 </button>
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/onboarding')}
                   className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:bg-white/10">
                   Edit Draft
                 </button>
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/onboarding')}
                   className="rounded-xl border border-white/10 bg-white/4 px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-300">
                   Reject
                 </button>
@@ -918,11 +918,11 @@ export default function Landing() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/8">
                     <Icon className="h-5 w-5 text-cyan-400" />
                   </div>
-                  <h3 className={`text-xl font-black ${isAgentStep ? 'text-cyan-100' : 'text-white'}`}>{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
                 </div>
-              );
-            })}
+                <h3 className="text-xl font-black text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
+              </div>
+            ))}
           </div>
           {/* Agent control callout */}
           <div className="mt-8 rounded-2xl border border-white/8 bg-white/[0.02] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -933,7 +933,7 @@ export default function Landing() {
               <p className="text-sm font-bold text-white">You stay in control — always.</p>
               <p className="text-sm text-slate-400 mt-0.5">The agent runs in Supervised Mode by default. Every draft waits for your tap to approve. Flip to Autonomous Mode when you're ready to go fully hands-free on low-risk actions.</p>
             </div>
-            <button onClick={() => navigate('/auth')}
+            <button onClick={() => navigate('/onboarding')}
               className="shrink-0 rounded-xl border border-violet-400/25 bg-violet-400/8 px-4 py-2 text-sm font-bold text-violet-300 transition-all hover:bg-violet-400/15 whitespace-nowrap">
               See it live →
             </button>
@@ -952,7 +952,7 @@ export default function Landing() {
               <div className={`mb-5 inline-flex rounded-xl p-3 ${bg}`}><Icon className={`h-6 w-6 ${color}`} /></div>
               <h3 className="text-xl font-black text-white">{title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{desc}</p>
-              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'business_models' }); navigate('/auth'); }}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'business_models' }); navigate('/onboarding'); }}
                 className={`mt-5 flex items-center gap-1.5 text-sm font-semibold ${color} transition-all group-hover:gap-2.5`}>
                 Get started <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -1007,7 +1007,7 @@ export default function Landing() {
                       </li>
                     ))}
                   </ul>
-                  <button onClick={() => tier.highlight || tier.cta === 'Contact Sales' ? scrollTo('waitlist') : navigate('/auth')}
+                  <button onClick={() => tier.highlight || tier.cta === 'Contact Sales' ? scrollTo('waitlist') : navigate('/onboarding')}
                     className={`w-full rounded-xl py-3 text-sm font-black transition-all ${tier.highlight ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:brightness-110' : 'border border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'}`}>
                     {tier.cta}
                   </button>
@@ -1147,7 +1147,7 @@ export default function Landing() {
               <p className="mt-2 text-sm text-slate-400">
                 We&apos;ll reach out personally with your early access link. Expect to hear from us within 48 hours.
               </p>
-              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'waitlist_success' }); navigate('/auth'); }}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'waitlist_success' }); navigate('/onboarding'); }}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
                 Try the demo now <ArrowRight className="h-4 w-4" />
               </button>
@@ -1213,7 +1213,7 @@ export default function Landing() {
             No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/auth'); }}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/onboarding'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 active:scale-[.98]">
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
