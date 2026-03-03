@@ -16,6 +16,16 @@ const NAV_LINKS = [
   { label: 'Early Access',  id: 'waitlist'      },
 ];
 
+// Agent closeout live demo steps — shown in hero
+const AGENT_STEPS = [
+  { icon: '📅', label: 'Appointment completed',        status: 'done',    ms: 0    },
+  { icon: '🤖', label: 'Agent triggered automatically', status: 'done',    ms: 600  },
+  { icon: '📓', label: 'Journal entry drafted',         status: 'done',    ms: 1200 },
+  { icon: '🧾', label: 'Invoice generated',             status: 'done',    ms: 1800 },
+  { icon: '⚠️', label: 'Compliance check passed',       status: 'pass',    ms: 2400 },
+  { icon: '✅', label: 'Awaiting your approval',        status: 'pending', ms: 3000 },
+];
+
 const STATS = [
   { val: '~90 sec', label: 'Avg Closeout Draft' },
   { val: '24/7',   label: 'Auto Post-Appointment Closeouts' },
@@ -182,6 +192,20 @@ export default function Landing() {
   const [waitlistRole,   setWaitlistRole]   = useState('mobile');
   const [waitlistDone,   setWaitlistDone]   = useState(false);
   const [waitlistLoading,setWaitlistLoading]= useState(false);
+  const [agentStepsVisible, setAgentStepsVisible] = useState([false, false, false, false, false, false]);
+
+  // Animate agent steps on mount
+  useEffect(() => {
+    AGENT_STEPS.forEach((step, i) => {
+      setTimeout(() => {
+        setAgentStepsVisible(prev => {
+          const next = [...prev];
+          next[i] = true;
+          return next;
+        });
+      }, step.ms + 400);
+    });
+  }, []);
 
   const trackEvent = (eventName, meta = {}) => {
     try {
@@ -353,25 +377,33 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-600/8 blur-[140px]" />
           <div className="absolute right-0 top-0 h-[400px] w-[400px] rounded-full bg-blue-600/8 blur-[120px]" />
-          <div className="absolute inset-0 opacity-0"
-            style={{ backgroundImage: 'none' }} />
+          <div className="absolute left-0 bottom-0 h-[300px] w-[300px] rounded-full bg-violet-600/6 blur-[100px]" />
         </div>
         <div className="relative mx-auto max-w-7xl px-6 pb-20 pt-24 md:pt-32">
+
+          {/* Badge */}
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
               AI Notary Agent · 2025
             </span>
           </div>
+
+          {/* H1 — agent outcome first */}
           <h1 className="mx-auto max-w-5xl text-center text-5xl font-black leading-[1.02] tracking-tight md:text-7xl lg:text-[5.5rem]">
             Meet your AI notary agent.<br />
             <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
               Appointments close themselves.
             </span>
+            <br />Your agent handles the rest.
           </h1>
+
+          {/* Subtext — explicit agent actions */}
           <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-slate-400 md:text-xl">
             After every signing, NotaryOS automatically drafts your journal, generates your invoice, and flags compliance risks in seconds.
           </p>
+
+          {/* CTAs — agent demo primary */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
@@ -380,9 +412,11 @@ export default function Landing() {
             </button>
             <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'hero' }); scrollTo('waitlist'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
-              Join Waitlist
+              Open Live Demo
             </button>
           </div>
+
+          {/* Trust chips — directly under CTAs */}
           <div className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-3">
             {TRUST_ITEMS.map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2 text-sm text-slate-400">
@@ -390,8 +424,101 @@ export default function Landing() {
               </div>
             ))}
           </div>
+
+          {/* ── Agent Closeout Live Preview ─────────────────────────────────── */}
+          <div className="mx-auto mt-16 max-w-4xl">
+            <div className="mb-6 flex items-center justify-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Live Agent Preview</span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-[#0a1525]/80 backdrop-blur-sm p-6 shadow-2xl shadow-black/40">
+              {/* Agent header */}
+              <div className="mb-5 flex items-center justify-between border-b border-white/[0.06] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400/20 to-blue-600/20 border border-cyan-400/20">
+                    <Bot className="h-5 w-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">NotaryOS Closeout Agent</p>
+                    <p className="flex items-center gap-1.5 text-xs text-emerald-400">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                      Running · Loan Signing · Sarah Johnson
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-300">
+                  Supervised Mode
+                </span>
+              </div>
+
+              {/* Animated steps */}
+              <div className="space-y-2.5">
+                {AGENT_STEPS.map((step, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-xl border px-4 py-3 transition-all duration-500"
+                    style={{
+                      opacity: agentStepsVisible[i] ? 1 : 0,
+                      transform: agentStepsVisible[i] ? 'translateY(0)' : 'translateY(8px)',
+                      borderColor: step.status === 'pending'
+                        ? 'rgba(34,211,238,0.3)'
+                        : step.status === 'pass'
+                        ? 'rgba(52,211,153,0.2)'
+                        : 'rgba(255,255,255,0.06)',
+                      background: step.status === 'pending'
+                        ? 'rgba(34,211,238,0.05)'
+                        : step.status === 'pass'
+                        ? 'rgba(52,211,153,0.04)'
+                        : 'rgba(255,255,255,0.02)',
+                    }}>
+                    <span className="text-base">{step.icon}</span>
+                    <span className={`flex-1 text-sm font-medium ${
+                      step.status === 'pending' ? 'text-cyan-300' :
+                      step.status === 'pass' ? 'text-emerald-300' : 'text-slate-300'
+                    }`}>
+                      {step.label}
+                    </span>
+                    {step.status === 'done' && (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-2 py-0.5">Done</span>
+                    )}
+                    {step.status === 'pass' && (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-2 py-0.5">✓ Pass</span>
+                    )}
+                    {step.status === 'pending' && (
+                      <span className="text-[10px] font-bold text-cyan-300 bg-cyan-400/10 border border-cyan-400/20 rounded-full px-2 py-0.5 animate-pulse">Pending Review</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Approve / Edit row */}
+              <div className="mt-4 flex items-center gap-3 border-t border-white/[0.06] pt-4">
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-2.5 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
+                  Approve &amp; Close Job
+                </button>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:bg-white/10">
+                  Edit Draft
+                </button>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="rounded-xl border border-white/10 bg-white/4 px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-300">
+                  Reject
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Role selector */}
           <div className="mx-auto mt-14 max-w-4xl">
+            <div className="mb-3 text-center">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Select your role to see agent impact</p>
+            </div>
             <div className="mb-5 flex justify-center">
               <div className="inline-flex rounded-xl border border-white/10 bg-white/5 p-1">
                 {Object.entries(ROLE_PROFILES).map(([key, p]) => (
@@ -404,9 +531,9 @@ export default function Landing() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               {[
-                { label: 'Weekly Signings',   val: String(activeProfile.weekly),                       accent: 'border-cyan-500/30 bg-cyan-500/5'    },
-                { label: 'Revenue Potential', val: `$${activeProfile.avgRevenue.toLocaleString()}/wk`,  accent: 'border-blue-500/30 bg-blue-500/5'    },
-                { label: 'Automation Impact', val: activeProfile.adminCut,                              accent: 'border-violet-500/30 bg-violet-500/5' },
+                { label: 'Weekly Signings',        val: String(activeProfile.weekly),                      accent: 'border-cyan-500/30 bg-cyan-500/5'    },
+                { label: 'Revenue Potential',       val: `$${activeProfile.avgRevenue.toLocaleString()}/wk`, accent: 'border-blue-500/30 bg-blue-500/5'    },
+                { label: 'Agent Hours Recovered',   val: activeProfile.agentRecovery,                       accent: 'border-violet-500/30 bg-violet-500/5' },
               ].map(card => (
                 <div key={card.label} className={`rounded-2xl border ${card.accent} p-4 text-center`}>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{card.label}</p>
@@ -415,6 +542,7 @@ export default function Landing() {
               ))}
             </div>
           </div>
+
         </div>
       </section>
 
@@ -439,10 +567,11 @@ export default function Landing() {
           <div>
             <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">AI Closeout Agent</span>
             <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight md:text-5xl">
-              Your personal compliance expert,{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">available 24/7.</span>
+              Your compliance agent,{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">grounded in state law.</span>
             </h2>
-            <p className="mt-4 text-lg text-slate-400">Get instant, state-specific answers on fees, ID requirements, red flags, and journal rules grounded in jurisdiction policy records.</p>
+            <p className="mt-4 text-lg text-slate-400">Ask anything — fee caps, ID rules, thumbprint requirements, RON statutes. Your agent knows all 50 states cold.</p>
+            <p className="mt-3 text-sm font-medium text-cyan-300/80 border-l-2 border-cyan-400/40 pl-3">NotaryOS doesn't just answer questions — it prepares the next compliant actions automatically.</p>
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
@@ -465,11 +594,11 @@ export default function Landing() {
                 <Stamp className="h-5 w-5 text-cyan-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">NotaryOS AI</p>
+                <p className="text-sm font-bold text-white">NotaryOS AI Agent</p>
                 <p className="flex items-center gap-1.5 text-xs text-emerald-400">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />Online · Answering instantly
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />Active · Answering instantly
                 </p>
-                <p className="text-[11px] text-slate-400">Source: jurisdiction policy records</p>
+                <p className="text-[11px] text-slate-400">Grounded in 50-state jurisdiction policy</p>
               </div>
             </div>
             <div className="mt-5 space-y-4">
@@ -733,11 +862,25 @@ export default function Landing() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/8">
                     <Icon className="h-5 w-5 text-cyan-400" />
                   </div>
+                  <h3 className={`text-xl font-black ${isAgentStep ? 'text-cyan-100' : 'text-white'}`}>{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
                 </div>
-                <h3 className="text-xl font-black text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+          {/* Agent control callout */}
+          <div className="mt-8 rounded-2xl border border-white/8 bg-white/[0.02] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 border border-violet-400/20">
+              <Zap className="h-5 w-5 text-violet-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-white">You stay in control — always.</p>
+              <p className="text-sm text-slate-400 mt-0.5">The agent runs in Supervised Mode by default. Every draft waits for your tap to approve. Flip to Autonomous Mode when you're ready to go fully hands-free on low-risk actions.</p>
+            </div>
+            <button onClick={() => navigate('/auth')}
+              className="shrink-0 rounded-xl border border-violet-400/25 bg-violet-400/8 px-4 py-2 text-sm font-bold text-violet-300 transition-all hover:bg-violet-400/15 whitespace-nowrap">
+              See it live →
+            </button>
           </div>
         </div>
       </section>
@@ -986,10 +1129,10 @@ export default function Landing() {
       <section className="bg-[#060d1b] py-16">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <h2 className="text-3xl font-black tracking-tight md:text-4xl">
-            Ready to explore the demo?
+            Ready to meet your notary agent?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-slate-400">
-            No signup required. Click in and see the full platform — schedule, journal, invoices, compliance, mileage, and more.
+            No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/auth'); }}
@@ -1112,3 +1255,4 @@ export default function Landing() {
     </div>
   );
 }
+
