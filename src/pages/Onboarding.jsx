@@ -14,6 +14,7 @@ const STEPS = [
   { id: 'license',  label: 'License'  },
   { id: 'fees',     label: 'Fees'     },
   { id: 'plan',     label: 'Plan'     },
+  { id: 'agent',    label: 'Agent'    },
   { id: 'launch',   label: 'Launch'   },
 ];
 
@@ -161,6 +162,7 @@ export default function Onboarding() {
     commissionExpiryDate: data.settings?.commissionExpiryDate || '',
     notaryType:           data.settings?.notaryType || 'Traditional',
     feeSchedule:          data.settings?.feeSchedule || { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
+    agentMode:            data.settings?.agentMode || 'supervised',
   });
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -192,6 +194,7 @@ export default function Onboarding() {
       notaryType:           form.notaryType,
       feeSchedule:          form.feeSchedule,
       onboardingComplete:   true,
+      agentMode:            form.agentMode,
     });
     navigate('/dashboard');
   };
@@ -206,7 +209,8 @@ export default function Onboarding() {
     3: { title: `Your notary credentials.`,        sub: 'Your license number and commission details appear on compliance records and client documents.', Illustration: IllustrationBusiness },
     4: { title: `Set your fee schedule.`,          sub: 'Establish your standard per-act fees. These power invoice automation and AI drafts.', Illustration: IllustrationBusiness },
     5: { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
-    6: { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
+    6: { title: `Meet your closeout agent.`,       sub: 'After each appointment, your agent drafts the journal entry, invoice, and compliance checks — automatically.', Illustration: IllustrationLaunch },
+    7: { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
   };
   const lc = leftContent[step];
 
@@ -567,8 +571,93 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* STEP 6: LAUNCH */}
+            {/* STEP 6: AGENT SETUP */}
             {step === 6 && (
+              <div className="space-y-5">
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-white">Your closeout agent is now active.</h1>
+                  <p className="mt-1.5 text-sm text-slate-400">
+                    After each appointment, it automatically drafts your journal entry, invoice, and compliance checks — ready for your review.
+                  </p>
+                </div>
+
+                {/* Agent expectations */}
+                <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/6 p-4 space-y-2.5">
+                  {[
+                    { icon: '📋', text: 'Drafts the journal entry with compliant per-act fields' },
+                    { icon: '🧾', text: 'Generates the invoice using your fee schedule' },
+                    { icon: '✅', text: 'Runs compliance checks and flags any issues' },
+                  ].map(({ icon, text }) => (
+                    <div key={text} className="flex items-start gap-3">
+                      <span className="text-base leading-none mt-0.5">{icon}</span>
+                      <p className="text-xs text-cyan-200 leading-relaxed">{text}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Autonomy mode primer */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2.5">Choose your agent mode</p>
+                  <div className="space-y-2">
+                    {[
+                      {
+                        id: 'assistive',
+                        label: 'Assistive',
+                        desc: 'Drafts only — you review and submit everything manually.',
+                        icon: '✏️',
+                      },
+                      {
+                        id: 'supervised',
+                        label: 'Supervised',
+                        desc: 'Suggests actions and applies them after your one-tap approval.',
+                        icon: '👁️',
+                        recommended: true,
+                      },
+                      {
+                        id: 'autonomous',
+                        label: 'Autonomous',
+                        desc: 'Auto-commits safe actions. You review exceptions only.',
+                        icon: '⚡',
+                      },
+                    ].map(mode => (
+                      <button
+                        key={mode.id}
+                        onClick={() => set('agentMode', mode.id)}
+                        className={`relative w-full rounded-xl border p-3.5 text-left transition-all ${
+                          form.agentMode === mode.id
+                            ? 'border-cyan-500/50 bg-cyan-500/10'
+                            : 'border-white/8 bg-white/3 hover:border-white/15'
+                        }`}
+                      >
+                        {mode.recommended && (
+                          <span className="absolute right-3 top-3 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                            Recommended
+                          </span>
+                        )}
+                        <div className="flex items-start gap-3 pr-24">
+                          <span className="text-base leading-none mt-0.5">{mode.icon}</span>
+                          <div>
+                            <p className="text-sm font-bold text-white">{mode.label}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{mode.desc}</p>
+                          </div>
+                        </div>
+                        {form.agentMode === mode.id && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500">
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-slate-500">You can change this any time in Settings → Agent.</p>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 7: LAUNCH */}
+            {step === 7 && (
               <div className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-white">You're ready to go.</h1>
@@ -584,6 +673,7 @@ export default function Onboarding() {
                     { label: 'Notary Type', val: form.notaryType },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                     { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
+                    { label: 'Agent Mode', val: { assistive: 'Assistive — drafts only', supervised: 'Supervised — review before commit', autonomous: 'Autonomous — auto-commit safe actions' }[form.agentMode] || '—' },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                       <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{row.label}</span>
