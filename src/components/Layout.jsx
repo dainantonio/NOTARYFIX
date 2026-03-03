@@ -3,7 +3,7 @@ import PWAInstallBanner from './PWAInstallBanner';
 import { Link, useLocation, BrowserRouter, useInRouterContext, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
-  ChevronLeft, ChevronRight, Sun, Moon, Search, Command, MapPin, X, Lock,
+  Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
   Sparkles, ClipboardList, Maximize2, Minimize2} from 'lucide-react';
 import { useData } from '../context/DataContext';
@@ -62,10 +62,7 @@ const TIER_STYLES = {
 };
 
 const LayoutInner = ({ children }) => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('sidebarCollapsed') === 'true';
-    return false;
-  });
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -90,9 +87,20 @@ const LayoutInner = ({ children }) => {
   const aiTrainerGate = getGateState('aiTrainer', gateContext);
   const adminGate = getGateState('admin', gateContext);
 
+
   useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
-  }, [isSidebarCollapsed]);
+    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onFs);
+    onFs();
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (_) {}
+  };
 
 
   useEffect(() => {
@@ -152,7 +160,11 @@ const LayoutInner = ({ children }) => {
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
 
       {/* Sidebar - Desktop */}
-      <aside className={`hidden md:flex flex-col bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 fixed h-full z-20 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+      <aside
+        onMouseEnter={() => setIsSidebarCollapsed(false)}
+        onMouseLeave={() => setIsSidebarCollapsed(true)}
+        className={`hidden md:flex flex-col bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 fixed h-full z-20 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}
+      >
         <div className={`p-6 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">N</div>
           {!isSidebarCollapsed && <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">NotaryOS</span>}
@@ -252,10 +264,6 @@ const LayoutInner = ({ children }) => {
               </button>
             </div>
           )}
-
-          <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="absolute -right-3 top-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full p-1 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 z-30">
-            {isSidebarCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
-          </button>
         </div>
       </aside>
 

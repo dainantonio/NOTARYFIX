@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal, UserPlus, CalendarClock, FileText, DollarSign } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { Plus, Search, Mail, Phone, X, Wand2, ScanLine, MoreHorizontal, UserPlus, CalendarClock, FileText, DollarSign, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
@@ -161,6 +161,56 @@ const Clients = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
+  const importInputRef = useRef(null);
+
+  const parseCsvLine = (line = '') => line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+
+  const handleImportContacts = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = typeof reader.result === 'string' ? reader.result : '';
+      const rows = text.split(/\r?\n/).filter(Boolean);
+      if (rows.length < 2) {
+        toast.error('CSV must include a header and at least one row.');
+        return;
+      }
+
+      const headers = parseCsvLine(rows[0]).map((h) => h.toLowerCase());
+      const idx = {
+        name: headers.findIndex((h) => ['name', 'client', 'company', 'client name'].includes(h)),
+        contact: headers.findIndex((h) => ['contact', 'contact name', 'primary contact'].includes(h)),
+        email: headers.findIndex((h) => h === 'email'),
+        phone: headers.findIndex((h) => h === 'phone' || h === 'mobile'),
+        type: headers.findIndex((h) => h === 'type' || h === 'client type'),
+      };
+
+      const existingNames = new Set((data.clients || []).map((c) => (c.name || '').trim().toLowerCase()));
+      let imported = 0;
+      rows.slice(1).forEach((line, rowIndex) => {
+        const cols = parseCsvLine(line);
+        const name = (idx.name >= 0 ? cols[idx.name] : '')?.trim();
+        if (!name) return;
+        if (existingNames.has(name.toLowerCase())) return;
+        const payload = {
+          id: Date.now() + rowIndex,
+          name,
+          contact: (idx.contact >= 0 ? cols[idx.contact] : '') || '',
+          email: (idx.email >= 0 ? cols[idx.email] : '') || '',
+          phone: (idx.phone >= 0 ? cols[idx.phone] : '') || '',
+          type: (idx.type >= 0 ? cols[idx.type] : '') || 'Individual',
+          status: 'Active',
+        };
+        addClient(payload);
+        existingNames.add(name.toLowerCase());
+        imported += 1;
+      });
+
+      if (imported > 0) toast.success(`Imported ${imported} contact${imported > 1 ? 's' : ''}.`);
+      else toast.info('No new contacts were imported.');
+    };
+    reader.readAsText(file);
+  };
 
   const filteredClients = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -216,7 +266,11 @@ const Clients = () => {
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Clients</h1>
             <p className="mt-1 text-sm text-slate-200">Manage relationships with a clean enterprise workflow.</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> Add Client</Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <input ref={importInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => handleImportContacts(e.target.files?.[0])} />
+            <Button variant="secondary" onClick={() => importInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import Contacts</Button>
+            <Button onClick={() => setIsModalOpen(true)} className="border-0 bg-blue-500 text-white hover:bg-blue-600"><Plus className="mr-2 h-4 w-4" /> Add Client</Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -241,7 +295,12 @@ const Clients = () => {
               <UserPlus className="mx-auto h-9 w-9 text-slate-300 dark:text-slate-600" />
               <p className="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">{(data.clients || []).length === 0 ? 'No clients yet' : 'No clients found'}</p>
               <p className="mt-1 text-xs text-slate-500">{(data.clients || []).length === 0 ? 'Add your first client to start scheduling and invoicing.' : 'Try a different search query.'}</p>
-              {(data.clients || []).length === 0 ? <Button className="mt-3" onClick={() => setIsModalOpen(true)}>Add your first client</Button> : null}
+              {(data.clients || []).length === 0 ? (
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <Button onClick={() => setIsModalOpen(true)}>Add your first client</Button>
+                  <Button variant="secondary" onClick={() => importInputRef.current?.click()}>Import Contacts</Button>
+                </div>
+              ) : null}
             </div>
           ) : filteredClients.map((client) => (
             <div key={client.id} onClick={() => setSelectedClient(client)} className="flex cursor-pointer items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40">

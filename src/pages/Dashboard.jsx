@@ -432,7 +432,7 @@ const ActivityFeed = ({ data, navigate }) => {
 };
 
 // ─── SETUP CHECKLIST ─────────────────────────────────────────────────────────
-const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
+const SetupProgress = ({ checklist, onAction }) => {
   const done = checklist.filter(i => i.done).length;
   const pct = Math.round((done / checklist.length) * 100);
   if (pct === 100) return null;
@@ -440,7 +440,7 @@ const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
     <Card className="border-slate-200/70 dark:border-slate-700">
       <CardHeader className="px-5 py-3.5">
         <CardTitle className="flex items-center gap-2 text-sm">
-          <Zap className="h-4 w-4 text-blue-500" /> Setup
+          <Zap className="h-4 w-4 text-blue-500" /> Setup for new account
         </CardTitle>
         <Badge variant="blue">{pct}%</Badge>
       </CardHeader>
@@ -448,14 +448,15 @@ const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
         <Progress value={pct} className="mb-3 h-1.5" />
         <div className="space-y-1.5">
           {checklist.map(item => (
-            <button key={item.id} onClick={() => onToggle(item.id)}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <div key={item.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs">
               <span className={`h-3 w-3 shrink-0 rounded-full border-2 transition-colors ${item.done ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 dark:border-slate-600'}`} />
-              <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300'}>{item.label}</span>
-            </button>
+              <span className={`flex-1 ${item.done ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300'}`}>{item.label}</span>
+              {!item.done && item.path ? (
+                <Button size="sm" variant="secondary" onClick={() => onAction(item.path)}>{item.cta || 'Open'}</Button>
+              ) : null}
+            </div>
           ))}
         </div>
-        <Button size="sm" className="mt-3 w-full" onClick={onCompleteNext}>Complete next step</Button>
       </CardContent>
     </Card>
   );
@@ -471,13 +472,6 @@ const Dashboard = () => {
     typeof window !== 'undefined' ? (localStorage.getItem('dashboard_chart_type') || 'area') : 'area'
   );
   const [isProTip,      setIsProTip]      = useState(false);
-  const [setupChecklist, setSetup]        = useState([
-    { id: 'profile',  label: 'Complete business profile',    done: true  },
-    { id: 'client',   label: 'Add first client',             done: true  },
-    { id: 'invoice',  label: 'Create first invoice',         done: false },
-    { id: 'journal',  label: 'Log first journal entry',      done: true  },
-    { id: 'payment',  label: 'Connect payout settings',      done: false },
-  ]);
 
   const { theme }             = useTheme();
   const navigate              = useNavigate();
@@ -549,17 +543,17 @@ const Dashboard = () => {
       address: fd.address || '',
       location: fd.location || 'TBD',
       notes: fd.notes || '',
-      receiptName: fd.receiptName || '',
-      receiptImage: fd.receiptImage || '',
     });
     setIsModalOpen(false);
   };
 
-  const toggleSetup     = id => setSetup(prev => prev.map(i => i.id === id ? { ...i, done: !i.done } : i));
-  const completeNext    = ()  => setSetup(prev => {
-    const idx = prev.findIndex(i => !i.done);
-    return idx < 0 ? prev : prev.map((i,n) => n === idx ? { ...i, done: true } : i);
-  });
+  const setupChecklist = useMemo(() => [
+    { id: 'profile',  label: 'Complete business profile', done: Boolean(data.settings?.onboardingComplete), path: '/settings', cta: 'Open Settings' },
+    { id: 'client',   label: 'Add your first client', done: (data.clients || []).length > 0, path: '/clients', cta: 'Add Client' },
+    { id: 'schedule', label: 'Create your first appointment', done: (data.appointments || []).length > 0, path: '/schedule', cta: 'New Appointment' },
+    { id: 'invoice',  label: 'Create your first invoice', done: (data.invoices || []).length > 0, path: '/invoices', cta: 'New Invoice' },
+    { id: 'journal',  label: 'Log your first journal entry', done: (data.journalEntries || []).length > 0, path: '/journal', cta: 'Add Entry' },
+  ], [data.settings, data.clients, data.appointments, data.invoices, data.journalEntries]);
 
   const greeting = getGreeting();
   const GreetIcon = greeting.Icon;
@@ -836,7 +830,7 @@ const Dashboard = () => {
 
             {/* Setup Progress */}
             {!loading && (
-              <SetupProgress checklist={setupChecklist} onToggle={toggleSetup} onCompleteNext={completeNext} />
+              <SetupProgress checklist={setupChecklist} onAction={(path) => navigate(path)} />
             )}
 
             {/* At a Glance */}
