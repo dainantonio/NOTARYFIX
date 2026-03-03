@@ -245,25 +245,44 @@ export default function Landing() {
   const [faqOutput,  setFaqOutput]  = useState('');
   const [faqTyping,  setFaqTyping]  = useState(false);
 
+  // Chips are fully self-contained — answers are inline strings, no FAQ array dependency
   const FAQ_STARTER_CHIPS = [
-    'How does the AI closeout agent work?',
-    'Can I manage a team of notaries?',
-    'What states are supported?',
-    'How much time does the agent save?',
-    'Is my signer data secure?',
-    'Can I cancel anytime?',
+    {
+      label: 'How does the AI closeout agent work?',
+      answer: "The moment you mark an appointment complete, the agent triggers automatically: it drafts your journal, generates a compliant invoice, flags any fee or ID-level risks, and queues everything for your approval. Supervised Mode by default — flip to Autonomous when you're ready to go hands-free.",
+    },
+    {
+      label: 'Can I manage a team of notaries?',
+      answer: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.',
+    },
+    {
+      label: 'What states are supported?',
+      answer: 'All 50 states. Every state has its own configured fee caps, required journal fields, ID rules, and conditional requirements (like California\'s thumbprint law for deeds). Your primary state is set during onboarding and drives all compliance defaults.',
+    },
+    {
+      label: 'How much time does the agent save?',
+      answer: 'Mobile Notaries recover ~9.5 agent hours per week, Loan Signing Agents recover ~14.2 hrs, and Signing Agencies recover 32+ hrs across their team. That\'s time the agent spends on closeouts, journaling, and invoicing — not you.',
+    },
+    {
+      label: 'Is my signer data secure?',
+      answer: 'Yes. NotaryOS uses AES-256 encryption at rest, TLS 1.3 in transit, and strict data isolation. Signer data is never shared or sold under any circumstances.',
+    },
+    {
+      label: 'Can I cancel anytime?',
+      answer: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.',
+    },
   ];
 
-  const submitFaqGuide = (q, source = 'faq_guide') => {
-    const query = (q || faqInput).trim();
+  const submitFaqGuide = (chip, source = 'faq_guide') => {
+    // chip is either a FAQ_STARTER_CHIPS object (has .label + .answer) or null (freeform)
+    const query = chip ? chip.label : faqInput.trim();
     if (!query) return;
-    if (q) setFaqInput(q);
+    setFaqInput(query);
     track('ai_query_submitted', { query: query.slice(0, 120), source });
     setFaqTyping(true);
     setFaqOutput('');
-    // Match against FAQ data first, then fall back to answerAI
-    const match = FAQ.find(item => item.q.toLowerCase() === query.toLowerCase());
-    const answer = match ? match.a : answerAI(query);
+    // Use pre-mapped answer for chips; fall back to answerAI for freeform
+    const answer = chip ? chip.answer : answerAI(query);
     setTimeout(() => { setFaqOutput(answer); setFaqTyping(false); }, 600);
   };
 
@@ -1081,17 +1100,17 @@ export default function Landing() {
 
           {/* Starter chips */}
           <div className="mb-6 flex flex-wrap justify-center gap-2">
-            {FAQ_STARTER_CHIPS.map(q => (
+            {FAQ_STARTER_CHIPS.map(chip => (
               <button
-                key={q}
-                onClick={() => submitFaqGuide(q, 'faq_guide_starter')}
+                key={chip.label}
+                onClick={() => submitFaqGuide(chip, 'faq_guide_starter')}
                 className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
-                  faqInput === q && faqOutput
+                  faqInput === chip.label && faqOutput
                     ? 'border-violet-400/50 bg-violet-400/15 text-violet-200'
                     : 'border-white/10 bg-white/4 text-slate-300 hover:border-violet-400/30 hover:bg-violet-400/8 hover:text-violet-200'
                 }`}
               >
-                {q}
+                {chip.label}
               </button>
             ))}
           </div>
