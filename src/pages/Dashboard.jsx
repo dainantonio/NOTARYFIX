@@ -562,6 +562,23 @@ const Dashboard = () => {
   const greeting = getGreeting();
   const GreetIcon = greeting.Icon;
 
+  const agentActivityLine = (() => {
+    const suggestions = data.agentSuggestions || [];
+    const pendingCount = suggestions.filter(s => s.status === 'pending').length;
+    if (pendingCount > 0) {
+      return `You have ${pendingCount} agent draft${pendingCount > 1 ? 's' : ''} awaiting review.`;
+    }
+    const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    const overnightCount = suggestions.filter(s => {
+      const t = s.createdAt ? new Date(s.createdAt).getTime() : 0;
+      return t >= midnight.getTime();
+    }).length;
+    if (overnightCount > 0) {
+      return `Your agent prepared ${overnightCount} closeout${overnightCount > 1 ? 's' : ''} overnight.`;
+    }
+    return 'Your agent is standing by for the next appointment.';
+  })();
+
   const TIPS = [
     'Core Service: Use the Digital Journal to capture compliant on-site entries with automated prompts.',
     'Core Service: Automated Invoicing keeps your cash flow visible — track status in real-time.',
@@ -593,6 +610,10 @@ const Dashboard = () => {
                   </h1>
                   <p className="mt-0.5 text-xs text-white/75">
                     {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
+                  </p>
+                  <p className="mt-1.5 text-xs font-medium text-cyan-300/90 flex items-center gap-1.5">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    {agentActivityLine}
                   </p>
                 </div>
               </div>
