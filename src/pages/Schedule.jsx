@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus, LayoutList, CalendarDays } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
-import AppointmentModal from '../components/AppointmentModal';
+import AppointmentModal, { appointmentTypeToActType } from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';

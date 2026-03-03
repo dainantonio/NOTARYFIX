@@ -3,6 +3,50 @@
 // No React imports — pure factory function.
 // getData() is passed as second param to read current state snapshot.
 
+// ─── SERVICE TYPE → ACT TYPE MAPPING ─────────────────────────────────────────
+// Mirrors SERVICE_TYPE_MAP in AppointmentModal.jsx — keep in sync.
+const _SERVICE_ACT_MAP = {
+  'loan signing':               'Acknowledgment',
+  'general notary work (gnw)':  'Acknowledgment',
+  'general notary':             'Acknowledgment',
+  'gnw':                        'Acknowledgment',
+  'jurat':                      'Jurat',
+  'oath / affirmation':         'Oath / Affirmation',
+  'oath/affirmation':           'Oath / Affirmation',
+  'i-9 verification':           'I-9 Verification',
+  'i9 verification':            'I-9 Verification',
+  'apostille':                  'Apostille',
+  'copy certification':         'Copy Certification',
+  'power of attorney':          'Power of Attorney',
+  'poa':                        'Power of Attorney',
+  'signature witnessing':       'Signature Witnessing',
+  'deed of trust':              'Deed of Trust',
+  'remote online notary (ron)': 'Remote Online Notary (RON)',
+  'ron':                        'Remote Online Notary (RON)',
+  'remote online notary':       'Remote Online Notary (RON)',
+  'other':                      'Other',
+};
+
+const apptTypeToActType = (apptType = '', aiHint = '') => {
+  const key = (apptType || '').trim().toLowerCase();
+  if (_SERVICE_ACT_MAP[key]) return _SERVICE_ACT_MAP[key];
+  // Fuzzy fallbacks
+  if (/loan/i.test(apptType))                     return 'Acknowledgment';
+  if (/jurat/i.test(apptType))                    return 'Jurat';
+  if (/oath|affirm/i.test(apptType))              return 'Oath / Affirmation';
+  if (/i-?9/i.test(apptType))                     return 'I-9 Verification';
+  if (/apostille/i.test(apptType))                return 'Apostille';
+  if (/copy cert/i.test(apptType))                return 'Copy Certification';
+  if (/power of attorney|poa/i.test(apptType))    return 'Power of Attorney';
+  if (/signature wit/i.test(apptType))            return 'Signature Witnessing';
+  if (/deed/i.test(apptType))                     return 'Deed of Trust';
+  if (/remote|ron|electronic/i.test(apptType))    return 'Remote Online Notary (RON)';
+  if (/gnw|general notary/i.test(apptType))       return 'Acknowledgment';
+  // Use AI hint if present
+  if (aiHint && _SERVICE_ACT_MAP[aiHint.trim().toLowerCase()]) return _SERVICE_ACT_MAP[aiHint.trim().toLowerCase()];
+  return 'Acknowledgment'; // safe default
+};
+
 import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
 import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
 import { mapServiceTypeToJournalActType } from '../../utils/notaryMappings';
@@ -201,7 +245,7 @@ export function createAgentOps(setData, getData) {
       const journalId = Date.now() + Math.floor(Math.random() * 999);
 
       const detectedActType = aiDraft?.documentType
-        || (/jurat/i.test(apt.type || '') ? 'Jurat' : 'Acknowledgment');
+        || apptTypeToActType(apt.type);
 
       const draftJournal = {
         id: journalId,

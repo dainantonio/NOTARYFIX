@@ -132,7 +132,7 @@ Output ONLY a JSON object with these keys (use null for anything not found):
   "clientName": "full name or null",
   "phone": "phone number or null",
   "email": "email address or null",
-  "serviceType": "most likely notary service type (Loan Signing, Acknowledgment, Jurat, I-9, Power of Attorney, etc.) or null",
+  "serviceType": "most likely notary service type — use one of: Loan Signing, General Notary Work (GNW), Jurat, Oath / Affirmation, I-9 Verification, Apostille, Copy Certification, Power of Attorney, Signature Witnessing, Deed of Trust, Remote Online Notary (RON), Other — or null if unclear",
   "suggestedDate": "ISO date string YYYY-MM-DD or null",
   "suggestedTime": "time string like '2:00 PM' or null",
   "location": "address or city/zip or null",
@@ -155,9 +155,14 @@ Output ONLY a JSON object with these keys (use null for anything not found):
       email:         emailMatch?.[0] || null,
       serviceType:   /loan/i.test(rawText)              ? 'Loan Signing'
                    : /i-?9/i.test(rawText)              ? 'I-9 Verification'
+                   : /apostille/i.test(rawText)         ? 'Apostille'
                    : /power of attorney|poa/i.test(rawText) ? 'Power of Attorney'
                    : /jurat/i.test(rawText)             ? 'Jurat'
-                   : 'Notary Appointment',
+                   : /oath|affirm/i.test(rawText)       ? 'Oath / Affirmation'
+                   : /copy cert/i.test(rawText)         ? 'Copy Certification'
+                   : /deed/i.test(rawText)              ? 'Deed of Trust'
+                   : /remote|ron/i.test(rawText)        ? 'Remote Online Notary (RON)'
+                   : 'General Notary Work (GNW)',
       suggestedDate: dateMatch
         ? `${dateMatch[3]?.length === 2 ? '20' + dateMatch[3] : dateMatch[3]}-${String(dateMatch[1]).padStart(2,'0')}-${String(dateMatch[2]).padStart(2,'0')}`
         : null,
