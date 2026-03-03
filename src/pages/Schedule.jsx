@@ -5,6 +5,7 @@ import AppointmentModal from '../components/AppointmentModal';
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';
+import { normalizeServiceType } from '../utils/notaryMappings';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -124,10 +125,11 @@ const Schedule = () => {
         date: formData.date,
         time: formData.time,
         amount: parseFloat(formData.fee) || 0,
+        phone: formData.phone || '',
+        email: formData.email || '',
+        address: formData.address || '',
         location: formData.location || 'TBD',
         notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
-        receiptName: formData.receiptName || '',
-        receiptImage: formData.receiptImage || '',
       });
       toast.success('Appointment updated');
       setEditingAppointment(null);
@@ -144,10 +146,11 @@ const Schedule = () => {
       time: formData.time,
       status: 'upcoming',
       amount: parseFloat(formData.fee) || 0,
+      phone: formData.phone || '',
+      email: formData.email || '',
+      address: formData.address || '',
       location: formData.location || 'TBD',
       notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
-      receiptName: formData.receiptName || '',
-      receiptImage: formData.receiptImage || '',
     });
     toast.success('Appointment created');
   };
@@ -174,7 +177,7 @@ const Schedule = () => {
     const date = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || new Date().toISOString().split('T')[0];
     const time = input.match(/\b\d{1,2}:\d{2}\s?(?:AM|PM)?\b/i)?.[0] || '10:00 AM';
     const amount = input.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
-    const type = /i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : 'General Notary';
+    const type = normalizeServiceType(/i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : /ron|remote online/i.test(input) ? 'Remote Online Notary (RON)' : 'General Notary Work (GNW)');
     const client = input.match(/(?:for|client)\s+([A-Za-z0-9 .'-]+)/i)?.[1]?.replace(/\s+on$/i, '').trim() || input.split(' on ')[0].slice(0, 40) || 'New Client';
     const parsedLocation = input.match(/(?:at|in)\s+([A-Za-z0-9 .,'#-]+)/i)?.[1]?.trim() || 'TBD';
     const durationMinutes = parseDurationMinutes(input, type);
@@ -188,7 +191,7 @@ const Schedule = () => {
     if (!smartPreview) return;
     addAppointment({
       id: Date.now(), client: smartPreview.client, type: smartPreview.type, date: smartPreview.date, time: smartPreview.time, status: 'upcoming',
-      amount: smartPreview.amount, location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`, receiptName: '', receiptImage: '',
+      amount: smartPreview.amount, phone: '', email: '', address: '', location: smartPreview.location || 'TBD', notes: `Smart calendar entry: ${smartPreview.source} (${smartPreview.durationMinutes}m) | Reminders: ${reminderSummary}`,
     });
     toast.success('Smart appointment added');
     setSmartCalendarInput('');
@@ -236,10 +239,11 @@ const Schedule = () => {
         time: '10:00 AM',
         status: 'upcoming',
         amount: 0,
+        phone: '',
+        email: '',
+        address: '',
         location,
         notes: 'Imported from calendar file',
-        receiptName: '',
-        receiptImage: '',
       });
     });
     toast.success(`Imported ${blocks.length} calendar event${blocks.length === 1 ? '' : 's'}`);
@@ -367,7 +371,7 @@ const Schedule = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => setCurrentDate(new Date())}>Today</Button>
-            <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Event</Button>
+            <Button onClick={() => openNewModal()}><Plus className="mr-2 h-4 w-4" /> New Appointment</Button>
             <div className="rounded-lg border border-slate-300/40 bg-white/10 p-0.5 flex items-center gap-0.5">
               <button onClick={() => setViewMode('agenda')} className={`rounded px-2 py-1 text-xs ${viewMode === 'agenda' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><LayoutList className="h-3.5 w-3.5" /></button>
               <button onClick={() => setViewMode('calendar')} className={`rounded px-2 py-1 text-xs ${viewMode === 'calendar' ? 'bg-white text-slate-900' : 'text-slate-100'}`}><CalendarDays className="h-3.5 w-3.5" /></button>

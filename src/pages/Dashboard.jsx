@@ -144,6 +144,15 @@ const DailyBrief = ({ data, navigate }) => {
 
   const todayEarnings = todayApts.reduce((s, a) => s + (Number(a.amount) || 0), 0);
 
+  const pendingAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
+  const approvedAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'approved').length;
+
+  const agentActivityLine = pendingAgentDrafts > 0
+    ? `You have ${pendingAgentDrafts} agent draft${pendingAgentDrafts > 1 ? 's' : ''} awaiting review.`
+    : approvedAgentDrafts > 0
+      ? `Your agent has completed ${approvedAgentDrafts} approved draft${approvedAgentDrafts > 1 ? 's' : ''}.`
+      : 'Your agent is standing by for the next appointment. Try a test closeout → Schedule.';
+
   const items = [
     {
       Icon: CalendarClock,
@@ -210,9 +219,14 @@ const DailyBrief = ({ data, navigate }) => {
           <Sparkles className="h-4 w-4 text-amber-400" />
           Daily Brief
         </CardTitle>
-        <span className="text-xs text-slate-400 dark:text-slate-500">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-        </span>
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-slate-400 dark:text-slate-500">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          </span>
+          <span className="mt-1 text-[11px] text-violet-500 dark:text-violet-300">
+            {agentActivityLine}
+          </span>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {items.map((item, i) => (
@@ -345,7 +359,7 @@ const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
 };
 
 // ─── QUICK ACTIONS GRID ───────────────────────────────────────────────────────
-const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
+const QuickActions = ({ navigate, onNew, planTier, userRole, pendingAgentDrafts = 0 }) => {
   const ctx = { planTier, role: userRole };
   const portalOK   = getGateState('signerPortal', ctx).allowed;
   const dispatchOK = getGateState('teamDispatch', ctx).allowed;
@@ -357,6 +371,7 @@ const QuickActions = ({ navigate, onNew, planTier, userRole }) => {
     { Icon: DollarSign,    label: 'New Invoice',   cls: 'bg-emerald-600 hover:bg-emerald-700 text-white', fn: () => navigate('/invoices'), locked: false },
     { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO' },
     { Icon: Truck,         label: 'Dispatch',      cls: dispatchOK ? 'bg-amber-600 hover:bg-amber-700 text-white'  : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/team-dispatch'),  locked: !dispatchOK, lockLabel:'AGENCY' },
+    { Icon: Sparkles,      label: pendingAgentDrafts > 0 ? `Review ${pendingAgentDrafts} Draft${pendingAgentDrafts > 1 ? 's' : ''}` : 'AI Agent', cls: 'bg-violet-600 hover:bg-violet-700 text-white', fn: () => navigate('/agent'), locked: false },
     { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO' },
   ];
 
@@ -417,7 +432,7 @@ const ActivityFeed = ({ data, navigate }) => {
 };
 
 // ─── SETUP CHECKLIST ─────────────────────────────────────────────────────────
-const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
+const SetupProgress = ({ checklist, onAction }) => {
   const done = checklist.filter(i => i.done).length;
   const pct = Math.round((done / checklist.length) * 100);
   if (pct === 100) return null;
@@ -425,7 +440,7 @@ const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
     <Card className="border-slate-200/70 dark:border-slate-700">
       <CardHeader className="px-5 py-3.5">
         <CardTitle className="flex items-center gap-2 text-sm">
-          <Zap className="h-4 w-4 text-blue-500" /> Setup
+          <Zap className="h-4 w-4 text-blue-500" /> Setup for new account
         </CardTitle>
         <Badge variant="blue">{pct}%</Badge>
       </CardHeader>
@@ -433,14 +448,15 @@ const SetupProgress = ({ checklist, onToggle, onCompleteNext }) => {
         <Progress value={pct} className="mb-3 h-1.5" />
         <div className="space-y-1.5">
           {checklist.map(item => (
-            <button key={item.id} onClick={() => onToggle(item.id)}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <div key={item.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs">
               <span className={`h-3 w-3 shrink-0 rounded-full border-2 transition-colors ${item.done ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 dark:border-slate-600'}`} />
-              <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300'}>{item.label}</span>
-            </button>
+              <span className={`flex-1 ${item.done ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300'}`}>{item.label}</span>
+              {!item.done && item.path ? (
+                <Button size="sm" variant="secondary" onClick={() => onAction(item.path)}>{item.cta || 'Open'}</Button>
+              ) : null}
+            </div>
           ))}
         </div>
-        <Button size="sm" className="mt-3 w-full" onClick={onCompleteNext}>Complete next step</Button>
       </CardContent>
     </Card>
   );
@@ -456,13 +472,6 @@ const Dashboard = () => {
     typeof window !== 'undefined' ? (localStorage.getItem('dashboard_chart_type') || 'area') : 'area'
   );
   const [isProTip,      setIsProTip]      = useState(false);
-  const [setupChecklist, setSetup]        = useState([
-    { id: 'profile',  label: 'Complete business profile',    done: true  },
-    { id: 'client',   label: 'Add first client',             done: true  },
-    { id: 'invoice',  label: 'Create first invoice',         done: false },
-    { id: 'journal',  label: 'Log first journal entry',      done: true  },
-    { id: 'payment',  label: 'Connect payout settings',      done: false },
-  ]);
 
   const { theme }             = useTheme();
   const navigate              = useNavigate();
@@ -529,19 +538,22 @@ const Dashboard = () => {
       date: fd.date || todayISO(),
       time: fd.time, status: 'upcoming',
       amount: parseFloat(fd.fee) || 0,
+      phone: fd.phone || '',
+      email: fd.email || '',
+      address: fd.address || '',
       location: fd.location || 'TBD',
       notes: fd.notes || '',
-      receiptName: fd.receiptName || '',
-      receiptImage: fd.receiptImage || '',
     });
     setIsModalOpen(false);
   };
 
-  const toggleSetup     = id => setSetup(prev => prev.map(i => i.id === id ? { ...i, done: !i.done } : i));
-  const completeNext    = ()  => setSetup(prev => {
-    const idx = prev.findIndex(i => !i.done);
-    return idx < 0 ? prev : prev.map((i,n) => n === idx ? { ...i, done: true } : i);
-  });
+  const setupChecklist = useMemo(() => [
+    { id: 'profile',  label: 'Complete business profile', done: Boolean(data.settings?.onboardingComplete), path: '/settings', cta: 'Open Settings' },
+    { id: 'client',   label: 'Add your first client', done: (data.clients || []).length > 0, path: '/clients', cta: 'Add Client' },
+    { id: 'schedule', label: 'Create your first appointment', done: (data.appointments || []).length > 0, path: '/schedule', cta: 'New Appointment' },
+    { id: 'invoice',  label: 'Create your first invoice', done: (data.invoices || []).length > 0, path: '/invoices', cta: 'New Invoice' },
+    { id: 'journal',  label: 'Log your first journal entry', done: (data.journalEntries || []).length > 0, path: '/journal', cta: 'Add Entry' },
+  ], [data.settings, data.clients, data.appointments, data.invoices, data.journalEntries]);
 
   const greeting = getGreeting();
   const GreetIcon = greeting.Icon;
@@ -549,7 +561,7 @@ const Dashboard = () => {
   const TIPS = [
     'Core Service: Use the Digital Journal to capture compliant on-site entries with automated prompts.',
     'Core Service: Automated Invoicing keeps your cash flow visible — track status in real-time.',
-    'Core Service: Ground your guidance in jurisdiction policy records via the AI Compliance Coach.',
+    'Core Service: Let the AI Closeout Agent draft next-step actions grounded in jurisdiction policy records.',
     'Owner focus: Review revenue velocity and net profit margins to optimize your business growth.',
   ];
 
@@ -572,10 +584,10 @@ const Dashboard = () => {
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-300">
                     {data.settings?.businessName || 'NotaryOS'}
                   </p>
-                  <h1 className="mt-0.5 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
+                  <h1 className="mt-0.5 text-xl font-bold tracking-tight text-white sm:text-2xl lg:text-3xl">
                     {greeting.label}, {firstName}
                   </h1>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="mt-0.5 text-xs text-white/75">
                     {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
                   </p>
                 </div>
@@ -593,7 +605,7 @@ const Dashboard = () => {
                 <Button onClick={() => setIsModalOpen(true)}
                   className="border-0 bg-blue-500 text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600">
                   <Plus className="mr-1.5 h-4 w-4" />
-                  <span className="hidden xs:inline">New </span>Appointment
+                  New Appointment
                 </Button>
               </div>
             </div>
@@ -791,13 +803,13 @@ const Dashboard = () => {
                 <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 pt-0">
-                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} />
+                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} pendingAgentDrafts={(data.agentSuggestions || []).filter(s => s.status === 'pending').length} />
               </CardContent>
             </Card>
 
             {/* Setup Progress */}
             {!loading && (
-              <SetupProgress checklist={setupChecklist} onToggle={toggleSetup} onCompleteNext={completeNext} />
+              <SetupProgress checklist={setupChecklist} onAction={(path) => navigate(path)} />
             )}
 
             {/* At a Glance */}

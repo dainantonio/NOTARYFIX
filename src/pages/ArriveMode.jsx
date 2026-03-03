@@ -22,6 +22,8 @@ import {
   Receipt, ShieldAlert, ShieldCheck, Star, User, Users,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { useLinker } from '../hooks/useLinker';
+import { mapServiceTypeToJournalActType } from '../utils/notaryMappings';
 
 // ─── Colour palette helpers ──────────────────────────────────────────────────
 
@@ -399,6 +401,7 @@ export default function ArriveMode() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data } = useData();
+  const { completeAppointment } = useLinker();
 
   // Resolve appointment
   const appt = useMemo(
@@ -794,7 +797,7 @@ export default function ArriveMode() {
                   state: {
                     prefillAppointmentId: appt.id,
                     prefillClient: appt.client,
-                    prefillActType: appt.type === 'Loan Signing' ? 'Acknowledgment' : '',
+                    prefillActType: mapServiceTypeToJournalActType(appt.type),
                   },
                 });
               }}
@@ -847,8 +850,7 @@ export default function ArriveMode() {
                 : 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed',
             )}
             onClick={() => {
-              // Mark appointment as in-progress / arrived
-              // Navigate to journal to start logging
+              completeAppointment(appt);
               navigate('/journal', {
                 state: { prefillAppointmentId: appt.id, prefillClient: appt.client },
               });

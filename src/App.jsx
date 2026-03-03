@@ -27,7 +27,7 @@ import { useData } from './context/DataContext';
 import PublicSignerView from './pages/PublicSignerView';
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
-const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
+const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/compliance', '/pricing'];
 
 // ─── Guard: redirect new users to onboarding, protect app routes ──────────────
 const RouteGuard = ({ children }) => {
