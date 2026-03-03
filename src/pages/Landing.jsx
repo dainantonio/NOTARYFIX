@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck, Sparkles, BadgeCheck, Bot, Clock3, AlertTriangle,
   XCircle, Wallet, CalendarCheck, FileCheck2, Car, Building2,
-  Users, ArrowRight, Check, ChevronDown, Zap, TrendingUp,
+  Users, ArrowRight, Check, Zap, TrendingUp,
   Lock, Menu, X, MapPin, Stamp,
 } from 'lucide-react';
 
@@ -27,16 +27,16 @@ const AGENT_STEPS = [
 ];
 
 const STATS = [
-  { val: '<90s',    label: 'Closeout Draft Speed'      },
-  { val: '100%',    label: 'Auto Closeouts'            },
-  { val: '14+ hrs', label: 'Agent Hrs Recovered / Wk' },
-  { val: '50',      label: 'States Supported'         },
+  { val: '~90 sec', label: 'Avg Closeout Draft' },
+  { val: '24/7',   label: 'Auto Post-Appointment Closeouts' },
+  { val: '50',     label: 'States Supported' },
+  { val: '256',    label: 'Agent Drafts This Week (Beta)' },
 ];
 
 const ROLE_PROFILES = {
-  mobile: { label: 'Mobile Notary',      weekly: 12, avgRevenue: 1450, agentRecovery: '9.5 agent hrs / wk'  },
-  loan:   { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, agentRecovery: '14.2 agent hrs / wk' },
-  agency: { label: 'Signing Agency',     weekly: 35, avgRevenue: 6200, agentRecovery: '32.8 agent hrs / wk' },
+  mobile: { label: 'Mobile Notary',      weekly: 12, avgRevenue: 1450, adminCut: '9.5 agent hrs recovered/wk'  },
+  loan:   { label: 'Loan Signing Agent', weekly: 18, avgRevenue: 2400, adminCut: '14.2 agent hrs recovered/wk' },
+  agency: { label: 'Signing Agency',     weekly: 35, avgRevenue: 6200, adminCut: '32.8 agent hrs recovered/wk' },
 };
 
 const OLD_WAY = [
@@ -52,10 +52,10 @@ const NEW_WAY = [
 ];
 
 const HOW_STEPS = [
-  { step: '01', title: 'Book the Job',         desc: 'Capture client info with Smart Fill — paste an SMS, email, or voicemail and the agent parses it into a structured appointment.',   icon: CalendarCheck },
-  { step: '02', title: 'Complete Signing',      desc: 'ArriveMode walks you through ID checks, state-specific compliance, and on-site journal capture in real time.',                     icon: FileCheck2    },
-  { step: '03', title: 'Agent Closes Out',     desc: 'Immediately after the appointment, your AI agent drafts the journal entry, generates the invoice, and flags any compliance gaps.',icon: Sparkles      },
-  { step: '04', title: 'Approve & Get Paid',   desc: 'Review the agent\'s draft in one tap — approve, edit, or reject. Invoice goes out and the job is closed.',                         icon: Wallet        },
+  { step: '01', title: 'Book the Job', desc: 'Capture signer details with Smart Fill and templates.', icon: CalendarCheck },
+  { step: '02', title: 'Complete Signing', desc: 'Handle the appointment with guided compliance checks.', icon: FileCheck2 },
+  { step: '03', title: 'Agent Closes Out', desc: 'AI Closeout Agent drafts journal + invoice and flags risks.', icon: Bot },
+  { step: '04', title: 'Approve & Get Paid', desc: 'Review, approve, and send with one click.', icon: Wallet },
 ];
 
 const BUSINESS_MODELS = [
@@ -93,8 +93,8 @@ const COMPARE_ROWS = [
 ];
 
 const FAQ = [
-  { q: 'What does the AI Notary Agent actually do?', a: 'After every signing, your AI Notary Agent automatically drafts the journal entry, generates the invoice, and runs a compliance check — all in under 90 seconds. You review and approve in one tap. No manual entry, no missed steps.' },
-  { q: 'How does the Agent Closeout flow work?', a: 'The moment you mark an appointment complete, the agent triggers automatically: it drafts your journal, generates a compliant invoice, flags any fee or ID-level risks, and queues everything for your approval. Supervised Mode by default — flip to Autonomous when you\'re ready to go hands-free.' },
+  { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides an AI notary agent for appointment closeout, plus scheduling, journaling, invoicing, and compliance controls. Agency adds team dispatch and multi-notary coordination.' },
+  { q: 'How does the AI Closeout Agent work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts, then drafts next-step closeout actions so every signing stays compliant.' },
   { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
   { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
@@ -104,7 +104,7 @@ const FAQ = [
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'AI Notary Agent'       },
+  { icon: Sparkles,    label: 'AI Closeout Agent'    },
   { icon: BadgeCheck,  label: '50-State Workflows'   },
   { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
@@ -192,7 +192,6 @@ export default function Landing() {
   const [adminMins,      setAdminMins]      = useState(20);
   const [hourlyRate,     setHourlyRate]     = useState(50);
   const [billing,        setBilling]        = useState('monthly');
-  const [openFaq,        setOpenFaq]        = useState(0);
   const [compSignings,   setCompSignings]   = useState(30);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [footerModal,    setFooterModal]    = useState(null);
@@ -218,6 +217,17 @@ export default function Landing() {
     });
   }, []);
 
+  const trackEvent = (eventName, meta = {}) => {
+    try {
+      const key = 'notaryos_landing_events';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const next = [...existing, { eventName, meta, ts: new Date().toISOString() }].slice(-200);
+      localStorage.setItem(key, JSON.stringify(next));
+    } catch (_) {
+      // no-op telemetry fallback
+    }
+  };
+
   const activeProfile = ROLE_PROFILES[profile];
   const painPoints    = beforeAfter === 'old' ? OLD_WAY : NEW_WAY;
 
@@ -232,9 +242,9 @@ export default function Landing() {
   const savings     = Math.max(0, stackCost - nosCost);
 
   // AI submit
-  const submitAI = () => {
+  const submitAI = (source = 'ai_demo') => {
     if (!aiInput.trim()) return;
-    track('ai_query_submitted', { query: aiInput.trim().slice(0, 120) });
+    trackEvent('landing_ai_query_submitted', { queryLength: aiInput.trim().length, source });
     setAiTyping(true);
     setAiOutput('');
     setTimeout(() => { setAiOutput(answerAI(aiInput)); setAiTyping(false); }, 650);
@@ -265,22 +275,23 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  // Section impression telemetry
   useEffect(() => {
-    const sections = ['hero', 'features', 'how-it-works', 'pricing', 'faq', 'waitlist'];
     const seen = new Set();
+    const ids = ['features', 'how-it-works', 'pricing', 'waitlist'];
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting && !seen.has(e.target.id)) {
-          seen.add(e.target.id);
-          track('landing_section_viewed', { section: e.target.id });
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !seen.has(entry.target.id)) {
+          seen.add(entry.target.id);
+          trackEvent('landing_section_viewed', { section: entry.target.id });
         }
       });
-    }, { threshold: 0.25 });
-    sections.forEach(id => {
+    }, { threshold: 0.35 });
+
+    ids.forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
+
     return () => observer.disconnect();
   }, []);
 
@@ -295,7 +306,7 @@ export default function Landing() {
     e.preventDefault();
     if (!waitlistEmail.trim()) return;
     setWaitlistLoading(true);
-    track('waitlist_submitted', { role: waitlistRole });
+    trackEvent('landing_waitlist_submitted', { role: waitlistRole });
     // Store in localStorage so entries survive page refresh during demo
     const existing = JSON.parse(localStorage.getItem('notaryos_waitlist') || '[]');
     existing.push({ email: waitlistEmail.trim(), role: waitlistRole, ts: new Date().toISOString() });
@@ -314,7 +325,7 @@ export default function Landing() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-[#060d1b] shadow-lg shadow-cyan-500/30">N</div>
             <div className="leading-none text-left">
               <p className="text-sm font-bold tracking-tight text-white">NotaryOS</p>
-              <p className="text-[10px] text-slate-400">AI Notary Agent · Notary Ops</p>
+              <p className="text-[10px] text-slate-400">AI Notary Agent</p>
             </div>
           </button>
 
@@ -336,9 +347,9 @@ export default function Landing() {
               className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-400/20">
               Join Waitlist
             </button>
-            <Link to="/auth"
+            <Link to="/auth" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
               className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
-              See Agent Closeout
+              Open Live Demo
             </Link>
           </div>
 
@@ -358,7 +369,7 @@ export default function Landing() {
                   {link.label}
                 </button>
               ))}
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}
+              <Link to="/auth" onClick={() => { trackEvent('landing_cta_live_demo', { location: 'mobile_menu' }); setMobileMenuOpen(false); }}
                 className="mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-bold text-white">
                 See Agent Closeout
               </Link>
@@ -384,35 +395,32 @@ export default function Landing() {
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
-              AI Notary Agent · Built for 2025
+              AI Notary Agent · 2025
             </span>
           </div>
 
           {/* H1 — agent outcome first */}
           <h1 className="mx-auto max-w-5xl text-center text-5xl font-black leading-[1.02] tracking-tight md:text-7xl lg:text-[5.5rem]">
-            Appointments close{' '}
+            Meet your AI notary agent.<br />
             <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              themselves.
+              Appointments close themselves.
             </span>
             <br />Your agent handles the rest.
           </h1>
 
           {/* Subtext — explicit agent actions */}
           <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-slate-400 md:text-xl">
-            After every signing, NotaryOS automatically drafts your journal, generates your invoice, and flags compliance risks — in seconds. You just approve.
+            After every signing, NotaryOS automatically drafts your journal, generates your invoice, and flags compliance risks in seconds.
           </p>
 
           {/* CTAs — agent demo primary */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => { track('cta_clicked', { label: 'See Agent Closeout', location: 'hero' }); navigate('/auth'); }}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
-              <Sparkles className="h-4 w-4" />
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <button
-              onClick={() => { track('cta_clicked', { label: 'Open Live Demo', location: 'hero' }); navigate('/auth'); }}
+            <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'hero' }); scrollTo('waitlist'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
               Open Live Demo
             </button>
@@ -577,13 +585,13 @@ export default function Landing() {
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && submitAI()}
+                onKeyDown={e => e.key === 'Enter' && submitAI('ai_demo')}
                 placeholder="Ask anything about notary compliance..." />
-              <button onClick={submitAI} className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-white">Ask AI</button>
+              <button onClick={() => submitAI('ai_demo')} className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-white">Ask AI</button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {["California jurat fee", "Texas expired ID rule", "Ohio red flags", "Dataset source?"].map(q => (
-                <button key={q} onClick={() => { setAiInput(q); setTimeout(submitAI, 50); }}
+                <button key={q} onClick={() => { setAiInput(q); setTimeout(() => submitAI('ai_demo_quick'), 50); }}
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-slate-400 transition-colors hover:border-cyan-400/30 hover:text-cyan-300">
                   {q}
                 </button>
@@ -852,38 +860,17 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
             <span className="inline-flex rounded-full border border-blue-400/25 bg-blue-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">How It Works</span>
-            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">Sign it. Agent closes it.</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">Your agent runs in the background so you can stay in the field.</p>
+            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 4 steps.</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">A streamlined workflow designed for mobile-first notaries.</p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-            {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => {
-              const isAgentStep = i === 2;
-              return (
-                <div key={title}
-                  className={`relative rounded-2xl border p-7 transition-all hover:-translate-y-1 ${
-                    isAgentStep
-                      ? 'border-cyan-400/40 bg-cyan-400/5 shadow-lg shadow-cyan-500/10'
-                      : 'border-white/8 bg-white/[0.03] hover:border-white/15'
-                  }`}>
-                  {i < 3 && (
-                    <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 md:block">
-                      <ArrowRight className={`h-5 w-5 ${isAgentStep ? 'text-cyan-600' : 'text-slate-700'}`} />
-                    </div>
-                  )}
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="text-4xl font-black text-white/5">{step}</span>
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
-                      isAgentStep
-                        ? 'border-cyan-400/40 bg-cyan-400/15'
-                        : 'border-cyan-400/20 bg-cyan-400/8'
-                    }`}>
-                      <Icon className={`h-5 w-5 ${isAgentStep ? 'text-cyan-300' : 'text-cyan-400'}`} />
-                    </div>
-                    {isAgentStep && (
-                      <span className="rounded-full bg-cyan-400/15 border border-cyan-400/25 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-cyan-300">
-                        AI Agent
-                      </span>
-                    )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => (
+              <div key={title} className="relative rounded-2xl border border-white/8 bg-white/[0.03] p-7 transition-all hover:-translate-y-1 hover:border-white/15">
+                {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-700" /></div>}
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="text-4xl font-black text-white/5">{step}</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/8">
+                    <Icon className="h-5 w-5 text-cyan-400" />
                   </div>
                   <h3 className={`text-xl font-black ${isAgentStep ? 'text-cyan-100' : 'text-white'}`}>{title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
@@ -919,7 +906,7 @@ export default function Landing() {
               <div className={`mb-5 inline-flex rounded-xl p-3 ${bg}`}><Icon className={`h-6 w-6 ${color}`} /></div>
               <h3 className="text-xl font-black text-white">{title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{desc}</p>
-              <button onClick={() => navigate('/auth')}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'business_models' }); navigate('/auth'); }}
                 className={`mt-5 flex items-center gap-1.5 text-sm font-semibold ${color} transition-all group-hover:gap-2.5`}>
                 Get started <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -1039,28 +1026,50 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══ FAQ ═══════════════════════════════════════════════════════════════ */}
-      <section id="faq" className="mx-auto max-w-3xl px-6 py-24">
-        <div className="mb-12 text-center">
-          <h2 className="text-4xl font-black tracking-tight md:text-5xl">Questions? Answered.</h2>
-          <p className="mx-auto mt-4 text-lg text-slate-400">Everything you need to know before getting started.</p>
+      {/* ══ AI GUIDE FAQ ══════════════════════════════════════════════════════ */}
+      <section id="faq" className="mx-auto max-w-4xl px-6 py-24">
+        <div className="mb-8 text-center">
+          <h2 className="text-4xl font-black tracking-tight md:text-5xl">AI Guide</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">Ask anything about pricing, workflows, compliance, or onboarding and get an instant guided answer.</p>
         </div>
-        <div className="space-y-3">
-          {FAQ.map((item, i) => {
-            const isOpen = openFaq === i;
-            return (
-              <div key={item.q} className={`overflow-hidden rounded-2xl border transition-all ${isOpen ? 'border-white/15 bg-white/5' : 'border-white/8 bg-white/[0.02]'}`}>
-                <button className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left"
-                  onClick={() => setOpenFaq(isOpen ? -1 : i)}>
-                  <span className="font-semibold text-white">{item.q}</span>
-                  <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-cyan-400' : ''}`} />
-                </button>
-                {isOpen && (
-                  <div className="border-t border-white/8 px-6 pb-5 pt-4 text-sm leading-relaxed text-slate-400">{item.a}</div>
-                )}
-              </div>
-            );
-          })}
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="flex flex-wrap gap-2">
+            {FAQ.map((item) => (
+              <button
+                key={item.q}
+                onClick={() => {
+                  trackEvent('landing_faq_starter_clicked', { question: item.q });
+                  setAiInput(item.q);
+                  setTimeout(() => submitAI('faq_guide_starter'), 50);
+                }}
+                className="rounded-lg border border-white/12 bg-white/[0.02] px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+              >
+                {item.q}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            <input
+              value={aiInput}
+              onChange={(e) => setAiInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitAI('faq_guide')}
+              placeholder="Try: What happens after I complete a signing?"
+              className="flex-1 rounded-lg border border-white/10 bg-[#0b1526] px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+            />
+            <button
+              onClick={() => submitAI('faq_guide')}
+              className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-sm font-bold text-white"
+            >
+              Ask AI Guide
+            </button>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-white/8 bg-[#0a1220] p-4">
+            <p className="text-[11px] uppercase tracking-wider text-cyan-300">AI Guide Response</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">{aiTyping ? 'Thinking…' : aiOutput}</p>
+          </div>
         </div>
       </section>
 
@@ -1092,7 +1101,7 @@ export default function Landing() {
               <p className="mt-2 text-sm text-slate-400">
                 We&apos;ll reach out personally with your early access link. Expect to hear from us within 48 hours.
               </p>
-              <button onClick={() => navigate('/auth')}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'waitlist_success' }); navigate('/auth'); }}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
                 Try the demo now <ArrowRight className="h-4 w-4" />
               </button>
@@ -1158,13 +1167,12 @@ export default function Landing() {
             No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => { track('cta_clicked', { label: 'See Agent Closeout', location: 'final_cta' }); navigate('/auth'); }}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/auth'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 active:scale-[.98]">
-              <Sparkles className="h-4 w-4" />
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <button onClick={() => { track('cta_clicked', { label: 'Join Waitlist', location: 'final_cta' }); scrollTo('waitlist'); }}
+            <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'final_cta' }); scrollTo('waitlist'); }}
               className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
               Join Waitlist
             </button>
