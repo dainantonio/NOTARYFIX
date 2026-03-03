@@ -161,6 +161,7 @@ export default function Onboarding() {
     licenseNumber:        '',
     commissionExpiryDate: data.settings?.commissionExpiryDate || '',
     notaryType:           data.settings?.notaryType || 'Traditional',
+    autonomyMode:         data.settings?.autonomyMode || 'supervised',
     feeSchedule:          data.settings?.feeSchedule || { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
     agentMode:            data.settings?.agentMode || 'supervised',
   });
@@ -192,6 +193,7 @@ export default function Onboarding() {
       licenseNumber:        form.licenseNumber,
       commissionExpiryDate: form.commissionExpiryDate,
       notaryType:           form.notaryType,
+      autonomyMode:         form.autonomyMode,
       feeSchedule:          form.feeSchedule,
       onboardingComplete:   true,
       agentMode:            form.agentMode,
@@ -671,6 +673,7 @@ export default function Onboarding() {
                     { label: 'Commissioned States', val: (form.commissionedStates || []).join(', ') || '—' },
                     { label: 'License',    val: form.licenseNumber || '—' },
                     { label: 'Notary Type', val: form.notaryType },
+                    { label: 'Autonomy Mode', val: form.autonomyMode.charAt(0).toUpperCase() + form.autonomyMode.slice(1) },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                     { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
                     { label: 'Agent Mode', val: { assistive: 'Assistive — drafts only', supervised: 'Supervised — review before commit', autonomous: 'Autonomous — auto-commit safe actions' }[form.agentMode] || '—' },
@@ -686,6 +689,38 @@ export default function Onboarding() {
                   <p className="text-xs text-emerald-300 leading-relaxed">
                     You can change anything in Settings at any time. Your first 30 days are fully unlocked — explore every feature.
                   </p>
+                </div>
+
+                <div className="space-y-3 rounded-xl border border-blue-500/25 bg-blue-500/10 p-4">
+                  <p className="text-sm font-semibold text-blue-200">Your AI closeout agent is now active.</p>
+                  <p className="text-xs text-blue-100/90 leading-relaxed">
+                    After each appointment, your agent drafts the journal + invoice and runs compliance checks so you can approve, edit, or reject.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Autonomy Mode</p>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      { value: 'assistive', label: 'Assistive', desc: 'Drafts only' },
+                      { value: 'supervised', label: 'Supervised', desc: 'Suggests actions, you review before commit' },
+                      { value: 'autonomous', label: 'Autonomous', desc: 'Auto-commits safe actions' },
+                    ].map(({ value, label, desc }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => set('autonomyMode', value)}
+                        className={`rounded-xl border p-3 text-left transition-all ${
+                          form.autonomyMode === value
+                            ? 'border-blue-400 bg-blue-500/15'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <p className="text-sm font-semibold text-white">{label}</p>
+                        <p className="mt-1 text-xs text-slate-400">{desc}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
