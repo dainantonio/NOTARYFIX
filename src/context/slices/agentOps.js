@@ -3,6 +3,10 @@
 // No React imports — pure factory function.
 // getData() is passed as second param to read current state snapshot.
 
+import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
+import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
+import { serviceTypeToActType } from '../../utils/notaryTypes';
+
 // ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
 // Now uses centralized mapping from notaryTypes.js — single source of truth.
 const apptTypeToActType = (apptType = '', aiHint = '') => {
@@ -10,10 +14,6 @@ const apptTypeToActType = (apptType = '', aiHint = '') => {
   const typeToUse = aiHint || apptType;
   return serviceTypeToActType(typeToUse);
 };
-
-import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
-import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
-import { serviceTypeToActType } from '../../utils/notaryTypes';
 
 // ── Internal helpers (module-private) ────────────────────────────────────────
 
