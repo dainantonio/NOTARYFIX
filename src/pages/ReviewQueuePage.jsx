@@ -10,7 +10,7 @@ const TYPE_FILTERS = [
   { key: 'all',      label: 'All',        icon: Filter },
   { key: 'closeout', label: 'Closeouts',  icon: FileText },
   { key: 'ar',       label: 'AR / Reminders', icon: Receipt },
-  { key: 'lead',     label: 'Lead Intake', icon: UserPlus },
+  { key: 'lead',     label: 'Lead Intake Agent', icon: UserPlus },
 ];
 
 const SORT_OPTIONS = [
@@ -117,7 +117,7 @@ export default function ReviewQueuePage() {
               {[
                 { label: 'Closeouts', key: 'closeout', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400' },
                 { label: 'AR / Reminders', key: 'ar', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400' },
-                { label: 'Lead Intake', key: 'lead', color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/20 dark:text-violet-400' },
+                { label: 'Lead Intake Agent', key: 'lead', color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/20 dark:text-violet-400' },
               ].filter(s => counts[s.key] > 0).map(s => (
                 <span key={s.key} className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${s.color}`}>
                   {counts[s.key]} {s.label}
