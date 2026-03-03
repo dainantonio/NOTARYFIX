@@ -53,7 +53,7 @@ const NEW_WAY = [
 
 const HOW_STEPS = [
   { step: '01', title: 'Book the Job',         desc: 'Capture client info with Smart Fill — paste an SMS, email, or voicemail and the agent parses it into a structured appointment.',   icon: CalendarCheck },
-  { step: '02', title: 'Do the Signing',       desc: 'ArriveMode walks you through ID checks, state-specific compliance, and on-site journal capture in real time.',                     icon: FileCheck2    },
+  { step: '02', title: 'Complete Signing',      desc: 'ArriveMode walks you through ID checks, state-specific compliance, and on-site journal capture in real time.',                     icon: FileCheck2    },
   { step: '03', title: 'Agent Closes Out',     desc: 'Immediately after the appointment, your AI agent drafts the journal entry, generates the invoice, and flags any compliance gaps.',icon: Sparkles      },
   { step: '04', title: 'Approve & Get Paid',   desc: 'Review the agent\'s draft in one tap — approve, edit, or reject. Invoice goes out and the job is closed.',                         icon: Wallet        },
 ];
@@ -104,7 +104,7 @@ const FAQ = [
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'AI Closeout Agent'    },
+  { icon: Sparkles,    label: 'AI Notary Agent'       },
   { icon: BadgeCheck,  label: '50-State Workflows'   },
   { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
@@ -282,7 +282,7 @@ export default function Landing() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-[#060d1b] shadow-lg shadow-cyan-500/30">N</div>
             <div className="leading-none text-left">
               <p className="text-sm font-bold tracking-tight text-white">NotaryOS</p>
-              <p className="text-[10px] text-slate-400">Agentic AI · Notary Ops</p>
+              <p className="text-[10px] text-slate-400">AI Notary Agent · Notary Ops</p>
             </div>
           </button>
 
@@ -306,7 +306,7 @@ export default function Landing() {
             </button>
             <Link to="/auth"
               className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
-              Live Demo
+              See Agent Closeout
             </Link>
           </div>
 
@@ -328,7 +328,7 @@ export default function Landing() {
               ))}
               <Link to="/auth" onClick={() => setMobileMenuOpen(false)}
                 className="mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-bold text-white">
-                Open Live Demo
+                See Agent Closeout
               </Link>
               <button onClick={() => { setMobileMenuOpen(false); scrollTo('waitlist'); }}
                 className="rounded-lg border border-cyan-400/30 bg-cyan-400/8 px-4 py-3 text-center text-sm font-bold text-cyan-300">
@@ -352,7 +352,7 @@ export default function Landing() {
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
-              Agentic AI Platform for Notaries · 2025
+              AI Notary Agent · Built for 2025
             </span>
           </div>
 
@@ -411,7 +411,7 @@ export default function Landing() {
                     <Bot className="h-5 w-5 text-cyan-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">NotaryOS Closeout Agent</p>
+                    <p className="text-sm font-bold text-white">NotaryOS AI Notary Agent</p>
                     <p className="flex items-center gap-1.5 text-xs text-emerald-400">
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                       Running · Loan Signing · Sarah Johnson
@@ -823,7 +823,7 @@ export default function Landing() {
             <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">Sign it. Agent closes it.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">Your agent runs in the background so you can stay in the field.</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
             {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => {
               const isAgentStep = i === 2;
               return (
@@ -1120,7 +1120,7 @@ export default function Landing() {
       <section className="bg-[#060d1b] py-16">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <h2 className="text-3xl font-black tracking-tight md:text-4xl">
-            Ready to meet your notary agent?
+            Meet your AI notary agent.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-slate-400">
             No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
