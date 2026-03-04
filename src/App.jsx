@@ -6,7 +6,7 @@ import Schedule from './pages/Schedule';
 import Clients from './pages/Clients';
 import Invoices from './pages/Invoices';
 import Settings from './pages/Settings';
-import Mileage from './pages/mileage';
+import Mileage from './pages/Mileage';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding';
@@ -77,7 +77,6 @@ function App() {
                 <Route path="/auth"        element={<Auth />} />
                 <Route path="/onboarding"  element={<Onboarding />} />
                 <Route path="/legal"       element={<Compliance />} />
-                <Route path="/compliance"  element={<Credentials />} />
                 <Route path="/credentials" element={<Credentials />} />
                 <Route path="/pricing"     element={<Pricing />} />
                 <Route path="/feature-paywall" element={<NavFeaturePaywall />} />
