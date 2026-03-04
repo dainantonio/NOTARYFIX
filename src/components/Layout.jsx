@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
-  Sparkles, ClipboardList, Maximize2, Minimize2, MoreHorizontal} from 'lucide-react';
+  Sparkles, Maximize2, Minimize2, MoreHorizontal} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -23,6 +23,18 @@ const Button = ({ children, variant = 'primary', size = 'default', className = '
     default: "h-10 px-4 py-2 text-sm", 
     icon: "h-10 w-10 p-2 flex items-center justify-center" 
   };
+  const isActivePath = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isMoreActive = moreItems.some((item) => isActivePath(item.path));
+  const getItemTarget = (item) => (item.locked ? '/feature-paywall' : item.path);
+  const getItemState = (item) => (item.locked
+    ? {
+      badge: item.badge || 'PRO FEATURE',
+      title: item.paywallTitle || item.label || 'Premium Feature',
+      description: `Upgrade to access ${item.paywallTitle || item.label}.`,
+      featureKey: item.featureKey || 'aiTrainer',
+    }
+    : undefined);
+
   return (
     <button 
       className={`inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 ${variants[variant] || variants.primary} ${sizes[size] || sizes.default} ${className}`} 
@@ -36,6 +48,18 @@ const Button = ({ children, variant = 'primary', size = 'default', className = '
 
 const CommandPalette = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
+  const isActivePath = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isMoreActive = moreItems.some((item) => isActivePath(item.path));
+  const getItemTarget = (item) => (item.locked ? '/feature-paywall' : item.path);
+  const getItemState = (item) => (item.locked
+    ? {
+      badge: item.badge || 'PRO FEATURE',
+      title: item.paywallTitle || item.label || 'Premium Feature',
+      description: `Upgrade to access ${item.paywallTitle || item.label}.`,
+      featureKey: item.featureKey || 'aiTrainer',
+    }
+    : undefined);
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex justify-center pt-[20vh]" onClick={onClose}>
       <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
@@ -120,7 +144,6 @@ const LayoutInner = ({ children }) => {
     navigate('/auth');
   };
 
-  const pendingReviewCount = (data?.agentSuggestions || []).filter(s => s.status === 'pending').length;
 
   const sidebarGroups = [
     {
@@ -136,9 +159,8 @@ const LayoutInner = ({ children }) => {
     {
       title: 'INTELLIGENCE',
       items: [
-        { icon: Sparkles, label: 'Command Center', path: '/agent', badge: 'PRO', locked: planTier === 'free' },
-        { icon: Scale, label: 'Act Library', path: '/form-guide', badge: 'PRO', locked: planTier === 'free' },
-        { icon: ClipboardList, label: 'Review Queue', path: '/review', pendingCount: pendingReviewCount, badge: 'PRO', locked: planTier === 'free' },
+        { icon: Sparkles, label: 'Command Center', path: '/agent', badge: 'PRO', locked: planTier === 'free', featureKey: 'aiTrainer', paywallTitle: 'Command Center' },
+        { icon: Scale, label: 'Act Library', path: '/form-guide', badge: 'PRO', locked: planTier === 'free', featureKey: 'aiTrainer', paywallTitle: 'Act Library' },
       ]
     },
     {
@@ -160,11 +182,23 @@ const LayoutInner = ({ children }) => {
   ];
 
   const moreItems = [
-    { Icon: Sparkles, label: 'Command Center', path: '/agent' },
-    { Icon: Scale, label: 'Act Library', path: '/form-guide' },
+    { Icon: Sparkles, label: 'Command Center', path: '/agent', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Command Center' },
+    { Icon: Scale, label: 'Act Library', path: '/form-guide', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Act Library' },
     { Icon: MapPin, label: 'Mileage', path: '/mileage' },
     { Icon: Settings, label: 'Settings', path: '/settings' },
   ];
+
+  const isActivePath = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isMoreActive = moreItems.some((item) => isActivePath(item.path));
+  const getItemTarget = (item) => (item.locked ? '/feature-paywall' : item.path);
+  const getItemState = (item) => (item.locked
+    ? {
+      badge: item.badge || 'PRO FEATURE',
+      title: item.paywallTitle || item.label || 'Premium Feature',
+      description: `Upgrade to access ${item.paywallTitle || item.label}.`,
+      featureKey: item.featureKey || 'aiTrainer',
+    }
+    : undefined);
 
   return (
     <div className="bg-slate-50 dark:bg-slate-900 flex transition-colors duration-300">
@@ -200,12 +234,13 @@ const LayoutInner = ({ children }) => {
               )}
               {group.items.map((item) => {
                 if (item.agencyOnly && planTier !== 'agency') return null;
-                const active = location.pathname === item.path;
+                const active = isActivePath(item.path);
                 
                 return (
                   <Link 
                     key={item.path} 
-                    to={item.locked ? '/pricing' : item.path} 
+                    to={getItemTarget(item)}
+                    state={getItemState(item)} 
                     title={isSidebarCollapsed ? item.label : item.locked ? `${item.label} — Upgrade required` : ''}
                     className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group ${item.locked ? 'opacity-60' : ''} ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
                   >
@@ -316,9 +351,10 @@ const LayoutInner = ({ children }) => {
                     <div className="px-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{group.title}</div>
                     {group.items.map((item) => {
                       if (item.agencyOnly && planTier !== 'agency') return null;
-                      const active = location.pathname === item.path;
+                      const active = isActivePath(item.path);
                       return (
-                        <Link key={item.path} to={item.locked ? '/pricing' : item.path} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'} ${item.locked ? 'opacity-60' : ''}`}>
+                        <Link key={item.path} to={getItemTarget(item)}
+                    state={getItemState(item)} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'} ${item.locked ? 'opacity-60' : ''}`}>
                           <item.icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />{item.label}
                           {item.locked && <span className="ml-auto flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500"><Lock className="h-2.5 w-2.5" />{item.badge || 'LOCKED'}</span>}
                         </Link>
@@ -349,7 +385,7 @@ const LayoutInner = ({ children }) => {
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 flex items-center justify-around px-1"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}>
           {mobileBottomItems.map(item => {
-            const active = location.pathname === item.path;
+            const active = isActivePath(item.path);
             return (
               <Link key={item.path} to={item.path}
                 className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl transition-colors min-w-[52px] ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>
@@ -360,7 +396,7 @@ const LayoutInner = ({ children }) => {
           })}
           <button 
             onClick={() => setIsMoreDrawerOpen(true)}
-            className="flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl text-slate-400 dark:text-slate-500 min-w-[52px]"
+            className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl min-w-[52px] ${isMoreActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
           >
             <MoreHorizontal className="h-[22px] w-[22px]" />
             <span className="text-[10px] font-semibold tracking-wide">More</span>
@@ -379,19 +415,23 @@ const LayoutInner = ({ children }) => {
               <div className="px-6 py-4">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Access</h3>
                 <div className="grid grid-cols-4 gap-4">
-                  {moreItems.map(item => (
+                  {moreItems.map(item => {
+                    const active = isActivePath(item.path);
+                    return (
                     <Link 
                       key={item.path} 
-                      to={item.path} 
+                      to={getItemTarget(item)}
+                      state={getItemState(item)}
                       onClick={() => setIsMoreDrawerOpen(false)}
                       className="flex flex-col items-center gap-2 group"
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 group-active:scale-95 transition-transform">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-active:scale-95 transition-transform ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                         <item.Icon className="w-6 h-6" />
                       </div>
-                      <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 text-center leading-tight">{item.label}</span>
+                      <span className={`text-[10px] font-medium text-center leading-tight ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.label}</span>
+                      {item.locked ? <span className="flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500"><Lock className="h-2.5 w-2.5" />{item.badge || 'LOCKED'}</span> : null}
                     </Link>
-                  ))}
+                  );})}
                 </div>
               </div>
             </div>
