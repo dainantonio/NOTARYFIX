@@ -23,6 +23,18 @@ const Button = ({ children, variant = 'primary', size = 'default', className = '
     default: "h-10 px-4 py-2 text-sm", 
     icon: "h-10 w-10 p-2 flex items-center justify-center" 
   };
+  const isActivePath = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isMoreActive = moreItems.some((item) => isActivePath(item.path));
+  const getItemTarget = (item) => (item.locked ? '/feature-paywall' : item.path);
+  const getItemState = (item) => (item.locked
+    ? {
+      badge: item.badge || 'PRO FEATURE',
+      title: item.paywallTitle || item.label || 'Premium Feature',
+      description: `Upgrade to access ${item.paywallTitle || item.label}.`,
+      featureKey: item.featureKey || 'aiTrainer',
+    }
+    : undefined);
+
   return (
     <button 
       className={`inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 ${variants[variant] || variants.primary} ${sizes[size] || sizes.default} ${className}`} 
@@ -36,6 +48,18 @@ const Button = ({ children, variant = 'primary', size = 'default', className = '
 
 const CommandPalette = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
+  const isActivePath = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isMoreActive = moreItems.some((item) => isActivePath(item.path));
+  const getItemTarget = (item) => (item.locked ? '/feature-paywall' : item.path);
+  const getItemState = (item) => (item.locked
+    ? {
+      badge: item.badge || 'PRO FEATURE',
+      title: item.paywallTitle || item.label || 'Premium Feature',
+      description: `Upgrade to access ${item.paywallTitle || item.label}.`,
+      featureKey: item.featureKey || 'aiTrainer',
+    }
+    : undefined);
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex justify-center pt-[20vh]" onClick={onClose}>
       <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
