@@ -451,7 +451,7 @@ export default function Layout({ children }) {
   const inRouter = useInRouterContext();
   if (!inRouter) {
     return (
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <LayoutInner>{children}</LayoutInner>
       </BrowserRouter>
     );
