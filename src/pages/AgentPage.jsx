@@ -189,7 +189,7 @@ const AgentPage = () => {
             <p className="text-xs uppercase tracking-[0.18em] text-violet-200">Agentic Operations</p>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Sparkles className="h-7 w-7 text-violet-300" />
-              Command Center
+              Compliance Panel
             </h1>
             <p className="mt-1 text-sm text-slate-200">Review AI drafts, approve actions, and track agent performance.</p>
           </div>

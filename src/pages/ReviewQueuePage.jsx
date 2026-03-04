@@ -107,7 +107,7 @@ export default function ReviewQueuePage() {
               className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Command Center
+              Compliance Panel
             </button>
           </div>
 
@@ -185,7 +185,7 @@ export default function ReviewQueuePage() {
                 onClick={() => navigate('/agent')}
                 className="mt-5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
               >
-                Go to Command Center
+                Go to Compliance Panel
               </button>
             )}
           </div>
