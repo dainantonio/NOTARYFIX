@@ -23,12 +23,13 @@ import Admin from './pages/Admin';
 import AgentPage from './pages/AgentPage';
 import AuditPage from './pages/AuditPage';
 import ReviewQueuePage from './pages/ReviewQueuePage';
+import NavFeaturePaywall from './pages/NavFeaturePaywall';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
 import PublicSignerView from './pages/PublicSignerView';
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
-const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
+const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing', '/feature-paywall'];
 
 // ─── Guard: redirect new users to onboarding, protect app routes ──────────────
 const RouteGuard = ({ children }) => {
@@ -54,7 +55,7 @@ const AppLayout = ({ children }) => {
 
 function App() {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <Routes>
         {/* Public signer portal — no auth, no layout */}
         <Route path="/portal/:id" element={<PublicSignerView />} />
@@ -72,6 +73,7 @@ function App() {
                 <Route path="/compliance"  element={<Credentials />} />
                 <Route path="/credentials" element={<Credentials />} />
                 <Route path="/pricing"     element={<Pricing />} />
+                <Route path="/feature-paywall" element={<NavFeaturePaywall />} />
 
                 {/* App */}
                 <Route path="/dashboard"   element={<Dashboard />} />
