@@ -158,8 +158,8 @@ const LayoutInner = ({ children }) => {
   ];
 
   const moreItems = [
-    { Icon: Sparkles, label: 'Command Center', path: '/agent' },
-    { Icon: Scale, label: 'Act Library', path: '/form-guide' },
+    { Icon: Sparkles, label: 'Compliance Panel', path: '/agent' },
+    { Icon: Scale, label: 'Forms Guide', path: '/form-guide' },
     { Icon: MapPin, label: 'Mileage', path: '/mileage' },
     { Icon: Settings, label: 'Settings', path: '/settings' },
   ];
