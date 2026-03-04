@@ -186,10 +186,10 @@ const AgentPage = () => {
       <Card className="app-hero-card">
         <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-200">Agentic Operations</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-violet-200">AI Command Center</p>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Sparkles className="h-7 w-7 text-violet-300" />
-              Compliance Panel
+              Command Center
             </h1>
             <p className="mt-1 text-sm text-slate-200">Review AI drafts, approve actions, and track agent performance.</p>
           </div>
