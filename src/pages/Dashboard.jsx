@@ -371,7 +371,7 @@ const QuickActions = ({ navigate, onNew, planTier, userRole, pendingAgentDrafts 
     { Icon: DollarSign,    label: 'New Invoice',   cls: 'bg-emerald-600 hover:bg-emerald-700 text-white', fn: () => navigate('/invoices'), locked: false },
     { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO' },
     { Icon: Truck,         label: 'Dispatch',      cls: dispatchOK ? 'bg-amber-600 hover:bg-amber-700 text-white'  : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/team-dispatch'),  locked: !dispatchOK, lockLabel:'AGENCY' },
-    { Icon: Sparkles,      label: pendingAgentDrafts > 0 ? `Review ${pendingAgentDrafts} Draft${pendingAgentDrafts > 1 ? 's' : ''}` : 'Command Center', cls: 'bg-violet-600 hover:bg-violet-700 text-white', fn: () => navigate('/agent'), locked: false },
+    { Icon: Sparkles,      label: pendingAgentDrafts > 0 ? `Review ${pendingAgentDrafts} Draft${pendingAgentDrafts > 1 ? 's' : ''}` : 'Compliance Panel', cls: 'bg-violet-600 hover:bg-violet-700 text-white', fn: () => navigate('/agent'), locked: false },
     { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO' },
   ];
 

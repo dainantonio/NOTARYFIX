@@ -740,7 +740,7 @@ export default function FormGuide() {
             <Scale className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="font-black text-slate-900 dark:text-white text-sm">Act Library</h2>
+            <h2 className="font-black text-slate-900 dark:text-white text-sm">Forms Guide</h2>
             <p className="text-[11px] text-slate-500">AI-powered act selector</p>
           </div>
         </div>
