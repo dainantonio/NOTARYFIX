@@ -39,7 +39,7 @@ const _appendAuditLog = (p, entry) => ({
 export function createAgentOps(setData, getData) {
 
   // ── Sync Closeout Agent ───────────────────────────────────────────────────
-  const runCloseoutAgent = (appointmentId, actor = 'Auto-Closeout') => setData((p) => {
+  const runCloseoutAgent = (appointmentId, actor = 'Closeout Agent') => setData((p) => {
     const appointment = (p.appointments || []).find((apt) => String(apt.id) === String(appointmentId));
     if (!appointment) return p;
 
@@ -164,7 +164,7 @@ export function createAgentOps(setData, getData) {
         agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
         agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
       }, {
-        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Auto-Closeout',
+        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
         resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
         diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
       });
@@ -176,7 +176,7 @@ export function createAgentOps(setData, getData) {
       agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
       agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
     }, {
-      actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Auto-Closeout',
+      actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
       resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
       diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval`,
     });
@@ -184,7 +184,7 @@ export function createAgentOps(setData, getData) {
 
   // ── AI-Enhanced Async Closeout Agent ─────────────────────────────────────
   // Note: DataContext.jsx wraps this with useCallback([]) for memoization.
-  const runCloseoutAgentWithAI = async (appointmentId, actor = 'Auto-Closeout') => {
+  const runCloseoutAgentWithAI = async (appointmentId, actor = 'Closeout Agent') => {
     const currentData = getData();
     const appointment = (currentData?.appointments || []).find(
       (apt) => String(apt.id) === String(appointmentId)
@@ -343,7 +343,7 @@ export function createAgentOps(setData, getData) {
           journalEntries: [draftJournal, ...(p.journalEntries || [])],
           agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
           agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
-        }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Auto-Closeout', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}` });
+        }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}` });
       }
 
       return _appendAuditLog({
@@ -351,7 +351,7 @@ export function createAgentOps(setData, getData) {
         appointments: nextAppointments,
         agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
         agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
-      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Auto-Closeout', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
+      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
     });
   };
 
@@ -400,7 +400,7 @@ export function createAgentOps(setData, getData) {
       }, {
         actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
         action: 'approved', resourceType: 'agentSuggestion', resourceId: id,
-        resourceLabel: suggestion.label || 'Lead Intake Agent draft',
+        resourceLabel: suggestion.label || 'Lead Parser draft',
         diff: `Created client ${suggestion.draftClient?.name} + appointment`,
       });
     }
@@ -475,7 +475,7 @@ export function createAgentOps(setData, getData) {
     return { ...p, autonomyRoadmap: { ...current, ...next, updatedAt: new Date().toISOString() } };
   });
 
-  // ── Aging AR Agent ────────────────────────────────────────────────────────
+  // ── Collections ────────────────────────────────────────────────────────
   const runAgingARAgent = () => setData((p) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -506,7 +506,7 @@ export function createAgentOps(setData, getData) {
         appointmentClient: inv.client,
         ranAt: nowIso,
         createdAt: nowIso,
-        actor: 'Aging AR Agent',
+        actor: 'Collections',
         invoiceId: inv.id,
         invoiceAmount: inv.amount,
         daysOverdue,
@@ -534,7 +534,7 @@ export function createAgentOps(setData, getData) {
   // Alias for AgentPage playbook launcher
   const runARScan = () => runAgingARAgent();
 
-  // ── Lead Intake Agent ─────────────────────────────────────────────────────
+  // ── Lead Parser ─────────────────────────────────────────────────────
   const runLeadIntakeAgent = async (rawText) => {
     if (!rawText?.trim()) return;
     const parsed = await parseLeadText(rawText);
@@ -551,7 +551,7 @@ export function createAgentOps(setData, getData) {
       appointmentClient: parsed.clientName || 'Unknown',
       ranAt: nowIso,
       createdAt: nowIso,
-          actor: 'Lead Intake Agent',
+          actor: 'Lead Parser',
       rawText,
       draftClient: {
         id: clientId,
@@ -625,7 +625,7 @@ export function createAgentOps(setData, getData) {
           type: 'aging_ar', status: 'pending',
           label: `Overdue Invoice — ${inv.client}`,
           appointmentClient: inv.client, ranAt: nowIso, createdAt: nowIso,
-          actor: 'Aging AR Agent (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
+          actor: 'Collections (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
           daysOverdue,
           diffData: {
             invoiceId: inv.id,

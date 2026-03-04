@@ -14,11 +14,19 @@ const DATE_FILTERS = [
 
 const RESOURCE_TYPES = [
   { value: 'all', label: 'All types' },
-  { value: 'Auto-Closeout', label: 'Closeout Agent' },
+  { value: 'Closeout Agent', label: 'Closeout Agent' },
   { value: 'agentSuggestion', label: 'Agent Suggestion' },
   { value: 'journalEntry', label: 'Journal Entry' },
   { value: 'invoice', label: 'Invoice' },
 ];
+
+const RESOURCE_TYPE_LABELS = {
+  'Auto-Closeout': 'Closeout Agent',
+  'Closeout Agent': 'Closeout Agent',
+  agentSuggestion: 'Agent Suggestion',
+  journalEntry: 'Journal Entry',
+  invoice: 'Invoice',
+};
 
 const ActorBadge = ({ actor, actorRole }) => {
   if (actorRole === 'ai_agent' || actor?.toLowerCase().includes('agent')) {
@@ -76,7 +84,7 @@ const AuditEntry = ({ entry }) => {
         {/* Resource label */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-            {entry.resourceLabel || entry.resourceType || 'Unknown resource'}
+            {entry.resourceLabel || RESOURCE_TYPE_LABELS[entry.resourceType] || entry.resourceType || 'Unknown resource'}
           </p>
           {diff && (
             <div className="mt-1">
@@ -113,7 +121,7 @@ const AuditPage = () => {
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
       .filter((e) => {
         if (cutoff && e.timestamp < cutoff) return false;
-        if (typeFilter !== 'all' && e.resourceType !== typeFilter) return false;
+        if (typeFilter !== 'all' && !(e.resourceType === typeFilter || (typeFilter === 'Closeout Agent' && e.resourceType === 'Auto-Closeout'))) return false;
         if (search) {
           const q = search.toLowerCase();
           return (
