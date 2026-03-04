@@ -10,7 +10,7 @@ const TYPE_FILTERS = [
   { key: 'all',      label: 'All',        icon: Filter },
   { key: 'closeout', label: 'Closeouts',  icon: FileText },
   { key: 'ar',       label: 'AR / Reminders', icon: Receipt },
-  { key: 'lead',     label: 'Lead Intake Agent', icon: UserPlus },
+  { key: 'lead',     label: 'Lead Parser', icon: UserPlus },
 ];
 
 const SORT_OPTIONS = [
@@ -107,7 +107,7 @@ export default function ReviewQueuePage() {
               className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Command Center
+              Compliance Panel
             </button>
           </div>
 
@@ -117,7 +117,7 @@ export default function ReviewQueuePage() {
               {[
                 { label: 'Closeouts', key: 'closeout', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400' },
                 { label: 'AR / Reminders', key: 'ar', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400' },
-                { label: 'Lead Intake Agent', key: 'lead', color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/20 dark:text-violet-400' },
+                { label: 'Lead Parser', key: 'lead', color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/20 dark:text-violet-400' },
               ].filter(s => counts[s.key] > 0).map(s => (
                 <span key={s.key} className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${s.color}`}>
                   {counts[s.key]} {s.label}
@@ -185,7 +185,7 @@ export default function ReviewQueuePage() {
                 onClick={() => navigate('/agent')}
                 className="mt-5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
               >
-                Go to Command Center
+                Go to Compliance Panel
               </button>
             )}
           </div>

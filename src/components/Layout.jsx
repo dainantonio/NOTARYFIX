@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
-  Sparkles, ClipboardList, Maximize2, Minimize2, MoreHorizontal} from 'lucide-react';
+  Sparkles, Maximize2, Minimize2, MoreHorizontal} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -120,7 +120,6 @@ const LayoutInner = ({ children }) => {
     navigate('/auth');
   };
 
-  const pendingReviewCount = (data?.agentSuggestions || []).filter(s => s.status === 'pending').length;
 
   const sidebarGroups = [
     {
@@ -138,7 +137,6 @@ const LayoutInner = ({ children }) => {
       items: [
         { icon: Sparkles, label: 'Command Center', path: '/agent', badge: 'PRO', locked: planTier === 'free' },
         { icon: Scale, label: 'Act Library', path: '/form-guide', badge: 'PRO', locked: planTier === 'free' },
-        { icon: ClipboardList, label: 'Review Queue', path: '/review', pendingCount: pendingReviewCount, badge: 'PRO', locked: planTier === 'free' },
       ]
     },
     {
