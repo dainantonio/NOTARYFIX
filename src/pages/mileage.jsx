@@ -285,7 +285,7 @@ function TripForm({ initial, onSave, onCancel, appointments }) {
       </div>
       <FInput label="Notes (optional)" value={form.notes} onChange={set('notes')} placeholder="Extra context…" />
       <div className="flex justify-end gap-3 pt-2">
-        <button onClick={onCancel} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-200 dark:bg-slate-700/70 transition-all">Cancel</button>
+        <button onClick={onCancel} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700/70 transition-all">Cancel</button>
         <button disabled={!valid} onClick={() => onSave(form)}
           className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 disabled:opacity-40 hover:brightness-110 transition-all">
           Save Trip
@@ -385,7 +385,7 @@ function StopTripModal({ liveTrip, elapsed, appointments, suggestedMiles, gpsTra
         <FInput label="Notes (optional)" value={notes} onChange={setNotes} placeholder="Client name, job type…" />
 
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onCancel} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-200 dark:bg-slate-700/70 transition-all">
+          <button onClick={onCancel} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700/70 transition-all">
             Keep Tracking
           </button>
           <button
@@ -475,7 +475,7 @@ function SplitModal({ trip, onSave, onClose }) {
         </div>
 
         <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-200 dark:bg-slate-700/70 transition-all">Cancel</button>
+          <button onClick={onClose} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700/70 transition-all">Cancel</button>
           <button disabled={!total} onClick={() => onSave({ miles1, purpose1, miles2, purpose2 })}
             className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 disabled:opacity-40 hover:brightness-110 transition-all">
             Split Trip
@@ -1538,7 +1538,7 @@ export default function Mileage() {
               </select>
             </div>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setLinkModal(null)} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-200 dark:bg-slate-700/70 transition-all">Cancel</button>
+              <button onClick={() => setLinkModal(null)} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/40 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700/70 transition-all">Cancel</button>
               <button onClick={() => attachJob(linkModal.id, selectedAppt)}
                 className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all">
                 Save

@@ -23,12 +23,14 @@ import Admin from './pages/Admin';
 import AgentPage from './pages/AgentPage';
 import AuditPage from './pages/AuditPage';
 import ReviewQueuePage from './pages/ReviewQueuePage';
+import NavFeaturePaywall from './pages/NavFeaturePaywall';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
 import PublicSignerView from './pages/PublicSignerView';
+import AppErrorBoundary from './components/AppErrorBoundary';
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
-const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing'];
+const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing', '/feature-paywall'];
 
 // ─── Guard: redirect new users to onboarding, protect app routes ──────────────
 const RouteGuard = ({ children }) => {
@@ -40,6 +42,11 @@ const RouteGuard = ({ children }) => {
   // On a protected route but onboarding not done → send to onboarding
   if (!isPublic && !onboarded) {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // If onboarding is complete, avoid rendering onboarding again
+  if (onboarded && location.pathname === '/onboarding') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
@@ -54,7 +61,8 @@ const AppLayout = ({ children }) => {
 
 function App() {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
+      <AppErrorBoundary>
       <Routes>
         {/* Public signer portal — no auth, no layout */}
         <Route path="/portal/:id" element={<PublicSignerView />} />
@@ -72,6 +80,7 @@ function App() {
                 <Route path="/compliance"  element={<Credentials />} />
                 <Route path="/credentials" element={<Credentials />} />
                 <Route path="/pricing"     element={<Pricing />} />
+                <Route path="/feature-paywall" element={<NavFeaturePaywall />} />
 
                 {/* App */}
                 <Route path="/dashboard"   element={<Dashboard />} />
@@ -100,6 +109,7 @@ function App() {
           </RouteGuard>
         } />
       </Routes>
+      </AppErrorBoundary>
     </Router>
   );
 }
