@@ -136,8 +136,8 @@ const LayoutInner = ({ children }) => {
     {
       title: 'INTELLIGENCE',
       items: [
-        { icon: Sparkles, label: 'Command Center', path: '/agent', badge: 'PRO', locked: planTier === 'free' },
-        { icon: Scale, label: 'Act Library', path: '/form-guide', badge: 'PRO', locked: planTier === 'free' },
+        { icon: Sparkles, label: 'Compliance Panel', path: '/agent', badge: 'PRO', locked: planTier === 'free' },
+        { icon: Scale, label: 'Forms Guide', path: '/form-guide', badge: 'PRO', locked: planTier === 'free' },
         { icon: ClipboardList, label: 'Review Queue', path: '/review', pendingCount: pendingReviewCount, badge: 'PRO', locked: planTier === 'free' },
       ]
     },
@@ -160,8 +160,8 @@ const LayoutInner = ({ children }) => {
   ];
 
   const moreItems = [
-    { Icon: Sparkles, label: 'Command Center', path: '/agent' },
-    { Icon: Scale, label: 'Act Library', path: '/form-guide' },
+    { Icon: Sparkles, label: 'Compliance Panel', path: '/agent' },
+    { Icon: Scale, label: 'Forms Guide', path: '/form-guide' },
     { Icon: MapPin, label: 'Mileage', path: '/mileage' },
     { Icon: Settings, label: 'Settings', path: '/settings' },
   ];
