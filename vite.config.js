@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 // GitHub Pages falls back to '/NOTARYFIX/' (the repo subdirectory).
 export default defineConfig({
   plugins: [react()],
-  base: process.env.BASE_URL || '/NOTARYFIX/',
+  base: process.env.BASE_URL || (process.env.VERCEL ? '/' : '/NOTARYFIX/'),
 })
