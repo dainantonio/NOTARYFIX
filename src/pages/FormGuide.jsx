@@ -661,7 +661,7 @@ export default function FormGuide() {
     role: 'assistant',
       response: {
       type: 'welcome',
-      title: 'Compliance Check',
+      title: 'Notarial Act Advisor',
       body: stateRule
         ? `State policies for **${stateRule.state}** are loaded from your Admin configuration — answers are state-aware. Ask me anything: "What act for an affidavit?" or "Deed of trust, signer already signed."`
         : `Ask me anything about notarial acts: "What act do I use for an affidavit?" or "Signer already signed the deed — now what?" Configure your state in Admin Settings to get state-specific fee caps and requirements.`,
@@ -723,7 +723,7 @@ export default function FormGuide() {
       role: 'assistant',
       response: {
         type: 'welcome',
-        title: 'Compliance Check',
+        title: 'Notarial Act Advisor',
         body: 'Chat cleared. Ask me anything.',
         act: null, actData: null, stateEnrichment: null,
       },
@@ -740,7 +740,7 @@ export default function FormGuide() {
             <Scale className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="font-black text-slate-900 dark:text-white text-sm">Act Library</h2>
+            <h2 className="font-black text-slate-900 dark:text-white text-sm">Forms Guide</h2>
             <p className="text-[11px] text-slate-500">AI-powered act selector</p>
           </div>
         </div>

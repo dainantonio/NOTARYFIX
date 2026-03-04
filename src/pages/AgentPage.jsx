@@ -277,7 +277,7 @@ const AgentPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-amber-500" />
-              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Agent Library</p>
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Compliance Panel</p>
             </div>
             <button
               onClick={() => navigate('/audit')}
@@ -291,7 +291,7 @@ const AgentPage = () => {
             {/* Post-Appointment Closeout */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Auto-Closeout</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Closeout Agent</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Auto-draft journal + invoice from completed appointment</p>
               </div>
               <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -331,7 +331,7 @@ const AgentPage = () => {
             {/* AR Check */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Aging AR Agent</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Collections</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scan for unpaid invoices and draft reminders</p>
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
@@ -350,7 +350,7 @@ const AgentPage = () => {
             {/* Lead Intake */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Intake Agent</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead Parser</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Parse text or emails into appointment drafts</p>
               </div>
               <p className="text-xs text-slate-400">
@@ -427,7 +427,7 @@ const AgentPage = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <Clock className="h-5 w-5 text-slate-400" />
-            Run History
+            Closeout Runs
           </h2>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
             {['all', 'approved', 'rejected', 'pending'].map((t) => (
