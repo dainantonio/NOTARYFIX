@@ -160,7 +160,7 @@ export default function Onboarding() {
     selectedPlan:         data.settings?.planTier      || 'pro',
     licenseNumber:        '',
     commissionExpiryDate: data.settings?.commissionExpiryDate || '',
-    notaryType:           data.settings?.notaryType || 'Traditional',
+    notaryType:           Array.isArray(data.settings?.notaryType) ? data.settings.notaryType : (data.settings?.notaryType ? [data.settings.notaryType] : ['Traditional']),
     autonomyMode:         data.settings?.autonomyMode || 'supervised',
     feeSchedule:          data.settings?.feeSchedule || { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
     agentMode:            data.settings?.agentMode || 'supervised',
@@ -232,7 +232,7 @@ export default function Onboarding() {
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white shadow-lg shadow-blue-600/30">N</div>
-          <span className="text-lg font-bold tracking-tight text-white">NotaryOS</span>
+          <span className="text-lg font-bold tracking-tight text-white">NotaryFix</span>
         </div>
 
         {/* Step copy */}
@@ -269,7 +269,7 @@ export default function Onboarding() {
         <div className="mb-6 flex items-center justify-between md:hidden">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-base font-bold text-white">N</div>
-            <span className="text-base font-bold text-white">NotaryOS</span>
+            <span className="text-base font-bold text-white">NotaryFix</span>
           </div>
           <span className="text-xs text-slate-400">{step + 1} / {STEPS.length}</span>
         </div>
@@ -473,19 +473,31 @@ export default function Onboarding() {
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                 </Field>
-                <Field label="Notary Type">
+                <Field label="Notary Type (select all that apply)">
                   <div className="flex gap-3 flex-wrap">
-                    {['Traditional', 'Electronic', 'RON (Remote Online)'].map(t => (
-                      <button key={t} onClick={() => set('notaryType', t)}
+                    {['Traditional', 'Electronic', 'RON (Remote Online)'].map(t => {
+                      const selected = (form.notaryType || []).includes(t);
+                      return (
+                        <button key={t} onClick={() => {
+                          const next = selected
+                            ? (form.notaryType || []).filter(x => x !== t)
+                            : [...(form.notaryType || []), t];
+                          set('notaryType', next);
+                        }}
                         className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
-                          form.notaryType === t
+                          selected
                             ? 'border-blue-500 bg-blue-600/20 text-blue-300'
                             : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'
                         }`}>
-                        {t}
-                      </button>
-                    ))}
+                          <span className="flex items-center gap-2">
+                            {selected && <span className="text-blue-400">✓</span>}
+                            {t}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
+                  <p className="text-xs text-slate-500 mt-1">Select all types you perform.</p>
                 </Field>
               </div>
             )}
@@ -672,7 +684,7 @@ export default function Onboarding() {
                     { label: 'Primary State', val: form.stateCode },
                     { label: 'Commissioned States', val: (form.commissionedStates || []).join(', ') || '—' },
                     { label: 'License',    val: form.licenseNumber || '—' },
-                    { label: 'Notary Type', val: form.notaryType },
+                    { label: 'Notary Type', val: Array.isArray(form.notaryType) ? form.notaryType.join(', ') : form.notaryType },
                     { label: 'Autonomy Mode', val: form.autonomyMode.charAt(0).toUpperCase() + form.autonomyMode.slice(1) },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                     { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
@@ -747,7 +759,7 @@ export default function Onboarding() {
               <button onClick={finish}
                 className="group flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-500 active:scale-[.98]">
                 <Zap className="h-4 w-4" />
-                Launch NotaryOS
+                Launch NotaryFix
               </button>
             )}
           </div>

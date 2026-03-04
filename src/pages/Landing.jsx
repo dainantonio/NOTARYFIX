@@ -370,7 +370,7 @@ export default function Landing() {
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-[#060d1b] shadow-lg shadow-cyan-500/30">N</div>
             <div className="leading-none text-left">
-              <p className="text-sm font-bold tracking-tight text-white">NotaryOS</p>
+              <p className="text-sm font-bold tracking-tight text-white">NotaryFix</p>
               <p className="text-[10px] text-slate-400">AI Notary Agent</p>
             </div>
           </button>
@@ -388,12 +388,12 @@ export default function Landing() {
 
           {/* CTAs */}
           <div className="hidden items-center gap-3 md:flex">
-            <Link to="/compliance" className="text-sm font-medium text-slate-300 transition-colors hover:text-white">Log in</Link>
+            <Link to="/auth" className="text-sm font-medium text-slate-300 transition-colors hover:text-white">Log in</Link>
             <button onClick={() => scrollTo('waitlist')}
               className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-400/20">
               Join Waitlist
             </button>
-            <Link to="/compliance" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
+            <Link to="/onboarding" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
               className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110 hover:shadow-cyan-500/40">
               Open Live Demo
             </Link>
@@ -415,7 +415,7 @@ export default function Landing() {
                   {link.label}
                 </button>
               ))}
-              <Link to="/compliance" onClick={() => { trackEvent('landing_cta_live_demo', { location: 'mobile_menu' }); setMobileMenuOpen(false); }}
+              <Link to="/onboarding" onClick={() => { trackEvent('landing_cta_live_demo', { location: 'mobile_menu' }); setMobileMenuOpen(false); }}
                 className="mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-center text-sm font-bold text-white">
                 See Agent Closeout
               </Link>
@@ -461,7 +461,7 @@ export default function Landing() {
 
           {/* CTAs — agent demo primary */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/compliance'); }}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'hero' }); navigate('/onboarding'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 hover:shadow-cyan-500/40 active:scale-[.98]">
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -952,7 +952,7 @@ export default function Landing() {
               <div className={`mb-5 inline-flex rounded-xl p-3 ${bg}`}><Icon className={`h-6 w-6 ${color}`} /></div>
               <h3 className="text-xl font-black text-white">{title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{desc}</p>
-              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'business_models' }); navigate('/compliance'); }}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'business_models' }); navigate('/onboarding'); }}
                 className={`mt-5 flex items-center gap-1.5 text-sm font-semibold ${color} transition-all group-hover:gap-2.5`}>
                 Get started <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -1007,7 +1007,7 @@ export default function Landing() {
                       </li>
                     ))}
                   </ul>
-                  <button onClick={() => tier.highlight || tier.cta === 'Contact Sales' ? scrollTo('waitlist') : navigate('/compliance')}
+                  <button onClick={() => tier.highlight || tier.cta === 'Contact Sales' ? scrollTo('waitlist') : navigate('/onboarding')}
                     className={`w-full rounded-xl py-3 text-sm font-black transition-all ${tier.highlight ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:brightness-110' : 'border border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'}`}>
                     {tier.cta}
                   </button>
@@ -1147,7 +1147,7 @@ export default function Landing() {
               <p className="mt-2 text-sm text-slate-400">
                 We&apos;ll reach out personally with your early access link. Expect to hear from us within 48 hours.
               </p>
-              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'waitlist_success' }); navigate('/compliance'); }}
+              <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'waitlist_success' }); navigate('/onboarding'); }}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110">
                 Try the demo now <ArrowRight className="h-4 w-4" />
               </button>
@@ -1213,7 +1213,7 @@ export default function Landing() {
             No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/compliance'); }}
+            <button onClick={() => { trackEvent('landing_cta_agent_closeout', { location: 'final_cta' }); navigate('/onboarding'); }}
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-black text-white shadow-2xl shadow-cyan-500/25 transition-all hover:brightness-110 active:scale-[.98]">
               See Agent Closeout
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -1236,7 +1236,7 @@ export default function Landing() {
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4 flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-[#060d1b]">N</div>
-                <span className="text-sm font-black text-white">NotaryOS</span>
+                <span className="text-sm font-black text-white">NotaryFix</span>
               </div>
               <p className="mb-5 max-w-[240px] text-sm leading-relaxed text-slate-500">
                 The complete operating system for modern notary professionals. Scheduling, compliance, invoicing, and AI — all in one place.
