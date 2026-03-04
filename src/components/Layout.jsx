@@ -6,8 +6,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
-  Sparkles, Maximize2, Minimize2, MoreHorizontal
-} from 'lucide-react';
+  Sparkles, Maximize2, Minimize2, MoreHorizontal} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -122,6 +121,7 @@ const LayoutInner = ({ children }) => {
     navigate('/auth');
   };
 
+
   const sidebarGroups = [
     {
       title: 'WORK',
@@ -216,6 +216,37 @@ const LayoutInner = ({ children }) => {
                   {group.title}
                 </div>
               )}
+              {group.items.map((item) => {
+                if (item.agencyOnly && planTier !== 'agency') return null;
+                const active = isActivePath(item.path);
+                
+                return (
+                  <Link 
+                    key={item.path} 
+                    to={getItemTarget(item)}
+                    state={getItemState(item)} 
+                    title={isSidebarCollapsed ? item.label : item.locked ? `${item.label} — Upgrade required` : ''}
+                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all group ${item.locked ? 'opacity-60' : ''} ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                  >
+                    <item.icon className={`w-5 h-5 transition-colors ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+                    {!isSidebarCollapsed && (
+                      <>
+                        <span className="animate-fade-in flex-1">{item.label}</span>
+                        {item.pendingCount > 0 && !item.locked ? <span className="rounded-full bg-blue-600 text-white px-2 py-0.5 text-[10px] font-bold min-w-[1.25rem] text-center">{item.pendingCount}</span> : null}
+                        {item.locked ? (
+                          <span className="flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500 dark:text-slate-400">
+                            <Lock className="h-2.5 w-2.5" />
+                            {item.badge || 'LOCKED'}
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
 
               <nav className="space-y-1">
                 {group.items
@@ -316,18 +347,45 @@ const LayoutInner = ({ children }) => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 min-w-0">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white/70 dark:bg-slate-950/50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
-          <div className="flex items-center justify-between px-4 md:px-8 h-16">
-            <div className="flex items-center gap-3">
-              <button
-                className="md:hidden p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                onClick={() => setIsMobileMenuOpen(true)}
-              >
-                <Menu className="w-5 h-5 text-slate-600 dark:text-slate-200" />
-              </button>
+      {/* Mobile Wrapper */}
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} min-w-0`}>
+        <header className="md:hidden bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+          <div className="flex items-center gap-2">
+             {businessLogo ? <img src={businessLogo} alt="Business logo" className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700" /> : <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">N</div>}
+             <span className="font-bold text-slate-900 dark:text-white">NotaryOS</span>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon" onClick={() => setIsCommandPaletteOpen(true)}><Search className="w-5 h-5 dark:text-white" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}><Menu className="w-6 h-6 dark:text-white" /></Button>
+          </div>
+        </header>
+
+        {isMobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-40 bg-slate-800/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="bg-white dark:bg-slate-900 w-4/5 max-w-xs h-full p-5 shadow-xl border-r border-slate-200 dark:border-slate-700 overflow-y-auto" onClick={e => e.stopPropagation()} style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">N</div>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">NotaryOS</span>
+              </div>
+              
+              <nav className="space-y-6">
+                {sidebarGroups.map(group => (
+                  <div key={group.title} className="space-y-1">
+                    <div className="px-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{group.title}</div>
+                    {group.items.map((item) => {
+                      if (item.agencyOnly && planTier !== 'agency') return null;
+                      const active = isActivePath(item.path);
+                      return (
+                        <Link key={item.path} to={getItemTarget(item)}
+                    state={getItemState(item)} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'} ${item.locked ? 'opacity-60' : ''}`}>
+                          <item.icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />{item.label}
+                          {item.locked && <span className="ml-auto flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500"><Lock className="h-2.5 w-2.5" />{item.badge || 'LOCKED'}</span>}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
+              </nav>
 
               <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-100/80 dark:bg-slate-800/60 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
                 <Search className="w-4 h-4 text-slate-400" />
@@ -381,31 +439,26 @@ const LayoutInner = ({ children }) => {
           {children}
         </main>
 
-        {/* Bottom Nav - Mobile */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 dark:bg-slate-950/70 backdrop-blur-xl border-t border-slate-200/50 dark:border-slate-800/50">
-          <div className="flex items-center justify-around px-2" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-            {mobileBottomItems.map((item) => {
-              const active = isActivePath(item.path);
-              const Icon = item.Icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl min-w-[52px] ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
-                >
-                  <Icon className="h-[22px] w-[22px]" />
-                  <span className="text-[10px] font-semibold tracking-wide">{item.label}</span>
-                </Link>
-              );
-            })}
-            <button
-              onClick={() => setIsMoreDrawerOpen(true)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl min-w-[52px] ${isMoreActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
-            >
-              <MoreHorizontal className="h-[22px] w-[22px]" />
-              <span className="text-[10px] font-semibold tracking-wide">More</span>
-            </button>
-          </div>
+        {/* ── Mobile Bottom Nav Bar ─────────────────────────────────────── */}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 flex items-center justify-around px-1"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}>
+          {mobileBottomItems.map(item => {
+            const active = isActivePath(item.path);
+            return (
+              <Link key={item.path} to={item.path}
+                className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl transition-colors min-w-[52px] ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <item.Icon className="h-[22px] w-[22px]" />
+                <span className="text-[10px] font-semibold tracking-wide">{item.label}</span>
+              </Link>
+            );
+          })}
+          <button 
+            onClick={() => setIsMoreDrawerOpen(true)}
+            className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl min-w-[52px] ${isMoreActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
+          >
+            <MoreHorizontal className="h-[22px] w-[22px]" />
+            <span className="text-[10px] font-semibold tracking-wide">More</span>
+          </button>
         </nav>
 
         {/* More Drawer - Mobile */}
@@ -423,21 +476,20 @@ const LayoutInner = ({ children }) => {
                   {moreItems.map(item => {
                     const active = isActivePath(item.path);
                     return (
-                      <Link
-                        key={item.path}
-                        to={getItemTarget(item)}
-                        state={getItemState(item)}
-                        onClick={() => setIsMoreDrawerOpen(false)}
-                        className="flex flex-col items-center gap-2 group"
-                      >
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-active:scale-95 transition-transform ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
-                          <item.Icon className="w-6 h-6" />
-                        </div>
-                        <span className={`text-[10px] font-medium text-center leading-tight ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.label}</span>
-                        {item.locked ? <span className="flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500"><Lock className="h-2.5 w-2.5" />{item.badge || 'LOCKED'}</span> : null}
-                      </Link>
-                    );
-                  })}
+                    <Link 
+                      key={item.path} 
+                      to={getItemTarget(item)}
+                      state={getItemState(item)}
+                      onClick={() => setIsMoreDrawerOpen(false)}
+                      className="flex flex-col items-center gap-2 group"
+                    >
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-active:scale-95 transition-transform ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
+                        <item.Icon className="w-6 h-6" />
+                      </div>
+                      <span className={`text-[10px] font-medium text-center leading-tight ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{item.label}</span>
+                      {item.locked ? <span className="flex items-center gap-1 rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-500"><Lock className="h-2.5 w-2.5" />{item.badge || 'LOCKED'}</span> : null}
+                    </Link>
+                  );})}
                 </div>
               </div>
             </div>

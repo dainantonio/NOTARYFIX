@@ -7,7 +7,7 @@ import {
   Zap, Shield, BarChart2, Settings2, BellRing, Bell, UserPlus, RefreshCw, Send, X,
   ScrollText, DollarSign, Calendar
 } from 'lucide-react';
-import { Card, CardContent, Button } from '../components/UI';
+import { Card, CardContent, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { AgentSuggestionCard } from '../components/AgentSuggestionCard';
 import { toast } from '../hooks/useLinker';
