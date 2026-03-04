@@ -277,7 +277,7 @@ const AgentPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-amber-500" />
-              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Compliance Panel</p>
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Command Center</p>
             </div>
             <button
               onClick={() => navigate('/audit')}
