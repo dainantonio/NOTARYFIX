@@ -18,12 +18,13 @@ const NAV_LINKS = [
 
 // Agent closeout live demo steps — shown in hero
 const AGENT_STEPS = [
-  { icon: '📅', label: 'Appointment completed',        status: 'done',    ms: 0    },
-  { icon: '🤖', label: 'Agent triggered automatically', status: 'done',    ms: 600  },
-  { icon: '📓', label: 'Journal entry drafted',         status: 'done',    ms: 1200 },
-  { icon: '🧾', label: 'Invoice generated',             status: 'done',    ms: 1800 },
-  { icon: '⚠️', label: 'Compliance check passed',       status: 'pass',    ms: 2400 },
-  { icon: '✅', label: 'Awaiting your approval',        status: 'pending', ms: 3000 },
+  { icon: '📅', label: 'Appointment completed',                          status: 'done',    ms: 0    },
+  { icon: '🤖', label: 'Agent triggered automatically',                  status: 'done',    ms: 500  },
+  { icon: '🗺️', label: 'Planner maps task → journal + invoice + verify', status: 'done',    ms: 1000 },
+  { icon: '📓', label: 'Journal entry drafted',                          status: 'done',    ms: 1500 },
+  { icon: '🧾', label: 'Invoice generated from fee schedule',            status: 'done',    ms: 2000 },
+  { icon: '🔬', label: 'Verifier attaches citations + confidence score', status: 'pass',    ms: 2600 },
+  { icon: '✅', label: 'Awaiting your approval in Command Center',       status: 'pending', ms: 3200 },
 ];
 
 const STATS = [
@@ -47,14 +48,14 @@ const OLD_WAY = [
 const NEW_WAY = [
   { title: 'Agent-Drafted Invoices', desc: 'Your agent drafts professional invoices automatically after each completed appointment.', icon: Check },
   { title: 'Agent-Assisted Journaling', desc: 'Your agent prepares compliant journal drafts with state-specific prompts ready for review.', icon: Check },
-  { title: 'Active Compliance Guardrails', desc: 'Your agent flags fee, ID, and act-level risks using grounded 50-state policy records.', icon: Check },
+  { title: 'Active Compliance Guardrails', desc: 'Your agent flags fee, ID, and act-level risks with grounded citations — citing the exact policy record and last-updated date behind every decision.', icon: Check },
   { title: 'Agent-Ready Team Dispatch', desc: 'Coordinate multi-notary teams while agent drafts keep closeout workflows consistent.', icon: Check },
 ];
 
 const HOW_STEPS = [
   { step: '01', title: 'Book the Job', desc: 'Capture signer details with Smart Fill and templates.', icon: CalendarCheck },
   { step: '02', title: 'Complete Signing', desc: 'Handle the appointment with guided compliance checks.', icon: FileCheck2 },
-  { step: '03', title: 'Agent Closes Out', desc: 'AI Closeout Agent drafts journal + invoice and flags risks.', icon: Bot },
+  { step: '03', title: 'Agent Closes Out', desc: 'Agent Runtime drafts journal + invoice, verifies compliance with grounded citations, and queues everything in Command Center.', icon: Bot },
   { step: '04', title: 'Approve & Get Paid', desc: 'Review, approve, and send with one click.', icon: Wallet },
 ];
 
@@ -72,12 +73,12 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Closeout Agent', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    features: ['Unlimited Appointments', 'AI Agent Runtime + Citations', 'Command Center', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
     name: 'Agency', price: 79, yearly: 63, sub: 'For scaling operations.',
-    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Dedicated Manager', 'Standardized UI System'],
+    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Compliance Manager Role', 'Dedicated Manager', 'Standardized UI System'],
     cta: 'Contact Sales', highlight: false,
   },
 ];
@@ -86,25 +87,27 @@ const COMPARE_ROWS = [
   { feature: 'Appointments per month', starter: '5',         pro: 'Unlimited',              agency: 'Unlimited + team routing', proHighlight: true  },
   { feature: 'Journal workflows',      starter: 'Basic',     pro: '✓ Advanced + templates', agency: '✓ Team oversight',         proHighlight: true  },
   { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
-  { feature: 'AI closeout agent',      starter: '—',         pro: '✓ Included',             agency: '✓ Included',               proHighlight: true  },
+  { feature: 'AI agent runtime',       starter: '—',         pro: '✓ Runtime + citations',  agency: '✓ Runtime + citations',    proHighlight: true  },
   { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
   { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
   { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
 ];
 
 const FAQ = [
-  { q: 'What are the core services of NotaryOS?', a: 'NotaryOS provides an AI notary agent for appointment closeout, plus scheduling, journaling, invoicing, and compliance controls. Agency adds team dispatch and multi-notary coordination.' },
-  { q: 'How does the AI Closeout Agent work?', a: 'Our AI is grounded in 50-state jurisdiction policy records. It provides real-time guidance on fee caps, ID requirements, and state-specific notarial acts, then drafts next-step closeout actions so every signing stays compliant.' },
-  { q: 'Can I manage my entire team on NotaryOS?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
+  { q: 'What are the core services of NotaryFix?', a: 'NotaryFix provides an AI notary agent runtime for appointment closeout, plus scheduling, journaling, invoicing, and compliance controls. Agency adds team dispatch and multi-notary coordination. Every AI decision is grounded in admin-published state policy records.' },
+  { q: 'How does the AI Agent Runtime work?', a: 'When you mark an appointment complete, the Agent Runtime fires automatically: a Planner maps your task into steps (journal → invoice → verify), Tools execute each step using your existing data, and a Verifier runs compliance checks then attaches grounded citations — showing exactly which policy record justified each decision. All drafts queue in Command Center for your one-tap approval.' },
+  { q: 'What are grounded citations?', a: 'Every AI suggestion includes citation chips: the exact admin-published policy record that grounded it (e.g. "Fee capped at $15 per VA Fee Schedule, updated Jan 2025"). Citations link to the official source so you can verify the rule yourself. If no admin policy record exists yet, the agent falls back to hardcoded baselines and flags it.' },
+  { q: 'Can I manage my entire team on NotaryFix?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
-  { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryOS is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
+  { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryFix is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
   { q: 'Can I switch plans or cancel anytime?', a: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.' },
   { q: 'How much time does the agent actually save?', a: 'Based on role profiles: Mobile Notaries recover ~9.5 agent hours per week, Loan Signing Agents recover ~14.2 hrs, and Signing Agencies recover 32+ hrs across their team. That\'s time the agent spends on closeouts, journaling, and invoicing — not you.' },
+  { q: 'What is the Command Center?', a: 'Command Center is your proactive AI hub — it shows pending suggestions from the agent, live KPIs, playbook shortcuts, and a full history of agent actions. It includes a live badge showing pending suggestion count. Use it to stay on top of your business; use the Review Queue when you need focused processing with filters and bulk actions.' },
 ];
 
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
-  { icon: Sparkles,    label: 'AI Closeout Agent'    },
+  { icon: Sparkles,    label: 'AI Agent Runtime'     },
   { icon: BadgeCheck,  label: '50-State Workflows'   },
   { icon: ShieldCheck, label: 'No Credit Card Needed'},
 ];
@@ -112,23 +115,23 @@ const TRUST_ITEMS = [
 const FOOTER_CONTENT = {
   terms: {
     title: 'Terms of Use',
-    body: `Effective: January 1, 2025\n\n1. Acceptance. By using NotaryOS, you agree to these Terms. If you disagree, do not use the service.\n\n2. License. We grant you a limited, non-exclusive, non-transferable license to use NotaryOS for lawful notary business purposes only.\n\n3. Prohibited Use. You may not reverse engineer, resell, or use NotaryOS to facilitate fraud, identity theft, or any unlawful notarial act.\n\n4. Legal Disclaimer. NotaryOS provides workflow software, not legal counsel. Always confirm your state notarial statutes, fee caps, and journal retention requirements.\n\n5. Termination. We may terminate accounts violating these Terms without notice. You may cancel at any time.\n\n6. Limitation of Liability. NotaryOS shall not be liable for indirect, incidental, or consequential damages arising from use of the service.\n\nQuestions? legal@notaryos.com`,
+    body: `Effective: January 1, 2025\n\n1. Acceptance. By using NotaryFix, you agree to these Terms. If you disagree, do not use the service.\n\n2. License. We grant you a limited, non-exclusive, non-transferable license to use NotaryOS for lawful notary business purposes only.\n\n3. Prohibited Use. You may not reverse engineer, resell, or use NotaryOS to facilitate fraud, identity theft, or any unlawful notarial act.\n\n4. Legal Disclaimer. NotaryFix provides workflow software, not legal counsel. Always confirm your state notarial statutes, fee caps, and journal retention requirements.\n\n5. Termination. We may terminate accounts violating these Terms without notice. You may cancel at any time.\n\n6. Limitation of Liability. NotaryFix shall not be liable for indirect, incidental, or consequential damages arising from use of the service.\n\nQuestions? legal@notaryfix.com`,
   },
   privacy: {
     title: 'Privacy Policy',
-    body: `1. Data We Collect. We collect information you provide (name, email, business details) and usage data to improve the product.\n\n2. How We Use It. Your data powers your NotaryOS workspace, compliance features, and customer support. We never sell your data to third parties.\n\n3. Signer Data. Signer information is fully isolated and private. It is not shared, analyzed, or sold under any circumstances.\n\n4. Security. We use encrypted transport (TLS 1.3), role-based access controls, and least-privilege principles throughout our infrastructure.\n\n5. Your Rights. You may request access, correction, or deletion of your data at any time. Contact privacy@notaryos.com.\n\n6. Cookies. We use only functional session cookies. No advertising or tracking cookies.`,
+    body: `1. Data We Collect. We collect information you provide (name, email, business details) and usage data to improve the product.\n\n2. How We Use It. Your data powers your NotaryFix workspace, compliance features, and customer support. We never sell your data to third parties.\n\n3. Signer Data. Signer information is fully isolated and private. It is not shared, analyzed, or sold under any circumstances.\n\n4. Security. We use encrypted transport (TLS 1.3), role-based access controls, and least-privilege principles throughout our infrastructure.\n\n5. Your Rights. You may request access, correction, or deletion of your data at any time. Contact privacy@notaryfix.com.\n\n6. Cookies. We use only functional session cookies. No advertising or tracking cookies.`,
   },
   security: {
     title: 'Security at NotaryOS',
-    body: `NotaryOS is built with a security-first architecture:\n\n• Encryption in transit — All data transmitted over TLS 1.3\n• Encrypted at rest — AES-256 for all stored data\n• Role-based access — Least-privilege model across all user roles\n• SOC 2 Type II — Certified compliance program\n• Isolated signer data — Journal records never cross user boundaries\n• Regular audits — Third-party penetration testing quarterly\n\nReport security issues to security@notaryos.com`,
+    body: `NotaryOS is built with a security-first architecture:\n\n• Encryption in transit — All data transmitted over TLS 1.3\n• Encrypted at rest — AES-256 for all stored data\n• Role-based access — Least-privilege model across all user roles\n• SOC 2 Type II — Certified compliance program\n• Isolated signer data — Journal records never cross user boundaries\n• Regular audits — Third-party penetration testing quarterly\n\nReport security issues to security@notaryfix.com`,
   },
   contact: {
     title: 'Contact Us',
-    body: `General: hello@notaryos.com\nSupport: support@notaryos.com\nLegal: legal@notaryos.com\nSecurity: security@notaryos.com\nAgency Sales: sales@notaryos.com\n\nFor agency pricing, team onboarding, or custom integrations, contact our sales team — we respond within one business day.`,
+    body: `General: hello@notaryfix.com\nSupport: support@notaryfix.com\nLegal: legal@notaryfix.com\nSecurity: security@notaryfix.com\nAgency Sales: sales@notaryfix.com\n\nFor agency pricing, team onboarding, or custom integrations, contact our sales team — we respond within one business day.`,
   },
   about: {
     title: 'About NotaryOS',
-    body: `NotaryOS is built by a team who believe notary professionals deserve enterprise-grade tools without enterprise complexity.\n\nWe started with a simple question: why are notaries still running their businesses out of spreadsheets and paper logs in 2025? No one had built something good enough — so we did.\n\nOur team includes former notaries, compliance attorneys, and product engineers who have spent years studying where notary workflows break down in the field.\n\nWe are headquartered in Columbus, Ohio, and proudly serve notaries across all 50 states.`,
+    body: `NotaryFix is built by a team who believe notary professionals deserve enterprise-grade tools without enterprise complexity.\n\nWe started with a simple question: why are notaries still running their businesses out of spreadsheets and paper logs in 2025? No one had built something good enough — so we did.\n\nNotaryFix features a full Agent Runtime (Planner → Tools → Verifier) that fires automatically after every signing, drafts your journal and invoice, and attaches grounded compliance citations to every decision.\n\nOur team includes former notaries, compliance attorneys, and product engineers who have spent years studying where notary workflows break down in the field.\n\nWe are headquartered in Columbus, Ohio, and proudly serve notaries across all 50 states.`,
   },
   cookies: {
     title: 'Cookie Policy',
@@ -258,8 +261,8 @@ export default function Landing() {
   // Chips are fully self-contained — answers are inline strings, no FAQ array dependency
   const FAQ_STARTER_CHIPS = [
     {
-      label: 'How does the AI closeout agent work?',
-      answer: "The moment you mark an appointment complete, the agent triggers automatically: it drafts your journal, generates a compliant invoice, flags any fee or ID-level risks, and queues everything for your approval. Supervised Mode by default — flip to Autonomous when you're ready to go hands-free.",
+      label: 'How does the AI Agent Runtime work?',
+      answer: "The moment you mark an appointment complete, the Agent Runtime fires automatically: a Planner maps your task into steps, Tools execute each one (journal draft, invoice generation), and a Verifier runs compliance checks then attaches grounded citations — showing exactly which state policy record justified each decision. Everything queues in Command Center for your one-tap approval. Supervised Mode by default — flip to Autonomous when you're ready to go hands-free.",
     },
     {
       label: 'Can I manage a team of notaries?',
@@ -280,6 +283,14 @@ export default function Landing() {
     {
       label: 'Can I cancel anytime?',
       answer: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.',
+    },
+    {
+      label: 'What are grounded citations?',
+      answer: "Every AI suggestion includes citation chips showing the exact admin-published policy record behind each decision — fee cap, ID rule, or notarial act requirement. Chips show the record name, the value, and when it was last updated. If the admin hasn't published a record yet, the agent falls back to hardcoded baselines and flags the gap.",
+    },
+    {
+      label: 'What is the Command Center?',
+      answer: 'Command Center is your proactive AI hub. It shows live pending-suggestion badges, KPI cards, agent playbook shortcuts, and full action history. The Review Queue is for focused batch processing (filters, sort, bulk approve). They work together: Command Center surfaces the big picture, Review Queue handles the queue.',
     },
   ];
 
@@ -441,7 +452,7 @@ export default function Landing() {
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
-              AI Notary Agent · 2025
+              AI Agent Runtime · 2025
             </span>
           </div>
 
@@ -456,7 +467,7 @@ export default function Landing() {
 
           {/* Subtext — explicit agent actions */}
           <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-slate-400 md:text-xl">
-            After every signing, NotaryOS automatically drafts your journal, generates your invoice, and flags compliance risks in seconds.
+            After every signing, NotaryFix's Agent Runtime automatically drafts your journal, generates your invoice, attaches grounded compliance citations, and queues everything for your one-tap approval.
           </p>
 
           {/* CTAs — agent demo primary */}
@@ -627,7 +638,7 @@ export default function Landing() {
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">grounded in state law.</span>
             </h2>
             <p className="mt-4 text-lg text-slate-400">Ask anything — fee caps, ID rules, thumbprint requirements, RON statutes. Your agent knows all 50 states cold.</p>
-            <p className="mt-3 text-sm font-medium text-cyan-300/80 border-l-2 border-cyan-400/40 pl-3">NotaryOS doesn't just answer questions — it prepares the next compliant actions automatically.</p>
+            <p className="mt-3 text-sm font-medium text-cyan-300/80 border-l-2 border-cyan-400/40 pl-3">NotaryFix doesn't just answer questions — it prepares the next compliant actions automatically, grounded in admin-published jurisdiction records.</p>
             <div className="mt-8 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1.5">
               <input className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 value={aiInput} onChange={e => setAiInput(e.target.value)}
@@ -1239,7 +1250,7 @@ export default function Landing() {
                 <span className="text-sm font-black text-white">NotaryFix</span>
               </div>
               <p className="mb-5 max-w-[240px] text-sm leading-relaxed text-slate-500">
-                The complete operating system for modern notary professionals. Scheduling, compliance, invoicing, and AI — all in one place.
+                The AI-native platform for modern notary professionals. Agent Runtime, grounded compliance citations, scheduling, invoicing, and team tools — all in one place.
               </p>
               <div className="flex gap-2">
                 {['𝕏', 'in', 'f', '◎'].map(s => (
@@ -1296,7 +1307,7 @@ export default function Landing() {
 
           {/* Bottom bar */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-xs text-slate-600">© {new Date().getFullYear()} NotaryOS Inc. All rights reserved. NotaryOS provides workflow software, not legal counsel.</p>
+            <p className="text-xs text-slate-600">© {new Date().getFullYear()} NotaryFix Inc. All rights reserved. NotaryFix provides workflow software, not legal counsel.</p>
             <div className="flex gap-5">
               {[
                 { label: 'Terms of Use',   key: 'terms'   },
