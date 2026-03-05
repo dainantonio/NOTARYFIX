@@ -296,7 +296,7 @@ export default function Onboarding() {
             {step === 0 && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-white">Welcome to NotaryOS</h1>
+                  <h1 className="text-3xl font-bold tracking-tight text-white">Welcome to NotaryFix</h1>
                   <p className="mt-2 text-sm text-slate-400">
                     Let's take 2 minutes to set up your workspace. You can change anything later in Settings.
                   </p>
