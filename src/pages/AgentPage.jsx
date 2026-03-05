@@ -146,10 +146,31 @@ const AgentPage = () => {
     return { total: runs.length, pending: suggestions.length, approved: approved.length, rejected: rejected.length, approvalRate, editRate };
   }, [data.agentSuggestions, suggestions]);
 
+  // FIX 10: route based on suggestion type after approval
+  const typeGroup = (suggestion) => {
+    const t = suggestion.type || '';
+    if (t === 'closeout' || t.includes('closeout')) return 'closeout';
+    if (t === 'ar_reminder' || t.includes('ar') || t.includes('reminder')) return 'ar';
+    if (t === 'lead_intake' || t.includes('lead')) return 'lead';
+    return 'other';
+  };
+  const APPROVE_TOAST = {
+    closeout: 'Journal entry + invoice drafted ✓',
+    ar:       'AR reminder sent — check Invoices ✓',
+    lead:     'Lead captured — view in Clients ✓',
+    other:    'Suggestion approved ✓',
+  };
+  const APPROVE_ROUTE = {
+    closeout: '/journal',
+    ar:       '/invoices',
+    lead:     '/clients',
+    other:    '/agent',
+  };
   const handleApprove = (suggestion) => {
     approveAgentSuggestion?.(suggestion.id);
-    toast.success(`Approved — journal + invoice added`);
-    navigate('/journal');
+    const group = typeGroup(suggestion);
+    toast.success(APPROVE_TOAST[group]);
+    navigate(APPROVE_ROUTE[group]);
   };
 
   const handleEdit = (suggestion) => {
@@ -393,6 +414,15 @@ const AgentPage = () => {
             Pending Review
           </h2>
           <Badge variant="secondary">{suggestions.length} Drafts</Badge>
+          {suggestions.length > 0 && (
+            <button
+              onClick={() => navigate('/review')}
+              className="ml-auto text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {/* FIX 11: Review Queue as focused drill-down from Command Center */}
+              Review All →
+            </button>
+          )}
         </div>
 
         {suggestions.length > 0 ? (

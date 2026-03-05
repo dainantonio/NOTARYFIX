@@ -89,6 +89,9 @@ const LayoutInner = ({ children }) => {
   const aiTrainerGate = getGateState('aiTrainer', gateContext);
   const adminGate = getGateState('admin', gateContext);
 
+  // FIX 12: live badge count for Command Center nav item
+  const pendingAgentCount = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
+
   // Fullscreen state sync
   useEffect(() => {
     const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -141,7 +144,7 @@ const LayoutInner = ({ children }) => {
     {
       title: 'INTELLIGENCE',
       items: [
-        { icon: Sparkles, label: 'Command Center', path: '/agent', badge: 'PRO', locked: planTier === 'free', featureKey: 'aiTrainer', paywallTitle: 'Command Center' },
+        { icon: Sparkles, label: 'Command Center', path: '/agent', badge: 'PRO', locked: planTier === 'free', featureKey: 'aiTrainer', paywallTitle: 'Command Center', pendingCount: planTier !== 'free' ? pendingAgentCount : 0 },
         { icon: Scale, label: 'Act Library', path: '/form-guide', badge: 'PRO', locked: planTier === 'free', featureKey: 'aiTrainer', paywallTitle: 'Act Library' },
       ]
     },
@@ -165,7 +168,7 @@ const LayoutInner = ({ children }) => {
 
   const moreItems = [
     { Icon: Wallet, label: 'Invoices', path: '/invoices' },
-    { Icon: Sparkles, label: 'Command Center', path: '/agent', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Command Center' },
+    { Icon: Sparkles, label: 'Command Center', path: '/agent', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Command Center', pendingCount: planTier !== 'free' ? pendingAgentCount : 0 },
     { Icon: Scale, label: 'Act Library', path: '/form-guide', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Act Library' },
     { Icon: MapPin, label: 'Mileage', path: '/mileage' },
     { Icon: Settings, label: 'Settings', path: '/settings' },
