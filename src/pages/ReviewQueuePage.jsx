@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Clock, Filter, Inbox, Sparkles, FileText, Receipt, UserPlus, Bell, RefreshCw } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { toast } from '../hooks/useLinker';
 import { AgentSuggestionCard } from '../components/AgentSuggestionCard';
 
 const TYPE_FILTERS = [
@@ -67,8 +68,17 @@ export default function ReviewQueuePage() {
     return list;
   }, [allPending, typeFilter, sortKey]);
 
+  // FIX 10: contextual toast on approval; stay in queue so user can batch-review
+  const APPROVE_TOAST = {
+    closeout: 'Journal entry + invoice drafted ✓',
+    ar:       'AR reminder sent — check Invoices ✓',
+    lead:     'Lead captured — view in Clients ✓',
+    other:    'Suggestion approved ✓',
+  };
   function handleApprove(suggestion) {
     approveAgentSuggestion?.(suggestion.id);
+    const group = typeGroup(suggestion);
+    toast.success(APPROVE_TOAST[group] || 'Approved ✓');
   }
 
   function handleReject(suggestion) {
