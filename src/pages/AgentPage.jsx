@@ -11,6 +11,7 @@ import { Card, CardContent, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { AgentSuggestionCard } from '../components/AgentSuggestionCard';
 import { toast } from '../hooks/useLinker';
+import { useAgentTriggers } from '../hooks/useAgentTriggers';
 
 // ─── KPI card ────────────────────────────────────────────────────────────────
 const KpiCard = ({ label, value, sub, color = 'text-slate-800 dark:text-white', icon: Icon }) => (
@@ -34,6 +35,25 @@ const AutoBadge = ({ mode }) => {
     autonomous:  { label: 'Autonomous',      color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700' },
   };
   const cfg = map[mode] || map.assistive;
+
+  // ── Trigger status strip ──────────────────────────────────────────────────
+  const TriggerStatusStrip = () => (
+    <div className="flex flex-wrap items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400">
+      <span className="flex items-center gap-1">
+        <span className={`inline-block h-1.5 w-1.5 rounded-full ${triggerStatus.lastARScan ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+        AR scan: {triggerStatus.lastARScan || 'not yet today'}
+      </span>
+      <span className="flex items-center gap-1">
+        <span className={`inline-block h-1.5 w-1.5 rounded-full ${triggerStatus.lastDigest ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+        Digest: {triggerStatus.lastDigest || 'not yet this week'}
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+        {triggerStatus.processedCompletions} completions processed
+      </span>
+    </div>
+  );
+
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${cfg.color}`}>
       <Zap className="h-3 w-3" />
@@ -97,6 +117,15 @@ const RunRow = ({ run }) => {
 const AgentPage = () => {
   const navigate = useNavigate();
   const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion, runAgingARAgent, runARScan, runLeadIntakeAgent, updateReminderStatus, runCloseoutAgentWithAI, generateWeeklySummary } = useData();
+
+  // ── Event-driven agent triggers (auto-run on data conditions) ───────────────
+  const triggerStatus = useAgentTriggers({
+    data,
+    runARScan,
+    generateWeeklySummary,
+    runCloseoutAgent: runCloseoutAgentWithAI,
+    enabled: data?.settings?.enableAutoCloseoutAgent !== false,
+  });
   const [historyTab, setHistoryTab] = useState('all'); // all, approved, rejected, pending
   const [leadText, setLeadText] = useState('');
   const [leadParsing, setLeadParsing] = useState(false);
@@ -283,6 +312,9 @@ const AgentPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Trigger status strip */}
+      <TriggerStatusStrip />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

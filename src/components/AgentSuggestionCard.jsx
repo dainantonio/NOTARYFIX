@@ -1,7 +1,8 @@
 // src/components/AgentSuggestionCard.jsx
 // Phase 1 — Suggestion card: Approve / Edit / Reject with confidence + missing fields
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt, UserPlus, DollarSign, Bell, Phone, Mail, MapPin, Calendar, Save, X } from 'lucide-react';
+import { useFeedbackLoop } from '../hooks/useFeedbackLoop';
+import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt, UserPlus, DollarSign, Bell, Phone, Mail, MapPin, Calendar, Save, X, BookOpen, ExternalLink } from 'lucide-react';
 
 const CONFIDENCE_COLORS = {
   high:   { bar: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800' },
@@ -41,6 +42,43 @@ const ActionLabel = ({ type }) => {
   return <span>{labels[type] || type}</span>;
 };
 
+
+// ── Citation chips — grounded policy links ────────────────────────────────────
+const CitationChips = ({ citations = [] }) => {
+  if (!citations.length) return null;
+  return (
+    <div className="mx-4 mb-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5 flex items-center gap-1">
+        <BookOpen className="h-3 w-3" />
+        Policy citations
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {citations.map((c) => (
+          <span
+            key={c.policyId}
+            title={c.lastUpdated ? `Updated ${new Date(c.lastUpdated).toLocaleDateString()}` : undefined}
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-600 dark:text-slate-400"
+          >
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{c.label}:</span>
+            {c.value}
+            {c.officialSourceUrl && (
+              <a
+                href={c.officialSourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="ml-0.5 text-blue-400 hover:text-blue-600"
+              >
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            )}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // FIX 4: Split onEdit into onOpenEdit (navigate) and onPatchDraft (id+patch save)
 // Keep onEdit for backward compat with legacy callers.
 export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatchDraft, onEdit, onReject }) => {
@@ -55,6 +93,8 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
   });
 
   const score = suggestion.confidenceScore ?? 65;
+  // Feedback loop — record when user saves edits to AI drafts
+  const { recordEdit } = useFeedbackLoop({ addFeedback: null, feedbackHistory: [] });
   const tier = confidenceTier(score);
   const colors = CONFIDENCE_COLORS[tier];
   const missingFields = suggestion.missingFields || [];
@@ -78,6 +118,8 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
     if (typeof onPatchDraft === 'function') {
       onPatchDraft(suggestion.id, patch);
     }
+    // Record the diff for feedback loop (adjusts future confidence scores)
+    recordEdit(suggestion, patch.draftJournal || {});
     setIsEditingInline(false);
   };
 
@@ -509,6 +551,11 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
             </div>
           )}
         </div>
+      )}
+
+      {/* Citation chips — grounded policy references */}
+      {expanded && !isEditingInline && suggestion.citations?.length > 0 && (
+        <CitationChips citations={suggestion.citations} />
       )}
 
       {/* Footer: actions */}
