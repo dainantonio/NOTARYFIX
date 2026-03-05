@@ -10,6 +10,7 @@ import {
   MoreVertical, Zap, Shield, DollarSign, BarChart3, Target, Copy,
   Bell, Printer, Satellite, WifiOff, Loader2,
 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { toast } from '../hooks/useLinker';
 
@@ -1232,37 +1233,27 @@ export default function Mileage() {
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pb-24 space-y-4 sm:space-y-6">
+    <div className="min-h-[calc(100vh-6rem)] px-4 py-5 sm:px-6 sm:py-7 md:px-8 md:py-8 mx-auto max-w-[1400px] space-y-5 sm:space-y-6 pb-24">
 
       {/* ── PAGE HEADER ─────────────────────────────────────────────────────── */}
-      <div className="app-hero-card rounded-2xl p-4 sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <Card className="app-hero-card">
+        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700">
-                <Car className="h-4 w-4 text-blue-200" />
-              </div>
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Mileage Tracker</h1>
+            <p className="text-xs uppercase tracking-[0.18em] text-blue-200">IRS Mileage Tracking</p>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+              Mileage Tracker
               {unverified > 0 && (
-                <span className="flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-200">
-                  <AlertCircle className="h-3 w-3" />{unverified} to review
-                </span>
+                <Badge variant="warning" className="gap-1 text-xs"><AlertCircle className="h-3 w-3" />{unverified} to review</Badge>
               )}
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-300">GPS auto-miles · IRS-ready exports · No more NG + MileIQ/Everlance split.</p>
-                      </div>
-          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-            <button onClick={() => setExportModal(true)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-700/70 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all flex-1 sm:flex-none">
-              <Download className="h-4 w-4" /> Export
-            </button>
-            <button onClick={() => setEditModal('new')}
-              className="flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-900/30 hover:bg-blue-600 transition-all flex-1 sm:flex-none">
-              <Plus className="h-4 w-4" /> Log Trip
-            </button>
+            </h1>
+            <p className="mt-1 text-sm text-slate-200">GPS auto-miles · IRS-ready exports · Appointment-linked trips.</p>
           </div>
-        </div>
-      </div>
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            <Button variant="secondary" onClick={() => setExportModal(true)}><Download className="mr-2 h-4 w-4" /> Export</Button>
+            <Button className="border-0 bg-blue-500 text-white hover:bg-blue-600" onClick={() => setEditModal('new')}><Plus className="mr-2 h-4 w-4" /> Log Trip</Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── LIVE TRIP BANNER ────────────────────────────────────────────────── */}
       <LiveTripBanner
@@ -1279,31 +1270,35 @@ export default function Mileage() {
       />
 
       {/* ── KPI CARDS ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard
-          label="Business YTD" value={`${businessYTD.toFixed(0)} mi`}
-          sub={pendingBusinessMilesYTD > 0 ? `+${pendingBusinessMilesYTD.toFixed(1)} mi pending review` : `${allYTD.toFixed(0)} mi verified total`}
-          accent="border-cyan-500/20 bg-cyan-500/[0.04]"
-          icon={TrendingUp}
-        />
-        <StatCard
-          label="Est. Deduction" value={`$${deductionYTD.toFixed(0)}`}
-          sub={`@ $${IRS_RATE_2025}/mi IRS 2025`}
-          accent="border-emerald-500/20 bg-emerald-500/[0.04]"
-          icon={DollarSign}
-        />
-        <StatCard
-          label="This Month" value={`${businessMTD.toFixed(0)} mi`}
-          sub={`${mtdTrips.length} trips logged`}
-          accent="border-violet-500/20 bg-violet-500/[0.04]"
-          icon={Calendar}
-        />
-        <StatCard
-          label="Total Trips" value={trips.length}
-          sub={`${unverified} need review`}
-          accent={unverified > 0 ? 'border-amber-500/20 bg-amber-500/[0.04]' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}
-          icon={Target}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1"><TrendingUp className="h-4 w-4 text-cyan-500" /><p className="text-xs uppercase text-slate-500">Business YTD</p></div>
+            <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{businessYTD.toFixed(0)} mi</p>
+            <p className="text-xs text-slate-400 mt-0.5">{pendingBusinessMilesYTD > 0 ? `+${pendingBusinessMilesYTD.toFixed(1)} mi pending review` : `${allYTD.toFixed(0)} mi verified total`}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1"><DollarSign className="h-4 w-4 text-emerald-500" /><p className="text-xs uppercase text-slate-500">Est. Deduction</p></div>
+            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">${deductionYTD.toFixed(0)}</p>
+            <p className="text-xs text-slate-400 mt-0.5">@ ${IRS_RATE_2025}/mi IRS 2025</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1"><Calendar className="h-4 w-4 text-violet-500" /><p className="text-xs uppercase text-slate-500">This Month</p></div>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">{businessMTD.toFixed(0)} mi</p>
+            <p className="text-xs text-slate-400 mt-0.5">{mtdTrips.length} trips logged</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1"><Target className={`h-4 w-4 ${unverified > 0 ? 'text-amber-500' : 'text-slate-400'}`} /><p className="text-xs uppercase text-slate-500">Total Trips</p></div>
+            <p className={`text-2xl font-bold ${unverified > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-200'}`}>{trips.length}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{unverified} need review</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── VIEW TABS ───────────────────────────────────────────────────────── */}
