@@ -465,6 +465,25 @@ export function createCrudOps(setData) {
     });
   });
 
+  // ── Agent Memory (lightweight facts store) ────────────────────────────────
+  const saveAgentMemory = (memory) => setData((p) => ({
+    ...p,
+    agentMemory: { ...(p.agentMemory || {}), ...memory, updatedAt: new Date().toISOString() },
+  }));
+
+  const addAgentMemoryFact = (fact) => setData((p) => ({
+    ...p,
+    agentMemory: {
+      ...(p.agentMemory || {}),
+      facts: [...((p.agentMemory?.facts || []).slice(-49)), { ...fact, id: Date.now(), ts: new Date().toISOString() }],
+    },
+  }));
+
+  const clearAgentMemory = () => setData((p) => ({
+    ...p,
+    agentMemory: { facts: [], updatedAt: new Date().toISOString() },
+  }));
+
   return {
     updateSettings,
     addClient,
@@ -487,5 +506,6 @@ export function createCrudOps(setData) {
     addKnowledgeArticle, updateKnowledgeArticle, deleteKnowledgeArticle,
     submitForReview, approveRecord, rejectReview,
     importJurisdictionDataset,
+    saveAgentMemory, addAgentMemoryFact, clearAgentMemory,
   };
 }
