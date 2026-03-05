@@ -6,8 +6,8 @@
 import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
 import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
 import { serviceTypeToActType } from '../../utils/notaryTypes';
-import { validateRecord } from '../schemas/validate';
-import { AgentSuggestionSchema } from '../schemas';
+import { validateRecord } from '../../schemas/validate';
+import { AgentSuggestionSchema } from '../../schemas';
 
 // ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
 // Now uses centralized mapping from notaryTypes.js — single source of truth.

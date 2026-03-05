@@ -2,8 +2,8 @@
 // Simple CRUD, journal helpers, admin data management, and audit utilities.
 // No React imports — pure factory functions that close over setData.
 import { serviceTypeToActType } from '../../utils/notaryTypes';
-import { validateRecord } from '../schemas/validate';
-import { AppointmentSchema, InvoiceSchema, JournalEntrySchema, StateRuleSchema, FeeScheduleSchema } from '../schemas';
+import { validateRecord } from '../../schemas/validate';
+import { AppointmentSchema, InvoiceSchema, JournalEntrySchema, StateRuleSchema, FeeScheduleSchema } from '../../schemas';
 
 const todayISO = new Date().toISOString().split('T')[0];
 
