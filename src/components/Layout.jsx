@@ -89,12 +89,15 @@ const LayoutInner = ({ children }) => {
   const aiTrainerGate = getGateState('aiTrainer', gateContext);
   const adminGate = getGateState('admin', gateContext);
 
+  // Fullscreen state sync
   useEffect(() => {
     const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener('fullscreenchange', onFs);
     onFs();
     return () => document.removeEventListener('fullscreenchange', onFs);
-  // FIX 6: Run auto AR scan once on mount when setting is enabled
+  }, []);
+
+  // FIX 6: Run auto AR scan once on app mount when setting is enabled
   useEffect(() => {
     checkAutoScanAR?.();
   // eslint-disable-next-line react-hooks/exhaustive-deps
