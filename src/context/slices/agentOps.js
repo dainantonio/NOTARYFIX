@@ -8,6 +8,7 @@ import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
 import { serviceTypeToActType } from '../../utils/notaryTypes';
 import { validateRecord } from '../../schemas/validate';
 import { AgentSuggestionSchema } from '../../schemas';
+import { buildCitations } from '../../agent/verifier';
 
 // ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
 // Now uses centralized mapping from notaryTypes.js — single source of truth.
@@ -143,6 +144,7 @@ export function createAgentOps(setData, getData) {
       confidenceScore,
       draftJournal,
       draftInvoice,
+      citations: buildCitations(stateCode, serviceTypeToActType(appointment.type), p),
       diffData: {
         signerName: draftJournal.signerName || appointment.client || 'Unknown',
         serviceType: draftJournal.documentDescription || appointment.type || 'Notary Appointment',
@@ -308,6 +310,7 @@ export function createAgentOps(setData, getData) {
         confidenceScore,
         stateCode: sc,
         stateName: complianceResult.stateName,
+        citations: buildCitations(sc, serviceTypeToActType(apt.type), p),
         aiGenerated: aiDraft?.aiGenerated || false,
         draftJournal,
         draftInvoice,
