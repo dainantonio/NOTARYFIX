@@ -6,6 +6,8 @@
 import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
 import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
 import { serviceTypeToActType } from '../../utils/notaryTypes';
+import { validateRecord } from '../schemas/validate';
+import { AgentSuggestionSchema } from '../schemas';
 
 // ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
 // Now uses centralized mapping from notaryTypes.js — single source of truth.
@@ -174,7 +176,7 @@ export function createAgentOps(setData, getData) {
       ...p,
       appointments: nextAppointments,
       agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
-      agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
+      agentSuggestions: _addValidatedSuggestion(suggestion, p).slice(0, 200),
     }, {
       actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
       resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
@@ -350,7 +352,7 @@ export function createAgentOps(setData, getData) {
         ...p,
         appointments: nextAppointments,
         agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
-        agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
+        agentSuggestions: _addValidatedSuggestion(suggestion, p).slice(0, 200),
       }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
     });
   };
@@ -527,7 +529,7 @@ export function createAgentOps(setData, getData) {
 
     return {
       ...p,
-      agentSuggestions: [...newSuggestions, ...(p.agentSuggestions || [])].slice(0, 200),
+      agentSuggestions: [...newSuggestions.map(s => { validateRecord(AgentSuggestionSchema, s, 'AgentSuggestion'); return s; }), ...(p.agentSuggestions || [])].slice(0, 200),
     };
   });
 
@@ -590,12 +592,19 @@ export function createAgentOps(setData, getData) {
 
     setData((p) => ({
       ...p,
-      agentSuggestions: [suggestion, ...(p.agentSuggestions || [])].slice(0, 200),
+      agentSuggestions: _addValidatedSuggestion(suggestion, p).slice(0, 200),
     }));
   };
 
   // ── Auto AR Scan on Mount ─────────────────────────────────────────────────
   // Note: DataContext.jsx wraps this with useCallback([]) for memoization.
+
+  // ── Schema-validated suggestion helper ──────────────────────────────────────
+  const _addValidatedSuggestion = (suggestion, prevState) => {
+    validateRecord(AgentSuggestionSchema, suggestion, 'AgentSuggestion');
+    return [suggestion, ...(prevState.agentSuggestions || [])];
+  };
+
   const checkAutoScanAR = () => {
     setData((p) => {
       if (!p.settings?.autoScanAR) return p;

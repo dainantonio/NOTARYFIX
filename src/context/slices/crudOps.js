@@ -2,6 +2,8 @@
 // Simple CRUD, journal helpers, admin data management, and audit utilities.
 // No React imports — pure factory functions that close over setData.
 import { serviceTypeToActType } from '../../utils/notaryTypes';
+import { validateRecord } from '../schemas/validate';
+import { AppointmentSchema, InvoiceSchema, JournalEntrySchema, StateRuleSchema, FeeScheduleSchema } from '../schemas';
 
 const todayISO = new Date().toISOString().split('T')[0];
 
@@ -65,7 +67,7 @@ export function createCrudOps(setData) {
   const addClient = (c) => setData((p) => ({ ...p, clients: [c, ...(p.clients || [])] }));
 
   // ── Invoices ──────────────────────────────────────────────────────────────
-  const addInvoice    = (i)      => setData((p) => ({ ...p, invoices: [i, ...(p.invoices || [])] }));
+  const addInvoice    = (i)      => { validateRecord(InvoiceSchema, i, 'Invoice'); return setData((p) => ({ ...p, invoices: [i, ...(p.invoices || [])] })); };
   const updateInvoice = (id, u)  => setData((p) => ({ ...p, invoices: (p.invoices || []).map((x) => x.id === id ? { ...x, ...u } : x) }));
   const deleteInvoice = (id)     => setData((p) => ({ ...p, invoices: (p.invoices || []).filter((x) => x.id !== id) }));
 
@@ -75,7 +77,7 @@ export function createCrudOps(setData) {
   const deleteMileageLog = (id)    => setData((p) => ({ ...p, mileageLogs: (p.mileageLogs || []).filter((x) => x.id !== id) }));
 
   // ── Appointments ──────────────────────────────────────────────────────────
-  const addAppointment    = (a)     => setData((p) => ({ ...p, appointments: [a, ...(p.appointments || [])] }));
+  const addAppointment    = (a)     => { validateRecord(AppointmentSchema, a, 'Appointment'); return setData((p) => ({ ...p, appointments: [a, ...(p.appointments || [])] })); };
   const updateAppointment = (id, u) => setData((p) => ({ ...p, appointments: (p.appointments || []).map((x) => x.id === id ? { ...x, ...u } : x) }));
   const deleteAppointment = (id)    => setData((p) => ({ ...p, appointments: (p.appointments || []).filter((x) => x.id !== id) }));
 
@@ -100,7 +102,7 @@ export function createCrudOps(setData) {
   const deletePortalMessage = (id)    => setData((p) => ({ ...p, portalMessages: (p.portalMessages || []).filter((x) => x.id !== id) }));
 
   // ── Journal Entries ───────────────────────────────────────────────────────
-  const addJournalEntry    = (j)     => setData((p) => ({ ...p, journalEntries: [j, ...(p.journalEntries || [])] }));
+  const addJournalEntry    = (j)     => { validateRecord(JournalEntrySchema, j, 'JournalEntry'); return setData((p) => ({ ...p, journalEntries: [j, ...(p.journalEntries || [])] })); };
   const updateJournalEntry = (id, u) => setData((p) => ({ ...p, journalEntries: (p.journalEntries || []).map((x) => x.id === id ? { ...x, ...u } : x) }));
   const deleteJournalEntry = (id)    => setData((p) => ({ ...p, journalEntries: (p.journalEntries || []).filter((x) => x.id !== id) }));
 
@@ -151,13 +153,13 @@ export function createCrudOps(setData) {
   const appendAuditLog = (entry) => setData((p) => _appendAuditLog(p, entry));
 
   // ── State Rules ───────────────────────────────────────────────────────────
-  const addStateRule = (rule, actor) => setData((p) => {
+  const addStateRule = (rule, actor) => { validateRecord(StateRuleSchema, rule, 'StateRule'); return setData((p) => {
     const next = { ...rule, id: Date.now(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     return _appendAuditLog(
       { ...p, stateRules: [next, ...(p.stateRules || [])] },
       { actor, actorRole: p.settings?.userRole || 'owner', action: 'created', resourceType: 'stateRules', resourceId: next.id, resourceLabel: `${rule.state} ${rule.version || ''}`, diff: 'New record' }
     );
-  });
+  }); }
 
   const updateStateRule = (id, u, actor, diff) => setData((p) => {
     const rule = (p.stateRules || []).find((r) => r.id === id);
@@ -209,13 +211,13 @@ export function createCrudOps(setData) {
   });
 
   // ── Fee Schedules ─────────────────────────────────────────────────────────
-  const addFeeSchedule = (fee, actor) => setData((p) => {
+  const addFeeSchedule = (fee, actor) => { validateRecord(FeeScheduleSchema, fee, 'FeeSchedule'); return setData((p) => {
     const next = { ...fee, id: Date.now(), updatedAt: new Date().toISOString() };
     return _appendAuditLog(
       { ...p, feeSchedules: [next, ...(p.feeSchedules || [])] },
       { actor, actorRole: p.settings?.userRole || 'owner', action: 'created', resourceType: 'feeSchedules', resourceId: next.id, resourceLabel: `${fee.stateCode} — ${fee.actType}`, diff: 'New record' }
     );
-  });
+  }); }
 
   const updateFeeSchedule = (id, u, actor, diff) => setData((p) => {
     const fee = (p.feeSchedules || []).find((f) => f.id === id);
