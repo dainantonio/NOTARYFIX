@@ -36,25 +36,6 @@ const AutoBadge = ({ mode }) => {
     autonomous:  { label: 'Autonomous',      color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700' },
   };
   const cfg = map[mode] || map.assistive;
-
-  // ── Trigger status strip ──────────────────────────────────────────────────
-  const TriggerStatusStrip = () => (
-    <div className="flex flex-wrap items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400">
-      <span className="flex items-center gap-1">
-        <span className={`inline-block h-1.5 w-1.5 rounded-full ${triggerStatus.lastARScan ? 'bg-emerald-400' : 'bg-slate-300'}`} />
-        AR scan: {triggerStatus.lastARScan || 'not yet today'}
-      </span>
-      <span className="flex items-center gap-1">
-        <span className={`inline-block h-1.5 w-1.5 rounded-full ${triggerStatus.lastDigest ? 'bg-emerald-400' : 'bg-slate-300'}`} />
-        Digest: {triggerStatus.lastDigest || 'not yet this week'}
-      </span>
-      <span className="flex items-center gap-1">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
-        {triggerStatus.processedCompletions} completions processed
-      </span>
-    </div>
-  );
-
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${cfg.color}`}>
       <Zap className="h-3 w-3" />
@@ -62,6 +43,24 @@ const AutoBadge = ({ mode }) => {
     </span>
   );
 };
+
+// ─── Trigger status strip (standalone — reads triggerStatus from props) ────────
+const TriggerStatusStrip = ({ triggerStatus }) => (
+  <div className="flex flex-wrap items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400">
+    <span className="flex items-center gap-1">
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${triggerStatus.lastARScan ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+      AR scan: {triggerStatus.lastARScan || 'not yet today'}
+    </span>
+    <span className="flex items-center gap-1">
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${triggerStatus.lastDigest ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+      Digest: {triggerStatus.lastDigest || 'not yet this week'}
+    </span>
+    <span className="flex items-center gap-1">
+      <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+      {triggerStatus.processedCompletions} completions processed
+    </span>
+  </div>
+);
 
 // ─── Agent run history row ────────────────────────────────────────────────────
 const RunRow = ({ run }) => {
@@ -110,6 +109,82 @@ const RunRow = ({ run }) => {
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+
+// ─── Guardian constants ───────────────────────────────────────────────────────
+const PHASES = ['BEFORE APPOINTMENT', 'DURING SIGNING', 'AFTER SIGNING'];
+
+const QUICK_CHIPS = [
+  { label: 'Max fee?',           q: 'What is the maximum fee I can charge per notarial act?' },
+  { label: 'ID requirements?',   q: 'What ID documents must signers present?' },
+  { label: 'Journal required?',  q: 'Is a notary journal required?' },
+  { label: 'Seal rules?',        q: 'What are the seal and stamp requirements?' },
+  { label: 'RON allowed?',       q: 'Is Remote Online Notarization (RON) permitted?' },
+  { label: 'Commission renewal?',q: 'How do I renew my notary commission?' },
+];
+
+const RISK_COLORS = {
+  LOW:    'text-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400',
+  MEDIUM: 'text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400',
+  HIGH:   'text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400',
+};
+
+const GuardianMessage = ({ res, onCta }) => {
+  if (!res) return null;
+  return (
+    <div className="space-y-2 text-sm">
+      <p className="font-semibold text-slate-800 dark:text-slate-100">{res.summary}</p>
+      {res.action && <p className="text-slate-600 dark:text-slate-300 text-sm">{res.action}</p>}
+      {res.details?.length > 0 && (
+        <ul className="list-disc list-inside space-y-0.5 text-slate-600 dark:text-slate-300 text-xs">
+          {res.details.map((d, i) => <li key={i}>{d}</li>)}
+        </ul>
+      )}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${RISK_COLORS[res.risk_level] || RISK_COLORS.MEDIUM}`}>
+          {res.risk_level} risk
+        </span>
+        <span className="text-[10px] text-slate-400">Confidence: {res.confidence}</span>
+      </div>
+      {res.source?.title && res.source.title !== 'Not available in this dataset' && (
+        <div className="rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 space-y-0.5">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Source</p>
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{res.source.title}</p>
+          {res.source.where_found && <p className="text-[11px] text-slate-500">{res.source.where_found}</p>}
+          {res.source.url && (
+            <a href={res.source.url} target="_blank" rel="noopener noreferrer"
+              className="text-[11px] text-blue-500 hover:underline flex items-center gap-0.5">
+              Official source <ExternalLink className="h-3 w-3 ml-0.5" />
+            </a>
+          )}
+          {res.source.last_updated && <p className="text-[10px] text-slate-400">Updated: {res.source.last_updated}</p>}
+        </div>
+      )}
+      {res.clarifying_questions?.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Clarifying questions</p>
+          {res.clarifying_questions.map((q, i) => (
+            <button key={i} onClick={() => onCta({ type: 'question', q })}
+              className="block text-left text-xs text-blue-600 dark:text-blue-400 hover:underline">
+              → {q}
+            </button>
+          ))}
+        </div>
+      )}
+      {res.next_ctas?.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {res.next_ctas.map((cta, i) => (
+            <button key={i} onClick={() => onCta({ type: 'nav', target: cta.target_view })}
+              className="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 hover:bg-black dark:hover:bg-white transition-colors">
+              {cta.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {res.disclaimer && <p className="text-[10px] text-slate-400 italic pt-1">{res.disclaimer}</p>}
     </div>
   );
 };
@@ -372,7 +447,7 @@ const AgentPage = () => {
       </Card>
 
       {/* Trigger status strip */}
-      <TriggerStatusStrip />
+      <TriggerStatusStrip triggerStatus={triggerStatus} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
