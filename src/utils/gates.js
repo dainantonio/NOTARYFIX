@@ -1,6 +1,17 @@
 // src/utils/gates.js
 export const PLAN_TIERS = ['free', 'pro', 'agency'];
-export const ROLES = ['owner', 'admin', 'dispatcher', 'notary'];
+
+// Canonical role list — includes operational roles used in Admin.jsx permission checks.
+// IMPORTANT: normalizeRole falls back to 'notary' (minimum privilege) for unrecognized values.
+// Do NOT fall back to 'owner' — that would silently grant maximum access.
+export const ROLES = [
+  'owner',            // Full access — account holder
+  'admin',            // Full admin access, limited billing
+  'compliance_manager', // Can publish/approve state rules and knowledge articles
+  'agency_admin',     // Can submit for review and edit records, cannot publish directly
+  'dispatcher',       // Operational scheduling only
+  'notary',           // Field-level read + own record access
+];
 
 // ─── FEATURE RULES ────────────────────────────────────────────────────────────
 // requiredPlan: minimum plan tier to access this feature
@@ -29,17 +40,17 @@ const FEATURE_RULES = {
 
   // ── Role-gated features ───────────────────────────────────────────────────
   admin: {
-    allowedRoles: ['owner', 'admin'],
+    allowedRoles: ['owner', 'admin', 'compliance_manager', 'agency_admin'],
     adminBypass: true,
     badge: 'ADMIN ONLY',
     title: 'Admin Control Center',
-    description: 'Manage state policies, fee tables, AI content, and governance. Requires Owner or Admin role.',
+    description: 'Manage state policies, fee tables, AI content, and governance. Requires Owner, Admin, Compliance Manager, or Agency Admin role.',
   },
 
   // ── Combined plan + role ──────────────────────────────────────────────────
   teamControls: {
     requiredPlan: 'agency',
-    allowedRoles: ['owner', 'admin', 'dispatcher'],
+    allowedRoles: ['owner', 'admin', 'agency_admin', 'dispatcher'],
     badge: 'AGENCY FEATURE',
     title: 'Team Controls',
     description: 'Manage and assign team members. Requires Agency plan with a management role.',
@@ -58,8 +69,10 @@ const FEATURE_RULES = {
 export const normalizePlanTier = (value) =>
   PLAN_TIERS.includes(value) ? value : 'free';
 
+// Falls back to 'notary' (minimum privilege) — NOT 'owner' — for unrecognized roles.
+// This prevents silent privilege escalation when an unknown role string is passed.
 export const normalizeRole = (value) =>
-  ROLES.includes(value) ? value : 'owner';
+  ROLES.includes(value) ? value : 'notary';
 
 const isPlanAllowed = (currentPlan, requiredPlan) => {
   if (!requiredPlan) return true;
@@ -71,8 +84,8 @@ export const getGateState = (featureKey, { planTier, role } = {}) => {
   const safePlan = normalizePlanTier(planTier);
   const safeRole = normalizeRole(role);
 
-  // Admin bypass: admin/owner roles always get access to admin-bypass features
-  if (rule.adminBypass && (safeRole === 'admin' || safeRole === 'owner')) {
+  // Admin bypass: owner/admin/compliance_manager roles always get access to admin-bypass features
+  if (rule.adminBypass && (safeRole === 'admin' || safeRole === 'owner' || safeRole === 'compliance_manager')) {
     return {
       allowed: true, roleAllowed: true, planAllowed: true,
       requiredPlan: rule.requiredPlan, allowedRoles: rule.allowedRoles || [],
