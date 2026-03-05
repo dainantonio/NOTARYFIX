@@ -102,6 +102,267 @@ const KpiTile = ({ title, value, sub, Icon, accent = 'blue', loading, onClick })
   );
 };
 
+// ─── AGENT COMMAND STRIP ─────────────────────────────────────────────────────
+const AgentCommandStrip = ({ data, navigate, onApprove, onReject }) => {
+  const pending = useMemo(() =>
+    (data.agentSuggestions || []).filter(s => s.status === 'pending'),
+    [data.agentSuggestions]
+  );
+
+  const lastApproved = useMemo(() =>
+    (data.agentSuggestions || [])
+      .filter(s => s.status === 'approved')
+      .sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''))
+      [0],
+    [data.agentSuggestions]
+  );
+
+  const hasAction = pending.length > 0;
+
+  const statusText = hasAction
+    ? `"${pending[0].title || 'Closeout draft'}" — tap to review & approve`
+    : lastApproved
+      ? `Last action: ${lastApproved.title || 'Closeout'} approved ${timeAgo(lastApproved.updatedAt || lastApproved.createdAt)}`
+      : 'Ready to generate closeouts, follow-ups, and journal drafts';
+
+  return (
+    <div className={`rounded-2xl border p-4 transition-all ${
+      hasAction
+        ? 'border-amber-300/50 bg-gradient-to-r from-amber-50 to-orange-50 dark:border-amber-700/40 dark:from-amber-950/30 dark:to-orange-950/20'
+        : 'border-violet-200/60 bg-gradient-to-r from-violet-50 to-indigo-50 dark:border-violet-800/40 dark:from-violet-950/30 dark:to-indigo-950/20'
+    }`}>
+      <div className="flex items-center gap-3">
+        {/* Brain icon */}
+        <div className="relative flex-shrink-0">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-sm ${
+            hasAction ? 'bg-amber-500' : 'bg-violet-600'
+          }`}>
+            <Brain className="h-5 w-5 text-white" />
+          </div>
+          {pending.length > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow">
+              {pending.length}
+            </span>
+          )}
+        </div>
+
+        {/* Status */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${
+              hasAction ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
+            }`} />
+            <span className={`text-xs font-bold uppercase tracking-wider ${
+              hasAction
+                ? 'text-amber-700 dark:text-amber-300'
+                : 'text-violet-700 dark:text-violet-300'
+            }`}>
+              {hasAction ? `${pending.length} Draft${pending.length > 1 ? 's' : ''} Awaiting Review` : 'Command Center · Agent Standing By'}
+            </span>
+          </div>
+          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+            {statusText}
+          </p>
+        </div>
+
+        {/* CTA buttons */}
+        <div className="flex flex-shrink-0 gap-2">
+          {hasAction ? (
+            <>
+              <button
+                onClick={() => onApprove && onApprove(pending[0])}
+                className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-600 active:scale-95 transition-all"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => navigate('/agent')}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
+                  hasAction
+                    ? 'border-amber-300 bg-white text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
+                    : 'border-violet-200 bg-white text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:bg-violet-900/20 dark:text-violet-300'
+                }`}
+              >
+                Review All
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => navigate('/agent')}
+              className="rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 active:scale-95 transition-all dark:border-violet-700 dark:bg-violet-900/20 dark:text-violet-300"
+            >
+              Open Agent →
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── AGENT INSIGHT CARDS ──────────────────────────────────────────────────────
+const AgentInsightCards = ({ data, navigate }) => {
+  const insights = useMemo(() => {
+    const results = [];
+    const apts     = data.appointments   || [];
+    const invoices = data.invoices       || [];
+
+    // 1. Revenue pace vs monthly goal
+    const now          = new Date();
+    const dayOfMonth   = now.getDate();
+    const daysInMonth  = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const thisMonthKey = now.toISOString().slice(0, 7);
+    const thisMonthRev = apts
+      .filter(a => (a.date || '').slice(0, 7) === thisMonthKey)
+      .reduce((s, a) => s + (Number(a.amount) || 0), 0);
+    const monthlyGoal  = data.settings?.monthlyGoal || 0;
+
+    if (monthlyGoal > 0 && dayOfMonth > 0) {
+      const dailyRate      = thisMonthRev / dayOfMonth;
+      const projected      = Math.round(dailyRate * daysInMonth);
+      const pct            = Math.min(200, Math.round((projected / monthlyGoal) * 100));
+      const daysLeft       = daysInMonth - dayOfMonth;
+      const needed         = Math.max(0, monthlyGoal - thisMonthRev);
+      const aptsPerDayNeeded = dailyRate > 0 ? (needed / dailyRate).toFixed(1) : null;
+
+      const isGood = pct >= 100;
+      const isOk   = pct >= 70;
+
+      results.push({
+        key: 'revenue_pace',
+        Icon: TrendingUp,
+        iconCls:  isGood ? 'text-emerald-500' : isOk ? 'text-blue-500' : 'text-amber-500',
+        border:   isGood ? 'border-emerald-200/70 dark:border-emerald-800/40' : isOk ? 'border-blue-200/70 dark:border-blue-800/40' : 'border-amber-200/70 dark:border-amber-800/40',
+        bg:       isGood ? 'from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/20' : isOk ? 'from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/20' : 'from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20',
+        label:    'Revenue Pace',
+        message:  isGood
+          ? `On track to exceed goal by $${(projected - monthlyGoal).toLocaleString()} this month 🎉`
+          : `Projected $${projected.toLocaleString()} of $${monthlyGoal.toLocaleString()} goal · ${daysLeft}d left${aptsPerDayNeeded ? ` · pace up $${Math.round(needed / Math.max(1, daysLeft)).toLocaleString()}/day` : ''}`,
+        action:   'View Invoices',
+        path:     '/invoices',
+      });
+    }
+
+    // 2. Overdue invoices — agent can help
+    const overdue    = invoices.filter(i => i.status === 'Overdue');
+    const overdueAmt = overdue.reduce((s, i) => s + Number(i.amount || 0), 0);
+    if (overdue.length > 0) {
+      results.push({
+        key:      'overdue',
+        Icon:     AlertTriangle,
+        iconCls:  'text-red-500',
+        border:   'border-red-200/70 dark:border-red-800/40',
+        bg:       'from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/20',
+        label:    'Overdue Invoices',
+        message:  `${overdue.length} invoice${overdue.length > 1 ? 's' : ''} overdue — $${overdueAmt.toLocaleString()} uncollected. Agent can draft follow-up emails now.`,
+        action:   'Draft Follow-ups',
+        path:     '/agent',
+      });
+    }
+
+    // 3. Compliance / E&O countdown
+    const eao = data.settings?.eAndOExpiresOn;
+    if (eao) {
+      const days = Math.ceil((new Date(eao) - Date.now()) / 86400000);
+      if (days <= 90) {
+        results.push({
+          key:      'compliance',
+          Icon:     Shield,
+          iconCls:  days <= 14 ? 'text-red-500' : 'text-amber-500',
+          border:   days <= 14 ? 'border-red-200/70 dark:border-red-800/40' : 'border-amber-200/70 dark:border-amber-800/40',
+          bg:       days <= 14 ? 'from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/20' : 'from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20',
+          label:    'E&O Expiring',
+          message:  `Your E&O insurance expires in ${days} day${days !== 1 ? 's' : ''} — ${days <= 14 ? 'renew immediately to stay compliant' : 'schedule renewal before it lapses'}.`,
+          action:   'View Compliance',
+          path:     '/compliance',
+        });
+      }
+    }
+
+    // 4. Completed appointments missing journal entries
+    const journaledIds = new Set(
+      (data.journalEntries || []).map(j => j.appointmentId).filter(Boolean)
+    );
+    const missingJournal = (apts || []).filter(
+      a => a.status === 'completed' && !journaledIds.has(a.id)
+    );
+    if (missingJournal.length > 0) {
+      results.push({
+        key:      'journal_gaps',
+        Icon:     ScrollText,
+        iconCls:  'text-indigo-500',
+        border:   'border-indigo-200/70 dark:border-indigo-800/40',
+        bg:       'from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/20',
+        label:    'Journal Gaps',
+        message:  `${missingJournal.length} completed appointment${missingJournal.length > 1 ? 's' : ''} with no journal entry. Your agent can auto-draft them.`,
+        action:   'Auto-Draft Entries',
+        path:     '/agent',
+      });
+    }
+
+    // 5. Scheduling pattern (busiest day) — only if enough data
+    if (apts.length >= 5) {
+      const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+      apts.forEach(a => {
+        if (a.date) dayCounts[new Date(a.date + 'T12:00:00').getDay()]++;
+      });
+      const maxIdx  = dayCounts.indexOf(Math.max(...dayCounts));
+      const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][maxIdx];
+      results.push({
+        key:      'pattern',
+        Icon:     BarChart3,
+        iconCls:  'text-violet-500',
+        border:   'border-violet-200/70 dark:border-violet-800/40',
+        bg:       'from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20',
+        label:    'Scheduling Pattern',
+        message:  `${dayName}s are your busiest day (${dayCounts[maxIdx]} appointments). Consider blocking that day for premium-rate jobs only.`,
+        action:   'View Schedule',
+        path:     '/schedule',
+      });
+    }
+
+    return results.slice(0, 3);
+  }, [data]);
+
+  if (!insights.length) return null;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 px-0.5">
+        <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Agent Insights
+        </span>
+        <span className="ml-auto text-[10px] text-slate-400 dark:text-slate-500">Updated now</span>
+      </div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {insights.map(insight => (
+          <button
+            key={insight.key}
+            onClick={() => navigate(insight.path)}
+            className={`group flex flex-col gap-2.5 rounded-xl border bg-gradient-to-br ${insight.bg} ${insight.border} p-3.5 text-left transition-all hover:scale-[1.02] active:scale-[.98]`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/70 shadow-sm dark:bg-white/10">
+                <insight.Icon className={`h-3.5 w-3.5 ${insight.iconCls}`} />
+              </span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                {insight.label}
+              </span>
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-slate-700 dark:text-slate-200">
+              {insight.message}
+            </p>
+            <span className="mt-auto flex items-center gap-1 text-[11px] font-semibold text-violet-600 group-hover:underline dark:text-violet-300">
+              {insight.action} <ArrowUpRight className="h-3 w-3" />
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ─── DAILY BRIEF ─────────────────────────────────────────────────────────────
 const DailyBrief = ({ data, navigate }) => {
   const today = todayISO();
@@ -144,7 +405,7 @@ const DailyBrief = ({ data, navigate }) => {
 
   const todayEarnings = todayApts.reduce((s, a) => s + (Number(a.amount) || 0), 0);
 
-  const pendingAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
+  const pendingAgentDrafts  = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
   const approvedAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'approved').length;
 
   const agentActivityLine = pendingAgentDrafts > 0
@@ -249,7 +510,7 @@ const DailyBrief = ({ data, navigate }) => {
 
 // ─── TODAY'S TIMELINE ─────────────────────────────────────────────────────────
 const TodayTimeline = ({ appointments, navigate }) => {
-  const today = todayISO();
+  const today    = todayISO();
   const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
 
   const todayApts = useMemo(() =>
@@ -333,12 +594,12 @@ const ModuleStatus = ({ data, navigate, planTier, userRole }) => {
   }).length;
 
   const modules = [
-    { Icon: ScrollText, label: 'Journal',     hint: 'Notary Log', value: `${journalThisMonth} this mo`,              color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20', path: '/journal',        ok: true },
-    { Icon: Shield,     label: 'Compliance',  hint: 'Policy Check', value: `${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length} OK`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', path: '/compliance', ok: true },
-    { Icon: Users,      label: 'Portal',      hint: 'Client Docs', value: portalOK ? `${(data.signerSessions||[]).filter(s=>s.status==='active').length} active` : 'PRO', color: portalOK ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400', bg: portalOK ? 'bg-violet-50 dark:bg-violet-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/signer-portal', ok: portalOK },
-    { Icon: Truck,      label: 'Dispatch',    hint: 'Team Jobs', value: dispatchOK ? `${(data.dispatchJobs||[]).filter(j=>j.status!=='completed').length} open` : 'AGENCY', color: dispatchOK ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400', bg: dispatchOK ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/team-dispatch', ok: dispatchOK },
-    { Icon: Brain,      label: 'AI Trainer',  hint: 'Policy Q&A', value: aiOK ? `${(data.knowledgeArticles||[]).filter(a=>a.status==='published').length} art.` : 'PRO', color: aiOK ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400', bg: aiOK ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/ai-trainer', ok: aiOK },
-    { Icon: Building2,  label: 'Admin',       hint: 'Policy Records', value: adminOK ? `${(data.stateRules||[]).filter(r=>r.status==='active').length} rules` : 'ADMIN', color: adminOK ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400', bg: adminOK ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/admin', ok: adminOK },
+    { Icon: ScrollText, label: 'Journal',     hint: 'Notary Log',     value: `${journalThisMonth} this mo`,              color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20', path: '/journal',       ok: true },
+    { Icon: Shield,     label: 'Compliance',  hint: 'Policy Check',   value: `${(data.complianceItems||[]).filter(c=>c.status==='Compliant').length}/${(data.complianceItems||[]).length} OK`, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', path: '/compliance', ok: true },
+    { Icon: Users,      label: 'Portal',      hint: 'Client Docs',    value: portalOK   ? `${(data.signerSessions||[]).filter(s=>s.status==='active').length} active` : 'PRO',    color: portalOK   ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400', bg: portalOK   ? 'bg-violet-50 dark:bg-violet-900/20' : 'bg-slate-100 dark:bg-slate-700/40', path: '/signer-portal', ok: portalOK   },
+    { Icon: Truck,      label: 'Dispatch',    hint: 'Team Jobs',      value: dispatchOK ? `${(data.dispatchJobs||[]).filter(j=>j.status!=='completed').length} open` : 'AGENCY', color: dispatchOK ? 'text-amber-600 dark:text-amber-400'  : 'text-slate-400', bg: dispatchOK ? 'bg-amber-50 dark:bg-amber-900/20'   : 'bg-slate-100 dark:bg-slate-700/40', path: '/team-dispatch', ok: dispatchOK },
+    { Icon: Brain,      label: 'AI Trainer',  hint: 'Policy Q&A',     value: aiOK       ? `${(data.knowledgeArticles||[]).filter(a=>a.status==='published').length} art.` : 'PRO',    color: aiOK       ? 'text-rose-600 dark:text-rose-400'    : 'text-slate-400', bg: aiOK       ? 'bg-rose-50 dark:bg-rose-900/20'       : 'bg-slate-100 dark:bg-slate-700/40', path: '/ai-trainer',    ok: aiOK       },
+    { Icon: Building2,  label: 'Admin',       hint: 'Policy Records', value: adminOK    ? `${(data.stateRules||[]).filter(r=>r.status==='active').length} rules` : 'ADMIN',  color: adminOK    ? 'text-blue-600 dark:text-blue-400'    : 'text-slate-400', bg: adminOK    ? 'bg-blue-50 dark:bg-blue-900/20'       : 'bg-slate-100 dark:bg-slate-700/40', path: '/admin',         ok: adminOK    },
   ];
 
   return (
@@ -369,10 +630,10 @@ const QuickActions = ({ navigate, onNew, planTier, userRole, pendingAgentDrafts 
     { Icon: FileSignature, label: 'New Appt',      cls: 'bg-blue-600 hover:bg-blue-700 text-white',    fn: onNew,                          locked: false },
     { Icon: ScrollText,    label: 'Log Journal',   cls: 'bg-indigo-600 hover:bg-indigo-700 text-white', fn: () => navigate('/journal'),     locked: false },
     { Icon: DollarSign,    label: 'New Invoice',   cls: 'bg-emerald-600 hover:bg-emerald-700 text-white', fn: () => navigate('/invoices'), locked: false },
-    { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO' },
+    { Icon: Users,         label: 'Signer Portal', cls: portalOK   ? 'bg-violet-600 hover:bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/signer-portal'),  locked: !portalOK,   lockLabel:'PRO'    },
     { Icon: Truck,         label: 'Dispatch',      cls: dispatchOK ? 'bg-amber-600 hover:bg-amber-700 text-white'  : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/team-dispatch'),  locked: !dispatchOK, lockLabel:'AGENCY' },
     { Icon: Sparkles,      label: pendingAgentDrafts > 0 ? `Review ${pendingAgentDrafts} Draft${pendingAgentDrafts > 1 ? 's' : ''}` : 'Command Center', cls: 'bg-violet-600 hover:bg-violet-700 text-white', fn: () => navigate('/agent'), locked: false },
-    { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO' },
+    { Icon: Brain,         label: 'AI Trainer',    cls: aiOK       ? 'bg-rose-600 hover:bg-rose-700 text-white'   : 'bg-slate-100 dark:bg-slate-700 text-slate-400', fn: () => navigate('/ai-trainer'),     locked: !aiOK,       lockLabel:'PRO'    },
   ];
 
   return (
@@ -434,7 +695,7 @@ const ActivityFeed = ({ data, navigate }) => {
 // ─── SETUP CHECKLIST ─────────────────────────────────────────────────────────
 const SetupProgress = ({ checklist, onAction }) => {
   const done = checklist.filter(i => i.done).length;
-  const pct = Math.round((done / checklist.length) * 100);
+  const pct  = Math.round((done / checklist.length) * 100);
   if (pct === 100) return null;
   return (
     <Card className="border-slate-200/70 dark:border-slate-700">
@@ -466,12 +727,12 @@ const SetupProgress = ({ checklist, onAction }) => {
 // MAIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
 const Dashboard = () => {
-  const [loading,       setLoading]       = useState(true);
-  const [isModalOpen,   setIsModalOpen]   = useState(false);
-  const [chartType,     setChartType]     = useState(() =>
+  const [loading,     setLoading]     = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chartType,   setChartType]   = useState(() =>
     typeof window !== 'undefined' ? (localStorage.getItem('dashboard_chart_type') || 'area') : 'area'
   );
-  const [isProTip,      setIsProTip]      = useState(false);
+  const [isProTip,    setIsProTip]    = useState(false);
 
   const { theme }             = useTheme();
   const navigate              = useNavigate();
@@ -503,10 +764,20 @@ const Dashboard = () => {
   const netProfit  = totalRevenue - 1200 - Math.round(totalMiles * cpm);
   const margin     = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
 
-  const monthlyGoal        = data.settings?.monthlyGoal || 15000;
+  const monthlyGoal         = data.settings?.monthlyGoal || 15000;
   const currentMonthRevenue = useMemo(() =>
     apts.filter((a) => (a.date || '').slice(0,7) === new Date().toISOString().slice(0,7)).reduce((s,a) => s + (Number(a.amount)||0), 0), [apts]);
   const goalPct = Math.min(100, Math.round((currentMonthRevenue / monthlyGoal) * 100));
+
+  // Revenue projection
+  const revenueProjection = useMemo(() => {
+    const now        = new Date();
+    const day        = now.getDate();
+    const daysInMo   = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    if (day === 0) return null;
+    const rate       = currentMonthRevenue / day;
+    return Math.round(rate * daysInMo);
+  }, [currentMonthRevenue]);
 
   const revenueData = useMemo(() => {
     const now = new Date();
@@ -525,12 +796,12 @@ const Dashboard = () => {
     return buckets;
   }, [apts]);
 
-  // ── chart theming ────────────────────────────────────────────────────────
+  // ── chart theming ─────────────────────────────────────────────────────────
   const chartStroke = theme === 'dark' ? '#60a5fa' : '#2563eb';
   const gridStroke  = theme === 'dark' ? '#1e293b' : '#f1f5f9';
   const tickFill    = theme === 'dark' ? '#475569' : '#94a3b8';
 
-  // ── handlers ─────────────────────────────────────────────────────────────
+  // ── handlers ──────────────────────────────────────────────────────────────
   const handleSave = fd => {
     addAppointment({
       id: Date.now(),
@@ -548,30 +819,26 @@ const Dashboard = () => {
   };
 
   const setupChecklist = useMemo(() => [
-    { id: 'profile',  label: 'Complete business profile', done: Boolean(data.settings?.onboardingComplete), path: '/settings', cta: 'Open Settings' },
-    { id: 'client',   label: 'Add your first client', done: (data.clients || []).length > 0, path: '/clients', cta: 'Add Client' },
-    { id: 'schedule', label: 'Create your first appointment', done: (data.appointments || []).length > 0, path: '/schedule', cta: 'New Appointment' },
-    { id: 'invoice',  label: 'Create your first invoice', done: (data.invoices || []).length > 0, path: '/invoices', cta: 'New Invoice' },
-    { id: 'journal',  label: 'Log your first journal entry', done: (data.journalEntries || []).length > 0, path: '/journal', cta: 'Add Entry' },
+    { id: 'profile',  label: 'Complete business profile',      done: Boolean(data.settings?.onboardingComplete), path: '/settings', cta: 'Open Settings'   },
+    { id: 'client',   label: 'Add your first client',          done: (data.clients || []).length > 0,            path: '/clients',  cta: 'Add Client'      },
+    { id: 'schedule', label: 'Create your first appointment',  done: (data.appointments || []).length > 0,       path: '/schedule', cta: 'New Appointment' },
+    { id: 'invoice',  label: 'Create your first invoice',      done: (data.invoices || []).length > 0,           path: '/invoices', cta: 'New Invoice'     },
+    { id: 'journal',  label: 'Log your first journal entry',   done: (data.journalEntries || []).length > 0,     path: '/journal',  cta: 'Add Entry'       },
   ], [data.settings, data.clients, data.appointments, data.invoices, data.journalEntries]);
 
-  const greeting = getGreeting();
+  const greeting  = getGreeting();
   const GreetIcon = greeting.Icon;
 
   const agentActivityLine = (() => {
-    const suggestions = data.agentSuggestions || [];
+    const suggestions  = data.agentSuggestions || [];
     const pendingCount = suggestions.filter(s => s.status === 'pending').length;
-    if (pendingCount > 0) {
-      return `You have ${pendingCount} agent draft${pendingCount > 1 ? 's' : ''} awaiting review.`;
-    }
-    const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    if (pendingCount > 0) return `You have ${pendingCount} agent draft${pendingCount > 1 ? 's' : ''} awaiting review.`;
+    const midnight       = new Date(); midnight.setHours(0, 0, 0, 0);
     const overnightCount = suggestions.filter(s => {
       const t = s.createdAt ? new Date(s.createdAt).getTime() : 0;
       return t >= midnight.getTime();
     }).length;
-    if (overnightCount > 0) {
-      return `Your agent prepared ${overnightCount} closeout${overnightCount > 1 ? 's' : ''} overnight.`;
-    }
+    if (overnightCount > 0) return `Your agent prepared ${overnightCount} closeout${overnightCount > 1 ? 's' : ''} overnight.`;
     return 'Your agent is standing by for the next appointment.';
   })();
 
@@ -581,6 +848,8 @@ const Dashboard = () => {
     'Core Service: Let the AI Closeout Agent draft next-step actions grounded in jurisdiction policy records.',
     'Owner focus: Review revenue velocity and net profit margins to optimize your business growth.',
   ];
+
+  const pendingAgentDrafts = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
 
   return (
     <div className="min-h-screen pb-24">
@@ -607,8 +876,8 @@ const Dashboard = () => {
                   <p className="mt-0.5 text-xs text-white/75">
                     {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
                   </p>
-                  <p className="mt-1.5 text-xs font-medium text-cyan-300/90 flex items-center gap-1.5">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-cyan-300/90">
+                    <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
                     {agentActivityLine}
                   </p>
                 </div>
@@ -633,19 +902,34 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* ══ AGENT SUGGESTIONS ════════════════════════════════════════════ */}
+        {/* ══ AGENT COMMAND STRIP (always visible) ═══════════════════════════ */}
+        {!loading && (
+          <AgentCommandStrip
+            data={data}
+            navigate={navigate}
+            onApprove={(s) => { approveAgentSuggestion?.(s.id); navigate('/journal'); }}
+            onReject={(s) => rejectAgentSuggestion?.(s.id)}
+          />
+        )}
+
+        {/* ══ AGENT SUGGESTIONS (pending drafts panel) ════════════════════════ */}
         {(data.agentSuggestions || []).filter(s => s.status === 'pending').length > 0 && (
           <Card>
             <CardContent className="p-4">
               <PendingSuggestionsPanel
                 suggestions={(data.agentSuggestions || []).filter(s => s.status === 'pending')}
                 onApprove={(s) => { approveAgentSuggestion?.(s.id); navigate('/journal'); }}
-                onEdit={(s) => navigate('/agent')}
+                onEdit={() => navigate('/agent')}
                 onReject={(s) => rejectAgentSuggestion?.(s.id)}
                 onViewAll={() => navigate('/agent')}
               />
             </CardContent>
           </Card>
+        )}
+
+        {/* ══ AGENT INSIGHT CARDS ════════════════════════════════════════════ */}
+        {!loading && (
+          <AgentInsightCards data={data} navigate={navigate} />
         )}
 
         {/* ══ KPI STRIP ═══════════════════════════════════════════════════════ */}
@@ -763,7 +1047,6 @@ const Dashboard = () => {
                   )
                 }
               </CardContent>
-
             </Card>
 
             {/* Activity Feed */}
@@ -785,7 +1068,7 @@ const Dashboard = () => {
           {/* RIGHT — 4 cols */}
           <aside className="space-y-4 sm:space-y-5 xl:col-span-4">
 
-            {/* Monthly Goal */}
+            {/* Monthly Goal + Projection */}
             <Card className="border-slate-200/70 dark:border-slate-700">
               <CardHeader className="px-5 py-3.5">
                 <CardTitle className="text-sm font-semibold">Monthly Goal</CardTitle>
@@ -806,15 +1089,35 @@ const Dashboard = () => {
                   )
                 }
                 <div className="mt-3 grid w-full grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
+                  <button onClick={() => navigate('/invoices')} className="w-full rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">This month</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${currentMonthRevenue.toLocaleString()}</p>
                   </button>
-                  <button onClick={() => navigate('/invoices')} className="rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60 w-full">
+                  <button onClick={() => navigate('/invoices')} className="w-full rounded-lg bg-slate-50 p-2.5 text-center dark:bg-slate-800/60">
                     <p className="text-[10px] uppercase tracking-wide text-slate-400">Remaining</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${Math.max(0, monthlyGoal - currentMonthRevenue).toLocaleString()}</p>
                   </button>
                 </div>
+                {/* Projection row */}
+                {!loading && revenueProjection !== null && (
+                  <div className={`mt-2 w-full rounded-lg p-2.5 text-center ${
+                    revenueProjection >= monthlyGoal
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                      : 'bg-blue-50 dark:bg-blue-900/20'
+                  }`}>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-400">Agent Projection</p>
+                    <p className={`text-sm font-bold ${
+                      revenueProjection >= monthlyGoal
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      ${revenueProjection.toLocaleString()} est. month-end
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {revenueProjection >= monthlyGoal ? '🎯 On track to hit goal' : `$${Math.max(0, monthlyGoal - revenueProjection).toLocaleString()} short of goal`}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -824,7 +1127,7 @@ const Dashboard = () => {
                 <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 pt-0">
-                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} pendingAgentDrafts={(data.agentSuggestions || []).filter(s => s.status === 'pending').length} />
+                <QuickActions navigate={navigate} onNew={() => setIsModalOpen(true)} planTier={planTier} userRole={userRole} pendingAgentDrafts={pendingAgentDrafts} />
               </CardContent>
             </Card>
 
