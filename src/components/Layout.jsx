@@ -73,7 +73,7 @@ const LayoutInner = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { data, updateSettings } = useData();
+  const { data, updateSettings, checkAutoScanAR } = useData();
 
   const planTier = data.settings?.planTier || 'free';
   const userRole = data.settings?.userRole || 'owner';
@@ -94,6 +94,10 @@ const LayoutInner = ({ children }) => {
     document.addEventListener('fullscreenchange', onFs);
     onFs();
     return () => document.removeEventListener('fullscreenchange', onFs);
+  // FIX 6: Run auto AR scan once on mount when setting is enabled
+  useEffect(() => {
+    checkAutoScanAR?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleFullscreen = async () => {

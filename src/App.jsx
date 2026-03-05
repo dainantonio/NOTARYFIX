@@ -27,6 +27,9 @@ const Settings       = lazy(() => import('./pages/Settings'));
 const Mileage        = lazy(() => import('./pages/mileage'));
 const FormGuide      = lazy(() => import('./pages/FormGuide'));
 
+// FIX 3: Public payment page for /pay/:invoiceId links
+const PayInvoicePage = lazy(() => import('./pages/PayInvoicePage'));
+
 // Gated / admin
 const SignerPortal   = lazy(() => import('./pages/SignerPortal'));
 const TeamDispatch   = lazy(() => import('./pages/TeamDispatch'));
@@ -53,7 +56,10 @@ const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing', '/feat
 const RouteGuard = ({ children }) => {
   const location = useLocation();
   const { data } = useData();
-  const isPublic = PUBLIC_ROUTES.includes(location.pathname) || location.pathname.startsWith('/portal');
+  const isPublic =
+    PUBLIC_ROUTES.includes(location.pathname) ||
+    location.pathname.startsWith('/portal') ||
+    location.pathname.startsWith('/pay/'); // FIX 3: payment pages are public
   const onboarded = data.settings?.onboardingComplete;
 
   if (!isPublic && !onboarded) {
@@ -70,7 +76,11 @@ const RouteGuard = ({ children }) => {
 // ─── Layout wrapper — hide sidebar shell on public pages ─────────────────────
 const AppLayout = ({ children }) => {
   const location = useLocation();
-  if (PUBLIC_ROUTES.includes(location.pathname) || location.pathname.startsWith('/portal')) return children;
+  if (
+    PUBLIC_ROUTES.includes(location.pathname) ||
+    location.pathname.startsWith('/portal') ||
+    location.pathname.startsWith('/pay/') // FIX 3: payment page has no sidebar
+  ) return children;
   return <Layout>{children}</Layout>;
 };
 
@@ -82,6 +92,9 @@ function App() {
           <Routes>
             {/* Public signer portal — no auth, no layout */}
             <Route path="/portal/:id" element={<PublicSignerView />} />
+
+            {/* FIX 3: Public payment page — no auth, no layout */}
+            <Route path="/pay/:invoiceId" element={<PayInvoicePage />} />
 
             {/* All other routes */}
             <Route path="/*" element={
@@ -107,16 +120,20 @@ function App() {
                     <Route path="/arrive/:id"      element={<ArriveMode />} />
                     <Route path="/settings"        element={<Settings />} />
                     <Route path="/mileage"         element={<Mileage />} />
-                    <Route path="/form-guide"      element={<FormGuide />} />
+
+                    {/* FIX 5: /form-guide is PRO — gate it */}
+                    <Route path="/form-guide"      element={<GatedRoute featureKey="formGuide"><FormGuide /></GatedRoute>} />
 
                     {/* Gated */}
                     <Route path="/signer-portal"   element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
                     <Route path="/team-dispatch"   element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
                     <Route path="/ai-trainer"      element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
-                    <Route path="/admin"           element={<Admin />} />
-                    <Route path="/agent"           element={<AgentPage />} />
-                    <Route path="/audit"           element={<AuditPage />} />
-                    <Route path="/review"          element={<ReviewQueuePage />} />
+
+                    {/* FIX 5: /admin, /agent, /review are gated — wrap with GatedRoute */}
+                    <Route path="/admin"           element={<GatedRoute featureKey="admin"><Admin /></GatedRoute>} />
+                    <Route path="/agent"           element={<GatedRoute featureKey="agent"><AgentPage /></GatedRoute>} />
+                    <Route path="/audit"           element={<GatedRoute featureKey="agent"><AuditPage /></GatedRoute>} />
+                    <Route path="/review"          element={<GatedRoute featureKey="agent"><ReviewQueuePage /></GatedRoute>} />
 
                     {/* Catch-all */}
                     <Route path="*" element={<Navigate to="/" replace />} />

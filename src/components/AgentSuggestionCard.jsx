@@ -41,7 +41,9 @@ const ActionLabel = ({ type }) => {
   return <span>{labels[type] || type}</span>;
 };
 
-export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject }) => {
+// FIX 4: Split onEdit into onOpenEdit (navigate) and onPatchDraft (id+patch save)
+// Keep onEdit for backward compat with legacy callers.
+export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatchDraft, onEdit, onReject }) => {
   const [expanded, setExpanded] = useState(false);
   const [sourceExpanded, setSourceExpanded] = useState(false);
   const [isEditingInline, setIsEditingInline] = useState(false);
@@ -62,7 +64,9 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
   const isLeadIntake = suggestion.type === 'lead_intake';
 
   const handleSaveEdits = () => {
-    onEdit?.(suggestion.id, {
+    // FIX 4: use onPatchDraft for saving inline edits (id + patch pattern)
+    // Falls back gracefully — does not call navigate-based onEdit with wrong args
+    const patch = {
       draftJournal: {
         ...suggestion.draftJournal,
         actType: editedFields.actType,
@@ -70,7 +74,10 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
         notes: editedFields.notes,
         documentDescription: editedFields.documentDescription,
       },
-    });
+    };
+    if (typeof onPatchDraft === 'function') {
+      onPatchDraft(suggestion.id, patch);
+    }
     setIsEditingInline(false);
   };
 
@@ -245,7 +252,7 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
               Reject
             </button>
             <button
-              onClick={() => onEdit?.(suggestion)}
+              onClick={() => (onOpenEdit || onEdit)?.(suggestion)}
               className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -542,7 +549,8 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onEdit, onReject })
 };
 
 // ── Pending suggestions panel (for Dashboard embed) ─────────────────────────
-export const PendingSuggestionsPanel = ({ suggestions = [], onApprove, onEdit, onReject, onViewAll }) => {
+// FIX 4: Added onOpenEdit and onPatchDraft forwarding
+export const PendingSuggestionsPanel = ({ suggestions = [], onApprove, onOpenEdit, onPatchDraft, onEdit, onReject, onViewAll }) => {
   if (suggestions.length === 0) return null;
 
   return (
@@ -568,6 +576,8 @@ export const PendingSuggestionsPanel = ({ suggestions = [], onApprove, onEdit, o
           key={s.id}
           suggestion={s}
           onApprove={onApprove}
+          onOpenEdit={onOpenEdit}
+          onPatchDraft={onPatchDraft}
           onEdit={onEdit}
           onReject={onReject}
         />
