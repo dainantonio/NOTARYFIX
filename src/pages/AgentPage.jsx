@@ -5,13 +5,14 @@ import {
   Sparkles, CheckCircle2, XCircle, Clock, TrendingUp, FileText,
   Receipt, AlertTriangle, ChevronDown, ChevronUp, Pencil, Activity,
   Zap, Shield, BarChart2, Settings2, BellRing, Bell, UserPlus, RefreshCw, Send, X,
-  ScrollText, DollarSign, Calendar
+  ScrollText, DollarSign, Calendar, MessageSquare, ExternalLink, ChevronRight
 } from 'lucide-react';
 import { Card, CardContent, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { AgentSuggestionCard } from '../components/AgentSuggestionCard';
 import { toast } from '../hooks/useLinker';
 import { useAgentTriggers } from '../hooks/useAgentTriggers';
+import { getGuardianResponse, GUARDIAN_ROUTE_MAP } from '../services/guardianService';
 
 // ─── KPI card ────────────────────────────────────────────────────────────────
 const KpiCard = ({ label, value, sub, color = 'text-slate-800 dark:text-white', icon: Icon }) => (
@@ -137,6 +138,63 @@ const AgentPage = () => {
   // Closeout playbook state
   const [closeoutRunning, setCloseoutRunning] = useState(false);
   const closeoutRunningRef = useRef(false);
+
+  // ── Guardian compliance chat ──────────────────────────────────────────────
+  const [guardianOpen, setGuardianOpen] = useState(false);
+  const [guardianMessages, setGuardianMessages] = useState([]);
+  const [guardianInput, setGuardianInput] = useState('');
+  const [guardianLoading, setGuardianLoading] = useState(false);
+  const [guardianCtx, setGuardianCtx] = useState({
+    state: '',
+    appointmentType: '',
+    phase: 'BEFORE APPOINTMENT',
+    journalStatus: 'not started',
+  });
+  const guardianBottomRef = useRef(null);
+
+  // Pre-fill state from settings
+  React.useEffect(() => {
+    const s = data.settings?.notaryState || data.settings?.state || '';
+    if (s) setGuardianCtx(c => ({ ...c, state: s }));
+  }, [data.settings]);
+
+  React.useEffect(() => {
+    guardianBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [guardianMessages]);
+
+  const handleGuardianSend = async (overrideMsg) => {
+    const msg = overrideMsg || guardianInput.trim();
+    if (!msg || guardianLoading) return;
+    if (!overrideMsg) setGuardianInput('');
+    setGuardianMessages(prev => [...prev, { role: 'user', text: msg }]);
+    setGuardianLoading(true);
+    try {
+      const res = await getGuardianResponse(msg, guardianCtx);
+      setGuardianMessages(prev => [...prev, { role: 'guardian', res }]);
+    } catch (err) {
+      setGuardianMessages(prev => [...prev, { role: 'guardian', res: {
+        summary: err.message || 'Something went wrong. Please try again.',
+        action: 'Check that your VITE_GEMINI_API_KEY is set in Vercel environment variables.',
+        details: [],
+        risk_level: 'HIGH',
+        source: { title: 'Error', url: '', where_found: '', last_updated: '' },
+        confidence: 'None',
+        disclaimer: '',
+        clarifying_questions: [],
+        next_ctas: [],
+      }}]);
+    } finally {
+      setGuardianLoading(false);
+    }
+  };
+
+  const handleGuardianCta = (cta) => {
+    if (cta.type === 'nav') {
+      navigate(GUARDIAN_ROUTE_MAP[cta.target] || '/agent');
+    } else if (cta.type === 'question') {
+      handleGuardianSend(cta.q);
+    }
+  };
 
   const handleGenerateDigest = async () => {
     setDigestLoading(true);
@@ -520,6 +578,132 @@ const AgentPage = () => {
           )}
         </Card>
       </div>
+
+      {/* ── Guardian Compliance Chat ──────────────────────────────────────────── */}
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <button
+            onClick={() => setGuardianOpen(o => !o)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-blue-500" />
+              <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Guardian Compliance Chat</p>
+              <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">AI · Grounded</span>
+            </div>
+            {guardianOpen
+              ? <ChevronUp className="h-4 w-4 text-slate-400" />
+              : <ChevronDown className="h-4 w-4 text-slate-400" />}
+          </button>
+
+          {guardianOpen && (
+            <div className="space-y-4">
+              {/* Context selectors */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">State</label>
+                  <select
+                    value={guardianCtx.state}
+                    onChange={e => setGuardianCtx(c => ({ ...c, state: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select state</option>
+                    {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Appointment Type</label>
+                  <select
+                    value={guardianCtx.appointmentType}
+                    onChange={e => setGuardianCtx(c => ({ ...c, appointmentType: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select type</option>
+                    {['Loan Signing','Power of Attorney','Affidavit','Deed','Will/Trust','Medical Directive','General Notarization'].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Phase</label>
+                  <div className="flex gap-1">
+                    {PHASES.map(p => (
+                      <button key={p} onClick={() => setGuardianCtx(c => ({ ...c, phase: p }))}
+                        className={`flex-1 text-[9px] font-bold uppercase py-1.5 rounded-md border transition-all ${guardianCtx.phase === p ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 border-slate-800 dark:border-slate-200' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
+                        {p === 'BEFORE APPOINTMENT' ? 'Before' : p === 'DURING SIGNING' ? 'During' : 'After'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick chips */}
+              <div className="flex flex-wrap gap-2">
+                {QUICK_CHIPS.map(chip => (
+                  <button key={chip.label}
+                    onClick={() => handleGuardianSend(chip.q)}
+                    disabled={!guardianCtx.state || guardianLoading}
+                    className="px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors">
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Messages */}
+              {guardianMessages.length > 0 && (
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                  {guardianMessages.map((m, i) => (
+                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${m.role === 'user' ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-tr-none text-sm' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-none'}`}>
+                        {m.role === 'user'
+                          ? <p>{m.text}</p>
+                          : <GuardianMessage res={m.res} onCta={handleGuardianCta} />}
+                      </div>
+                    </div>
+                  ))}
+                  {guardianLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
+                        <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                        <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                      </div>
+                    </div>
+                  )}
+                  <div ref={guardianBottomRef} />
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={guardianInput}
+                  onChange={e => setGuardianInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleGuardianSend()}
+                  placeholder={guardianCtx.state ? 'Ask about compliance, fees, ID rules…' : 'Select a state above first…'}
+                  disabled={!guardianCtx.state || guardianLoading}
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                />
+                <button
+                  onClick={() => handleGuardianSend()}
+                  disabled={!guardianInput.trim() || !guardianCtx.state || guardianLoading}
+                  className="px-4 py-2.5 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-xl hover:bg-black dark:hover:bg-white transition-colors disabled:opacity-40"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+
+              <p className="text-[10px] text-slate-400 text-center">
+                Grounded in 50-state primary sources · Not legal advice · Verify with official state statutes
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
     </div>
   );
 };
