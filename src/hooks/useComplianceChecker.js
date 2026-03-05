@@ -1,8 +1,23 @@
 // src/hooks/useComplianceChecker.js
-// Phase 1 — State-by-state compliance rules + missing field detection
-// Each rule has: required fields, conditional rules, fee caps, fix instructions
+// Compliance rules engine — journal entry validation against state rules.
+//
+// Two-layer architecture:
+//   1. HARDCODED_STATE_RULES — built-in rules for 20 high-volume states.
+//      Always available, no DataContext dependency.
+//   2. Admin-published stateRules (from DataContext) — can override fee caps,
+//      thumbprint requirements, and RON status for any of the 50 states.
+//      When an admin-published rule exists for a state, it takes precedence for
+//      those fields while the hardcoded required-field/conditional logic is preserved.
+//
+// Usage:
+//   const { check, rules, stateCode } = useComplianceChecker('CA');
+//   const { check } = useComplianceChecker('CA', data.stateRules);  // live admin data
 
-export const STATE_RULES = {
+import { useContext } from 'react';
+
+// ─── HARDCODED BASELINE (20 high-volume states) ───────────────────────────────
+// Used as fallback when no admin-published rule exists for a state.
+export const HARDCODED_STATE_RULES = {
   AL: {
     name: 'Alabama',
     requiredJournalFields: ['signerName', 'idType', 'actType', 'date'],
@@ -10,7 +25,7 @@ export const STATE_RULES = {
     feeCap: 5,
     notes: 'Alabama caps notary fees at $5 per notarization.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name as shown on their ID.',
+      signerName: "Enter the signer's full legal name as shown on their ID.",
       idType: 'Select the type of ID presented (Driver\'s License, Passport, etc.).',
       actType: 'Select the act type performed (Acknowledgment, Jurat, etc.).',
     },
@@ -22,7 +37,7 @@ export const STATE_RULES = {
     feeCap: 15,
     notes: 'Alaska allows up to $15 per notarial act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       idType: 'Record the ID type presented by the signer.',
     },
   },
@@ -35,8 +50,8 @@ export const STATE_RULES = {
     feeCap: 10,
     notes: 'Arizona requires signer address in the journal for all acts.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name as shown on their ID.',
-      signerAddress: 'Enter the signer\'s residential address (street, city, state, zip).',
+      signerName: "Enter the signer's full legal name as shown on their ID.",
+      signerAddress: "Enter the signer's residential address (street, city, state, zip).",
       idType: 'Select the type of ID presented.',
       idIssuingState: 'Select the state or country that issued the ID.',
     },
@@ -52,11 +67,11 @@ export const STATE_RULES = {
     notes: 'California requires complete signer ID information including expiration date. Thumbprint is legally required for real-property related documents.',
     fieldFixes: {
       signerName: 'Enter full legal name exactly as it appears on the presented ID.',
-      signerAddress: 'Required by CA law — enter the signer\'s residential address.',
+      signerAddress: "Required by CA law — enter the signer's residential address.",
       idType: 'California requires the specific ID type. Select from the dropdown.',
       idIssuingState: 'Record the state or country that issued the ID.',
-      idExpiration: 'California requires the ID expiration date. Check the signer\'s ID.',
-      thumbprintTaken: 'For real-property docs and POAs, CA law requires you to take a thumbprint. Mark this field.',
+      idExpiration: "California requires the ID expiration date. Check the signer's ID.",
+      thumbprintTaken: "For real-property docs and POAs, CA law requires you to take a thumbprint. Mark this field.",
     },
   },
   CO: {
@@ -66,7 +81,7 @@ export const STATE_RULES = {
     feeCap: 10,
     notes: 'Colorado allows electronic journal entries. Fee cap is $10 per act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       idType: 'Record the ID type used for identification.',
     },
   },
@@ -77,7 +92,7 @@ export const STATE_RULES = {
     feeCap: 5,
     notes: 'Connecticut caps fees at $5 per notarization.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
     },
   },
   FL: {
@@ -89,8 +104,8 @@ export const STATE_RULES = {
     feeCap: 10,
     notes: 'Florida requires signer address. Electronic notarization (RON) is permitted.',
     fieldFixes: {
-      signerName: 'Enter signer\'s full legal name.',
-      signerAddress: 'Florida law requires the signer\'s address in the journal.',
+      signerName: "Enter signer's full legal name.",
+      signerAddress: "Florida law requires the signer's address in the journal.",
       idType: 'Specify the type of ID the signer presented.',
     },
   },
@@ -101,7 +116,7 @@ export const STATE_RULES = {
     feeCap: 2,
     notes: 'Georgia has a very low fee cap of $2 per notarial act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       idType: 'Record the form of ID presented.',
     },
   },
@@ -112,8 +127,8 @@ export const STATE_RULES = {
     feeCap: 1,
     notes: 'Illinois has a $1 per signature fee cap — very strict. Journal must include signer address.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
-      signerAddress: 'Illinois requires the signer\'s address in the notary record.',
+      signerName: "Enter the signer's full legal name.",
+      signerAddress: "Illinois requires the signer's address in the notary record.",
       idType: 'Record the form of identification used.',
       idIssuingState: 'Note which state or country issued the ID.',
     },
@@ -125,7 +140,7 @@ export const STATE_RULES = {
     feeCap: 4,
     notes: 'Maryland caps fees at $4 per notarial act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
     },
   },
   MI: {
@@ -135,7 +150,7 @@ export const STATE_RULES = {
     feeCap: 10,
     notes: 'Michigan notaries should keep a journal even though not legally required — best practice.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full name.',
+      signerName: "Enter the signer's full name.",
     },
   },
   MN: {
@@ -145,8 +160,8 @@ export const STATE_RULES = {
     feeCap: 5,
     notes: 'Minnesota requires signer address in the journal.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
-      signerAddress: 'Enter the signer\'s home address.',
+      signerName: "Enter the signer's full legal name.",
+      signerAddress: "Enter the signer's home address.",
     },
   },
   NJ: {
@@ -156,7 +171,7 @@ export const STATE_RULES = {
     feeCap: 2.50,
     notes: 'New Jersey caps fees at $2.50 per notarial act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
     },
   },
   NV: {
@@ -168,7 +183,7 @@ export const STATE_RULES = {
     feeCap: 15,
     notes: 'Nevada has strict requirements: thumbprint for every act, full ID details required.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       signerAddress: 'Nevada law requires the signer\'s address.',
       idType: 'Record the exact ID type.',
       idIssuingState: 'Record issuing state or country.',
@@ -184,7 +199,7 @@ export const STATE_RULES = {
     feeCap: 2,
     notes: 'New York does not legally require a journal but best practice is to keep one. Fee cap is $2.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
     },
   },
   NC: {
@@ -192,9 +207,9 @@ export const STATE_RULES = {
     requiredJournalFields: ['signerName', 'signerAddress', 'idType', 'actType', 'date'],
     conditionalRules: [],
     feeCap: 10,
-    notes: 'North Carolina requires the signer\'s address in the notary journal.',
+    notes: "North Carolina requires the signer's address in the notary journal.",
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       signerAddress: 'NC law requires the signer address in the journal.',
       idType: 'Record the type of ID presented.',
     },
@@ -206,10 +221,10 @@ export const STATE_RULES = {
       { field: 'witnessRequired', condition: 'actType === "Jurat"', message: 'Ohio jurats require the signer to take an oath — document this.' },
     ],
     feeCap: null,
-    notes: 'Ohio requires the signer\'s full address in the journal. No statutory fee cap for notaries.',
+    notes: "Ohio requires the signer's full address in the journal. No statutory fee cap for notaries.",
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name as it appears on their ID.',
-      signerAddress: 'Ohio requires the signer\'s full street address (e.g., 1020 County Road 3, Chesapeake, OH 45619).',
+      signerName: "Enter the signer's full legal name as it appears on their ID.",
+      signerAddress: "Ohio requires the signer's full street address (e.g., 1020 County Road 3, Chesapeake, OH 45619).",
       idType: 'Select the type of ID the signer presented.',
       idIssuingState: 'Select the state that issued the ID (typically OH for Ohio residents).',
     },
@@ -221,7 +236,7 @@ export const STATE_RULES = {
     feeCap: 5,
     notes: 'Pennsylvania caps fees at $5 per notarial act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       idType: 'Record the form of identification.',
     },
   },
@@ -232,7 +247,7 @@ export const STATE_RULES = {
     feeCap: 6,
     notes: 'Texas caps fees at $6 per notarized signature. Journal is not legally required but strongly recommended.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       idType: 'Record the type of ID used for identification.',
     },
   },
@@ -243,7 +258,7 @@ export const STATE_RULES = {
     feeCap: 5,
     notes: 'Virginia caps fees at $5 per notarial act.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
     },
   },
   WA: {
@@ -253,18 +268,94 @@ export const STATE_RULES = {
     feeCap: 10,
     notes: 'Washington permits Remote Online Notarization (RON). Must use an approved platform and retain AV records for 10 years.',
     fieldFixes: {
-      signerName: 'Enter the signer\'s full legal name.',
+      signerName: "Enter the signer's full legal name.",
       idType: 'Record the type of identification presented.',
     },
   },
 };
 
+// Keep backward-compatible export alias
+export const STATE_RULES = HARDCODED_STATE_RULES;
+
+// ─── ADMIN RULE MERGE ─────────────────────────────────────────────────────────
+// Given an array of admin-published stateRules (from DataContext), find the live
+// published rule for a given state code and merge it with the hardcoded baseline.
+//
+// Admin-published rule overrides:
+//   feeCap           ← adminRule.maxFeePerAct
+//   thumbprint req   ← adminRule.thumbprintRequired (adds/removes conditional)
+//   ronPermitted     ← adminRule.ronPermitted (appended to notes)
+//   notes            ← adminRule.notes if present
+//
+// Required-field logic and fieldFixes remain from the hardcoded baseline (or a
+// sensible default for states not in the hardcoded map).
+function buildEffectiveRules(stateCode, adminStateRules = []) {
+  const published = (adminStateRules || []).find(
+    (r) => r.stateCode === stateCode && r.publishedAt && r.status !== 'archived'
+  );
+  const baseline = HARDCODED_STATE_RULES[stateCode] || {
+    name: stateCode,
+    requiredJournalFields: ['signerName', 'idType', 'actType', 'date'],
+    conditionalRules: [],
+    feeCap: null,
+    notes: `No built-in rules for ${stateCode}. Rules sourced from Admin dataset.`,
+    fieldFixes: {
+      signerName: "Enter the signer's full legal name.",
+      idType: 'Record the type of ID presented.',
+      actType: 'Select the notarial act type.',
+    },
+  };
+
+  if (!published) return baseline;
+
+  // Merge admin-published data over baseline
+  const merged = { ...baseline };
+
+  // Fee cap from admin data
+  if (published.maxFeePerAct != null && published.maxFeePerAct > 0) {
+    merged.feeCap = published.maxFeePerAct;
+  }
+
+  // Thumbprint conditional — inject or remove based on admin setting
+  if (published.thumbprintRequired === true) {
+    const alreadyHasThumb = merged.conditionalRules.some((r) => r.field === 'thumbprintTaken');
+    if (!alreadyHasThumb) {
+      merged.conditionalRules = [
+        ...merged.conditionalRules,
+        {
+          field: 'thumbprintTaken',
+          condition: 'true',
+          message: `${merged.name} requires a thumbprint for every notarial act per published state policy.`,
+        },
+      ];
+    }
+  } else if (published.thumbprintRequired === false) {
+    merged.conditionalRules = merged.conditionalRules.filter((r) => r.field !== 'thumbprintTaken');
+  }
+
+  // Notes — prefer admin notes if set
+  if (published.notes && published.notes.trim()) {
+    const ronNote = published.ronPermitted ? ' RON is permitted.' : ' RON is NOT permitted.';
+    merged.notes = published.notes + ronNote;
+  }
+
+  // Source URL annotation — surfaces in checker output for transparency
+  merged.officialSourceUrl = published.officialSourceUrl || null;
+  merged.adminPublished = true;
+
+  return merged;
+}
+
+// ─── CORE CHECKER ─────────────────────────────────────────────────────────────
 /**
  * Check a journal entry against state compliance rules.
+ * @param {object} journalEntry  - The journal record to validate
+ * @param {string} stateCode     - Two-letter state code
+ * @param {Array}  adminStateRules - Published stateRules from DataContext (optional)
  * Returns: { errors, warnings, missingRequired, conditionalFlags, feeCap, stateNotes, score }
  */
-export function checkCompliance(journalEntry = {}, stateCode = 'WA') {
-  const rules = STATE_RULES[stateCode] || STATE_RULES['WA'];
+export function checkCompliance(journalEntry = {}, stateCode = 'WA', adminStateRules = []) {
+  const rules = buildEffectiveRules(stateCode, adminStateRules);
   const errors = [];
   const warnings = [];
   const missingRequired = [];
@@ -288,7 +379,6 @@ export function checkCompliance(journalEntry = {}, stateCode = 'WA') {
   // Check conditional rules
   for (const rule of rules.conditionalRules || []) {
     try {
-      // Safe evaluation of condition with journal context
       const isRealPropertyDoc = /deed|trust|mortgage|power of attorney/i.test(journalEntry.documentDescription || '');
       const actType = journalEntry.actType || '';
       const idType = journalEntry.idType || '';
@@ -303,7 +393,7 @@ export function checkCompliance(journalEntry = {}, stateCode = 'WA') {
         }
       }
     } catch {
-      // ignore parse errors
+      // ignore parse errors in condition expressions
     }
   }
 
@@ -327,6 +417,8 @@ export function checkCompliance(journalEntry = {}, stateCode = 'WA') {
     conditionalFlags,
     feeCap: rules.feeCap,
     stateNotes: rules.notes,
+    officialSourceUrl: rules.officialSourceUrl || null,
+    adminPublished: rules.adminPublished || false,
     score,
     isCompliant: errors.length === 0,
     allIssues: [
@@ -336,13 +428,23 @@ export function checkCompliance(journalEntry = {}, stateCode = 'WA') {
   };
 }
 
+// ─── REACT HOOK ───────────────────────────────────────────────────────────────
 /**
- * React hook — returns a compliance check function bound to the current state setting.
+ * React hook — returns a compliance check function bound to the current state
+ * setting and the live admin-published stateRules from DataContext.
+ *
+ * Usage (preferred — uses live admin data automatically):
+ *   import { useData } from '../context/DataContext';
+ *   const { data } = useData();
+ *   const { check, rules } = useComplianceChecker('CA', data.stateRules);
+ *
+ * Usage (standalone, hardcoded rules only):
+ *   const { check, rules } = useComplianceChecker('CA');
  */
-export function useComplianceChecker(stateCode = 'WA') {
-  const check = (journalEntry) => checkCompliance(journalEntry, stateCode);
-  const rules = STATE_RULES[stateCode] || STATE_RULES['WA'];
-  return { check, rules, stateCode };
+export function useComplianceChecker(stateCode = 'WA', adminStateRules = []) {
+  const effectiveRules = buildEffectiveRules(stateCode, adminStateRules);
+  const check = (journalEntry) => checkCompliance(journalEntry, stateCode, adminStateRules);
+  return { check, rules: effectiveRules, stateCode };
 }
 
 export default useComplianceChecker;
