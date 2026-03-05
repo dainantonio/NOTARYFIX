@@ -153,7 +153,7 @@ const AgentPage = () => {
   };
 
   const handleEdit = (suggestion) => {
-    // Navigate to journal with the linked appointment pre-filled for editing
+    // FIX 4: onOpenEdit callback — navigates to the correct page for manual editing
     const aptId = suggestion.appointmentId || suggestion.linkedAppointmentId;
     navigate('/journal', { state: aptId ? { prefillFromAppointment: aptId } : undefined });
   };
@@ -303,12 +303,10 @@ const AgentPage = () => {
                 className="w-full"
                 disabled={closeoutRunning}
                 onClick={async () => {
-                  // Prevent double-fire
                   if (closeoutRunningRef.current) return;
                   closeoutRunningRef.current = true;
                   setCloseoutRunning(true);
                   try {
-                    // Find most recent completed appointment without a pending suggestion
                     const pendingApptIds = new Set((data.agentSuggestions || []).filter(s => s.status === 'pending' && s.type === 'closeout').map(s => String(s.appointmentId)));
                     const target = [...(data.appointments || [])]
                       .filter(a => a.status === 'completed' && !pendingApptIds.has(String(a.id)))
@@ -405,7 +403,8 @@ const AgentPage = () => {
                 suggestion={s}
                 onApprove={() => handleApprove(s)}
                 onReject={() => handleReject(s)}
-                onEdit={() => handleEdit(s)}
+                onOpenEdit={() => handleEdit(s)}
+                onPatchDraft={(id, patch) => editAgentSuggestion?.(id, patch)}
               />
             ))}
           </div>

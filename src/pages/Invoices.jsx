@@ -55,6 +55,8 @@ const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientNa
       due: formData.due,
       status: formData.status,
       notes: formData.notes || '',
+      // FIX 2: preserve linkedAppointmentId from prefill so cross-linking works
+      ...(initialInvoice?.linkedAppointmentId && { linkedAppointmentId: initialInvoice.linkedAppointmentId }),
     });
     setSmartInput('');
     onClose();
@@ -137,6 +139,9 @@ const Invoices = () => {
   useEffect(() => {
     const incoming = location.state?.statusFilter;
     const prefillClient = location.state?.prefillClientName;
+    const prefillAptId = location.state?.prefillFromAppointment;   // FIX 2
+    const prefillInvData = location.state?.prefillInvoice;         // FIX 2
+    const prefillSessionId = location.state?.prefillFromSession;   // FIX 2
     let shouldClearState = false;
 
     if (Array.isArray(incoming) && incoming.length > 0) {
@@ -151,8 +156,55 @@ const Invoices = () => {
       shouldClearState = true;
     }
 
+    // FIX 2: prefillFromAppointment — look up appointment and prefill modal
+    if (prefillAptId) {
+      const apt = (data.appointments || []).find((a) => String(a.id) === String(prefillAptId));
+      if (apt) {
+        setEditingInvoice({
+          linkedAppointmentId: apt.id,
+          client: apt.client || '',
+          amount: apt.amount || '',
+          due: apt.date || '',
+          status: 'Draft',
+          notes: `Notary services — ${apt.type || 'appointment'} on ${apt.date || ''}.`,
+        });
+        setPrefillClientName('');
+        setIsModalOpen(true);
+        shouldClearState = true;
+      }
+    }
+
+    // FIX 2: prefillInvoice — pre-populated from journal's afterJournalSave prompt
+    if (prefillInvData && !prefillAptId) {
+      setEditingInvoice({
+        client: prefillInvData.client || '',
+        amount: prefillInvData.amount || '',
+        status: 'Draft',
+        notes: prefillInvData.actType ? `Act type: ${prefillInvData.actType}` : '',
+      });
+      setPrefillClientName(prefillInvData.client || '');
+      setIsModalOpen(true);
+      shouldClearState = true;
+    }
+
+    // FIX 2: prefillFromSession — signer session complete prompt
+    if (prefillSessionId && !prefillAptId) {
+      const session = (data.signerSessions || []).find((s) => String(s.id) === String(prefillSessionId));
+      if (session) {
+        setEditingInvoice({
+          client: session.clientName || session.title || '',
+          amount: session.amount || '',
+          status: 'Draft',
+          notes: `Invoice for signing session: ${session.title || ''}.`,
+        });
+        setPrefillClientName(session.clientName || session.title || '');
+        setIsModalOpen(true);
+        shouldClearState = true;
+      }
+    }
+
     if (shouldClearState) navigate('/invoices', { replace: true, state: {} });
-  }, [location.state, navigate]);
+  }, [location.state, navigate, data.appointments, data.signerSessions]);
 
   const visibleInvoices = useMemo(() => {
     if (!statusFilter.length) return invoices;
@@ -182,6 +234,7 @@ const Invoices = () => {
   };
 
 
+  // FIX 3: /pay/:id route now exists in App.jsx — this link is correctly wired
   const buildInvoiceLink = (invoice) => `${window.location.origin}/pay/${encodeURIComponent(invoice.id)}`;
 
   const markSent = (invoice) => {

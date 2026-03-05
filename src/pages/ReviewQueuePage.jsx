@@ -42,7 +42,8 @@ const TYPE_COLOR = {
 };
 
 export default function ReviewQueuePage() {
-  const { data, approveAgentSuggestion, rejectAgentSuggestion } = useData();
+  // FIX 4: Add editAgentSuggestion to destructure for onPatchDraft
+  const { data, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion } = useData();
   const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortKey, setSortKey] = useState('oldest');
@@ -74,8 +75,8 @@ export default function ReviewQueuePage() {
     rejectAgentSuggestion?.(suggestion.id);
   }
 
+  // FIX 4: handleEdit is now onOpenEdit — navigates to the right page
   function handleEdit(suggestion) {
-    // Route to relevant page for manual editing
     const t = typeGroup(suggestion);
     if (t === 'closeout') navigate('/journal');
     else if (t === 'ar') navigate('/invoices');
@@ -107,7 +108,7 @@ export default function ReviewQueuePage() {
               className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Compliance Panel
+              Command Center
             </button>
           </div>
 
@@ -185,7 +186,7 @@ export default function ReviewQueuePage() {
                 onClick={() => navigate('/agent')}
                 className="mt-5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
               >
-                Go to Compliance Panel
+                Go to Command Center
               </button>
             )}
           </div>
@@ -204,7 +205,8 @@ export default function ReviewQueuePage() {
                 key={suggestion.id}
                 suggestion={suggestion}
                 onApprove={handleApprove}
-                onEdit={handleEdit}
+                onOpenEdit={handleEdit}
+                onPatchDraft={(id, patch) => editAgentSuggestion?.(id, patch)}
                 onReject={handleReject}
               />
             ))}
