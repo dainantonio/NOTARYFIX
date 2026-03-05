@@ -123,6 +123,7 @@ const LayoutInner = ({ children }) => {
     {
       title: 'WORK',
       items: [
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: Calendar, label: 'Schedule', path: '/schedule' },
         { icon: Users, label: 'Clients', path: '/clients' },
         { icon: ScrollText, label: 'Journal', path: '/journal' },
@@ -149,13 +150,14 @@ const LayoutInner = ({ children }) => {
   ];
 
   const mobileBottomItems = [
+    { Icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { Icon: Calendar, label: 'Schedule', path: '/schedule' },
     { Icon: ScrollText, label: 'Journal', path: '/journal' },
     { Icon: Users, label: 'Clients', path: '/clients' },
-    { Icon: Wallet, label: 'Invoices', path: '/invoices' },
   ];
 
   const moreItems = [
+    { Icon: Wallet, label: 'Invoices', path: '/invoices' },
     { Icon: Sparkles, label: 'Command Center', path: '/agent', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Command Center' },
     { Icon: Scale, label: 'Act Library', path: '/form-guide', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Act Library' },
     { Icon: MapPin, label: 'Mileage', path: '/mileage' },
@@ -412,7 +414,7 @@ const LayoutInner = ({ children }) => {
         )}
 
         {/* Page content */}
-        <main className="flex-1 px-4 md:px-8 py-6">
+        <main className="flex-1 px-4 md:px-8 py-6 pb-24 md:pb-6">
           {children}
         </main>
 
