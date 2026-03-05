@@ -303,10 +303,10 @@ export default function Onboarding() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { Icon: Shield,   title: 'Compliance Built-in',   sub: 'State-specific rules, fee limits, ID requirements, and red flags from jurisdiction policy records' },
-                    { Icon: Zap,      title: 'Smart Workflows',        sub: 'Auto journal prompts, invoice generation, and linking' },
+                    { Icon: Shield,   title: 'Compliance Built-in',   sub: 'Grounded in admin-published state policy records — fee caps, ID requirements, and act-level red flags with citations on every AI decision' },
+                    { Icon: Zap,      title: 'Agent Runtime',          sub: 'Planner → Tools → Verifier runs automatically after each signing. Drafts journal, invoice, and compliance check without you lifting a finger' },
                     { Icon: Target,   title: 'Revenue Tracking',       sub: 'Goals, mileage deductions, and profit visibility' },
-                    { Icon: CheckCircle2, title: 'Consistent Workspace', sub: 'Unified dark-mode visuals and spacing across Admin, Dispatch, Invoices, and more' },
+                    { Icon: CheckCircle2, title: 'Command Center',     sub: 'Live badge counts, AI suggestion queue, KPI cards, and playbook shortcuts — your proactive agent hub' },
                     { Icon: Users,    title: 'Team Ready',             sub: 'Dispatch, signer portal, and multi-notary coordination' },
                   ].map(({ Icon, title, sub }) => (
                     <div key={title} className="flex gap-3 rounded-xl border border-white/8 bg-white/4 p-4">
@@ -533,7 +533,7 @@ export default function Onboarding() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500">These are used as defaults when the AI agent drafts invoices. Your state's fee cap will still apply.</p>
+                <p className="text-xs text-slate-500">These are used as defaults when the Agent Runtime drafts invoices. Your state's published fee cap takes priority — the Verifier will flag any overages with a grounded citation.</p>
               </div>
             )}
 
@@ -591,16 +591,18 @@ export default function Onboarding() {
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-white">Your closeout agent is now active.</h1>
                   <p className="mt-1.5 text-sm text-slate-400">
-                    After each appointment, it automatically drafts your journal entry, invoice, and compliance checks — ready for your review.
+                    The Agent Runtime fires automatically after every completed appointment — Planner builds the plan, Tools execute it, Verifier attaches grounded citations. Everything lands in Command Center ready for your one-tap approval.
                   </p>
                 </div>
 
                 {/* Agent expectations */}
                 <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/6 p-4 space-y-2.5">
                   {[
-                    { icon: '📋', text: 'Drafts the journal entry with compliant per-act fields' },
-                    { icon: '🧾', text: 'Generates the invoice using your fee schedule' },
-                    { icon: '✅', text: 'Runs compliance checks and flags any issues' },
+                    { icon: '🗺️', text: 'Planner maps your task into steps — journal, invoice, compliance — before anything runs' },
+                    { icon: '📋', text: 'Drafts the journal entry with compliant per-act fields for your state' },
+                    { icon: '🧾', text: 'Generates the invoice from your fee schedule, linked to the appointment' },
+                    { icon: '🔬', text: 'Verifier checks compliance and attaches grounded citations — the exact policy record behind every decision' },
+                    { icon: '✅', text: 'All drafts queue in Command Center for your one-tap approval, edit, or reject' },
                   ].map(({ icon, text }) => (
                     <div key={text} className="flex items-start gap-3">
                       <span className="text-base leading-none mt-0.5">{icon}</span>
@@ -688,7 +690,7 @@ export default function Onboarding() {
                     { label: 'Autonomy Mode', val: form.autonomyMode.charAt(0).toUpperCase() + form.autonomyMode.slice(1) },
                     { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                     { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
-                    { label: 'Agent Mode', val: { assistive: 'Assistive — drafts only', supervised: 'Supervised — review before commit', autonomous: 'Autonomous — auto-commit safe actions' }[form.agentMode] || '—' },
+                    { label: 'Agent Runtime', val: { assistive: 'Assistive — drafts only', supervised: 'Supervised — approve before commit', autonomous: 'Autonomous — auto-commit safe actions' }[form.agentMode] || '—' },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                       <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{row.label}</span>
@@ -704,9 +706,9 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-3 rounded-xl border border-blue-500/25 bg-blue-500/10 p-4">
-                  <p className="text-sm font-semibold text-blue-200">Your AI closeout agent is now active.</p>
+                  <p className="text-sm font-semibold text-blue-200">Your AI Agent Runtime is now active.</p>
                   <p className="text-xs text-blue-100/90 leading-relaxed">
-                    After each appointment, your agent drafts the journal + invoice and runs compliance checks so you can approve, edit, or reject.
+                    Planner → Tools → Verifier runs automatically after each signing. Journal, invoice, and grounded compliance citations queue in Command Center for your approval. Feedback you give on edits improves confidence scoring over time.
                   </p>
                 </div>
 

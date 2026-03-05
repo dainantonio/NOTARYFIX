@@ -38,6 +38,7 @@ const Admin          = lazy(() => import('./pages/Admin'));
 const AgentPage      = lazy(() => import('./pages/AgentPage'));
 const AuditPage      = lazy(() => import('./pages/AuditPage'));
 const ReviewQueuePage = lazy(() => import('./pages/ReviewQueuePage'));
+const FAQPage         = lazy(() => import('./pages/FAQPage'));
 
 // ─── Loading fallback ─────────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -136,7 +137,8 @@ function App() {
                     <Route path="/review"          element={<GatedRoute featureKey="agent"><ReviewQueuePage /></GatedRoute>} />
 
                     {/* Catch-all */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="/faq"  element={<FAQPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </AppLayout>
               </RouteGuard>
