@@ -58,6 +58,7 @@ const defaultData = {
   payouts:         [],
   dispatchAuditLog:[],
   adminAuditLog:   [],
+  agentMemory:     { facts: [], updatedAt: null },
 
   settings: {
     name: '',
@@ -146,6 +147,9 @@ const hydrate = () => {
           payouts:          Array.isArray(parsed.payouts)          ? parsed.payouts          : defaultData.payouts,
           dispatchAuditLog: Array.isArray(parsed.dispatchAuditLog) ? parsed.dispatchAuditLog : defaultData.dispatchAuditLog,
           adminAuditLog:    Array.isArray(parsed.adminAuditLog)    ? parsed.adminAuditLog    : defaultData.adminAuditLog,
+          agentMemory:      parsed.agentMemory && typeof parsed.agentMemory === 'object'
+            ? { facts: Array.isArray(parsed.agentMemory.facts) ? parsed.agentMemory.facts : [], updatedAt: parsed.agentMemory.updatedAt || null }
+            : defaultData.agentMemory,
           stateRules:       Array.isArray(parsed.stateRules)       ? parsed.stateRules       : defaultData.stateRules,
           feeSchedules:     Array.isArray(parsed.feeSchedules)     ? parsed.feeSchedules     : defaultData.feeSchedules,
           idRequirements:   Array.isArray(parsed.idRequirements)   ? parsed.idRequirements   : defaultData.idRequirements,

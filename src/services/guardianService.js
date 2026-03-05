@@ -54,7 +54,7 @@ Schema:
   "disclaimer": "This is not legal advice. Verify with the official source.",
   "clarifying_questions": ["string"],
   "next_ctas": [
-    { "label": "string", "target_view": "schedule|journal|clients|finances|settings|export" }
+    { "label": "string", "target_view": "schedule|journal|journal_draft|clients|finances|settings|export|checklist|generate_checklist" }
   ]
 }
 
@@ -84,12 +84,15 @@ TONE
 // ─── Route map: next_ctas target_view → NotaryFix route ─────────────────────
 
 export const GUARDIAN_ROUTE_MAP = {
-  schedule:  '/schedule',
-  journal:   '/journal',
-  clients:   '/clients',
-  finances:  '/invoices',
-  settings:  '/settings',
-  export:    '/invoices', // closest equivalent
+  schedule:           '/schedule',
+  journal:            '/journal',
+  journal_draft:      '/journal',
+  clients:            '/clients',
+  finances:           '/invoices',
+  settings:           '/settings',
+  export:             '/invoices',   // closest equivalent
+  checklist:          '/agent',      // handled inline in component
+  generate_checklist: '/agent',      // handled inline in component
 };
 
 // ─── Main function ────────────────────────────────────────────────────────────
@@ -147,7 +150,20 @@ CURRENT CONTEXT:
               type: Type.OBJECT,
               properties: {
                 label:       { type: Type.STRING },
-                target_view: { type: Type.STRING, enum: ['schedule', 'journal', 'clients', 'finances', 'settings', 'export'] },
+                target_view: {
+                  type: Type.STRING,
+                  enum: [
+                    'schedule',
+                    'journal',
+                    'journal_draft',
+                    'clients',
+                    'finances',
+                    'settings',
+                    'export',
+                    'checklist',
+                    'generate_checklist',
+                  ],
+                },
               },
               required: ['label', 'target_view'],
             },

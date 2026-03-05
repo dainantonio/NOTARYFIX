@@ -5,7 +5,8 @@ import {
   Sparkles, CheckCircle2, XCircle, Clock, TrendingUp, FileText,
   Receipt, AlertTriangle, ChevronDown, ChevronUp, Pencil, Activity,
   Zap, Shield, BarChart2, Settings2, BellRing, Bell, UserPlus, RefreshCw, Send, X,
-  ScrollText, DollarSign, Calendar, MessageSquare, ExternalLink, ChevronRight
+  ScrollText, DollarSign, Calendar, MessageSquare, ExternalLink, ChevronRight,
+  Eye, Cpu, ListChecks, Download, Edit3, Brain
 } from 'lucide-react';
 import { Card, CardContent, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
@@ -13,6 +14,59 @@ import { AgentSuggestionCard } from '../components/AgentSuggestionCard';
 import { toast } from '../hooks/useLinker';
 import { useAgentTriggers } from '../hooks/useAgentTriggers';
 import { getGuardianResponse, GUARDIAN_ROUTE_MAP } from '../services/guardianService';
+
+// ─── Phase-based checklist templates ─────────────────────────────────────────
+const PHASE_CHECKLISTS = {
+  'BEFORE APPOINTMENT': [
+    'Verify signer identity documents are valid and unexpired',
+    'Confirm your notary commission is active and not expired',
+    'Review document type requirements for this signing',
+    'Ensure journal is prepared and ready',
+    'Check applicable state fee limits for this act type',
+    'Confirm appointment location and time with client',
+  ],
+  'DURING SIGNING': [
+    'Record ID type, number, expiration, and issuing state in journal',
+    'Confirm signer is signing willingly and appears competent',
+    'Complete all journal fields before signer leaves',
+    'Collect thumbprint if required by state law',
+    'Apply and affix seal/stamp as required',
+    'Charge and record the correct fee',
+  ],
+  'AFTER SIGNING': [
+    'Review journal entry for completeness and accuracy',
+    'Send invoice to client',
+    'File or scan document copies as required',
+    'Submit recording documents if applicable',
+    'Update appointment status to completed',
+    'Archive evidence and compliance notes',
+  ],
+};
+
+// ─── Autonomy mode config ─────────────────────────────────────────────────────
+const AUTONOMY_MODES = [
+  {
+    key: 'assistive',
+    label: 'Assistive',
+    Icon: Eye,
+    desc: 'Suggests only — you control everything',
+    color: 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300',
+  },
+  {
+    key: 'supervised',
+    label: 'Supervised',
+    Icon: Edit3,
+    desc: 'Suggests + pre-fills drafts for your review',
+    color: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
+  },
+  {
+    key: 'autonomous',
+    label: 'Autonomous',
+    Icon: Cpu,
+    desc: 'Auto-creates checklists + drafts on phase change',
+    color: 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300',
+  },
+];
 
 // ─── KPI card ────────────────────────────────────────────────────────────────
 const KpiCard = ({ label, value, sub, color = 'text-slate-800 dark:text-white', icon: Icon }) => (
@@ -43,6 +97,29 @@ const AutoBadge = ({ mode }) => {
     </span>
   );
 };
+
+// ─── Autonomy mode picker ─────────────────────────────────────────────────────
+const AutonomyPicker = ({ mode, onChange }) => (
+  <div className="grid grid-cols-3 gap-2">
+    {AUTONOMY_MODES.map(({ key, label, Icon, desc, color }) => (
+      <button
+        key={key}
+        onClick={() => onChange(key)}
+        className={`flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all ${
+          mode === key
+            ? color
+            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'
+        }`}
+      >
+        <div className="flex items-center gap-1.5">
+          <Icon className={`h-3.5 w-3.5 ${mode === key ? '' : 'text-slate-400'}`} />
+          <span className="text-xs font-bold">{label}</span>
+        </div>
+        <p className="text-[10px] leading-tight opacity-80">{desc}</p>
+      </button>
+    ))}
+  </div>
+);
 
 // ─── Trigger status strip (standalone — reads triggerStatus from props) ────────
 const TriggerStatusStrip = ({ triggerStatus }) => (
@@ -132,7 +209,8 @@ const RISK_COLORS = {
   HIGH:   'text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400',
 };
 
-const GuardianMessage = ({ res, onCta }) => {
+// ─── Guardian message renderer ────────────────────────────────────────────────
+const GuardianMessage = ({ res, onCta, onAddToChecklist, onStartJournal, onGenerateChecklist, onExportEvidence }) => {
   if (!res) return null;
   return (
     <div className="space-y-2 text-sm">
@@ -184,6 +262,38 @@ const GuardianMessage = ({ res, onCta }) => {
           ))}
         </div>
       )}
+
+      {/* ── Persistent agent action buttons ── */}
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Agent Actions</p>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={onAddToChecklist}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <ListChecks className="h-3 w-3" /> Add to Checklist
+          </button>
+          <button
+            onClick={onStartJournal}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <ScrollText className="h-3 w-3" /> Start Journal Entry
+          </button>
+          <button
+            onClick={onGenerateChecklist}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <CheckCircle2 className="h-3 w-3" /> Generate Checklist
+          </button>
+          <button
+            onClick={onExportEvidence}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+          >
+            <Download className="h-3 w-3" /> Export Evidence
+          </button>
+        </div>
+      </div>
+
       {res.disclaimer && <p className="text-[10px] text-slate-400 italic pt-1">{res.disclaimer}</p>}
     </div>
   );
@@ -192,7 +302,22 @@ const GuardianMessage = ({ res, onCta }) => {
 // ─── Main page ────────────────────────────────────────────────────────────────
 const AgentPage = () => {
   const navigate = useNavigate();
-  const { data, updateSettings, approveAgentSuggestion, rejectAgentSuggestion, editAgentSuggestion, runAgingARAgent, runARScan, runLeadIntakeAgent, updateReminderStatus, runCloseoutAgentWithAI, generateWeeklySummary } = useData();
+  const {
+    data,
+    updateSettings,
+    addComplianceItem,
+    updateComplianceItem,
+    deleteComplianceItem,
+    approveAgentSuggestion,
+    rejectAgentSuggestion,
+    editAgentSuggestion,
+    runAgingARAgent,
+    runARScan,
+    runLeadIntakeAgent,
+    updateReminderStatus,
+    runCloseoutAgentWithAI,
+    generateWeeklySummary,
+  } = useData();
 
   // ── Event-driven agent triggers (auto-run on data conditions) ───────────────
   const triggerStatus = useAgentTriggers({
@@ -246,6 +371,19 @@ const AgentPage = () => {
     try {
       const res = await getGuardianResponse(msg, guardianCtx);
       setGuardianMessages(prev => [...prev, { role: 'guardian', res }]);
+      // Autonomous mode: auto-add to checklist
+      if (data.settings?.autonomyMode === 'autonomous') {
+        addComplianceItem({
+          id: Date.now() + 1,
+          title: res.action || res.summary,
+          category: 'Guardian Auto-Capture',
+          dueDate: new Date().toISOString().split('T')[0],
+          status: 'Pending',
+          notes: `Auto-captured · ${guardianCtx.state} · ${guardianCtx.phase}`,
+          sourceUrl: res.source?.url || '',
+          createdAt: new Date().toISOString(),
+        });
+      }
     } catch (err) {
       setGuardianMessages(prev => [...prev, { role: 'guardian', res: {
         summary: err.message || 'Something went wrong. Please try again.',
@@ -269,6 +407,77 @@ const AgentPage = () => {
     } else if (cta.type === 'question') {
       handleGuardianSend(cta.q);
     }
+  };
+
+  // ── Agent CTA action handlers ──────────────────────────────────────────────
+  const todayISO = new Date().toISOString().split('T')[0];
+
+  const handleAddToChecklist = (res) => {
+    addComplianceItem({
+      id: Date.now(),
+      title: res.action || res.summary,
+      category: 'Guardian Compliance',
+      dueDate: todayISO,
+      status: 'Needs Review',
+      notes: `State: ${guardianCtx.state} · Phase: ${guardianCtx.phase}${res.source?.where_found ? ' · ' + res.source.where_found : ''}`,
+      sourceUrl: res.source?.url || '',
+      guardianSource: res.source,
+      createdAt: new Date().toISOString(),
+    });
+    toast.success('Added to compliance checklist ✓');
+  };
+
+  const handleStartJournalEntry = () => {
+    navigate('/journal', {
+      state: {
+        prefillDraft: {
+          notes: `Guardian compliance note — State: ${guardianCtx.state}, Phase: ${guardianCtx.phase}`,
+          date: todayISO,
+        },
+      },
+    });
+  };
+
+  const handleGenerateChecklist = () => {
+    const phase = guardianCtx.phase || 'BEFORE APPOINTMENT';
+    const items = (PHASE_CHECKLISTS[phase] || []).map((title, i) => ({
+      id: Date.now() + i,
+      title,
+      category: 'Phase Checklist',
+      dueDate: todayISO,
+      status: 'Pending',
+      notes: `Auto-generated · ${phase} · State: ${guardianCtx.state || 'All states'}`,
+      createdAt: new Date().toISOString(),
+    }));
+    items.forEach((item) => addComplianceItem(item));
+    toast.success(`${items.length} checklist items created ✓`);
+  };
+
+  const handleExportEvidence = (res) => {
+    const evidence = {
+      exportedAt: new Date().toISOString(),
+      context: guardianCtx,
+      response: res,
+      conversation: guardianMessages.map((m) => ({
+        role: m.role,
+        content: m.role === 'user' ? m.text : m.res,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(evidence, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `guardian-evidence-${guardianCtx.state || 'unknown'}-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success('Evidence report exported ✓');
+  };
+
+  const handleAutonomyChange = (mode) => {
+    updateSettings({ autonomyMode: mode });
+    toast.info(`Switched to ${mode} mode`);
   };
 
   const handleGenerateDigest = async () => {
@@ -336,7 +545,6 @@ const AgentPage = () => {
   };
 
   const handleEdit = (suggestion) => {
-    // FIX 4: onOpenEdit callback — navigates to the correct page for manual editing
     const aptId = suggestion.appointmentId || suggestion.linkedAppointmentId;
     navigate('/journal', { state: aptId ? { prefillFromAppointment: aptId } : undefined });
   };
@@ -362,6 +570,13 @@ const AgentPage = () => {
 
   const autonomyMode = data.settings?.autonomyMode || 'assistive';
 
+  const guardianChecklist = useMemo(
+    () => (data.complianceItems || []).filter(
+      (c) => c.category === 'Guardian Compliance' || c.category === 'Phase Checklist' || c.category === 'Guardian Auto-Capture'
+    ).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
+    [data.complianceItems]
+  );
+
   return (
     <div className="animate-fade-in space-y-5 px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-7 mx-auto max-w-[1400px] pb-24">
 
@@ -386,14 +601,23 @@ const AgentPage = () => {
               <RefreshCw className="h-4 w-4" />
               AR Check
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/settings')}
-              className="flex items-center gap-1.5"
-            >
-              <Settings2 className="h-4 w-4" />
-              Mode settings
-            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Agent Autonomy Control */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Cpu className="h-4 w-4 text-violet-500" />
+            <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">Agent Autonomy</p>
+            <AutoBadge mode={autonomyMode} />
+          </div>
+          <AutonomyPicker mode={autonomyMode} onChange={handleAutonomyChange} />
+          <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 px-3 py-2 text-[11px] text-slate-500 dark:text-slate-400">
+            {autonomyMode === 'assistive' && '👁 Assistive mode: Guardian answers your questions. You manually act on every suggestion.'}
+            {autonomyMode === 'supervised' && '✍ Supervised mode: Guardian pre-fills drafts and suggests checklist items. You review before saving.'}
+            {autonomyMode === 'autonomous' && '⚡ Autonomous mode: Every Guardian response automatically adds a compliance item to your checklist. Drafts are created without review prompts.'}
           </div>
         </CardContent>
       </Card>
@@ -584,7 +808,6 @@ const AgentPage = () => {
               onClick={() => navigate('/review')}
               className="ml-auto text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
             >
-              {/* FIX 11: Review Queue as focused drill-down from Command Center */}
               Review All →
             </button>
           )}
@@ -649,6 +872,81 @@ const AgentPage = () => {
           {filteredRuns.length > 10 && (
             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
               <button onClick={() => navigate('/audit')} className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">View full history in Audit Log →</button>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* ── Agent Compliance Checklist ──────────────────────────────────────── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <ListChecks className="h-5 w-5 text-emerald-500" />
+            Compliance Checklist
+          </h2>
+          <div className="flex items-center gap-2">
+            {guardianChecklist.length > 0 && (
+              <span className="text-xs text-slate-400">{guardianChecklist.filter(c => c.status !== 'Done').length} remaining</span>
+            )}
+            <Button size="sm" variant="secondary" onClick={handleGenerateChecklist}
+              className="flex items-center gap-1.5">
+              <ListChecks className="h-3.5 w-3.5" />
+              Generate for {(guardianCtx.phase || 'BEFORE APPOINTMENT').split(' ')[0]}
+            </Button>
+          </div>
+        </div>
+
+        <Card className={guardianChecklist.length === 0 ? 'border-dashed' : ''}>
+          {guardianChecklist.length === 0 ? (
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                <ListChecks className="h-5 w-5 text-slate-400" />
+              </div>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No checklist items yet</p>
+              <p className="text-xs text-slate-400 mt-1">Ask Guardian a question and click "Add to Checklist", or use "Generate Checklist" to create phase-specific items.</p>
+            </CardContent>
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {guardianChecklist.slice(0, 15).map((item) => (
+                <div key={item.id} className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  <button
+                    onClick={() => updateComplianceItem(item.id, { status: item.status === 'Done' ? 'Pending' : 'Done' })}
+                    className={`mt-0.5 flex-shrink-0 h-4 w-4 rounded border-2 flex items-center justify-center transition-all ${
+                      item.status === 'Done'
+                        ? 'bg-emerald-500 border-emerald-500'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-emerald-400'
+                    }`}
+                  >
+                    {item.status === 'Done' && <CheckCircle2 className="h-3 w-3 text-white" />}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${item.status === 'Done' ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                      {item.title}
+                    </p>
+                    {item.notes && <p className="text-xs text-slate-400 mt-0.5 truncate">{item.notes}</p>}
+                    {item.sourceUrl && (
+                      <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-[10px] text-blue-500 hover:underline flex items-center gap-0.5 mt-0.5">
+                        Source <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
+                  </div>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                    item.status === 'Done' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600' :
+                    item.status === 'Needs Review' ? 'bg-amber-100 dark:bg-amber-900/20 text-amber-600' :
+                    'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                  }`}>{item.status}</span>
+                  <button onClick={() => deleteComplianceItem(item.id)}
+                    className="text-slate-300 dark:text-slate-600 hover:text-rose-400 transition-colors flex-shrink-0">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              {guardianChecklist.length > 15 && (
+                <div className="p-3 text-center text-xs text-slate-400">
+                  +{guardianChecklist.length - 15} more items
+                </div>
+              )}
             </div>
           )}
         </Card>
@@ -734,7 +1032,14 @@ const AgentPage = () => {
                       <div className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${m.role === 'user' ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-tr-none text-sm' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-none'}`}>
                         {m.role === 'user'
                           ? <p>{m.text}</p>
-                          : <GuardianMessage res={m.res} onCta={handleGuardianCta} />}
+                          : <GuardianMessage
+                              res={m.res}
+                              onCta={handleGuardianCta}
+                              onAddToChecklist={() => handleAddToChecklist(m.res)}
+                              onStartJournal={handleStartJournalEntry}
+                              onGenerateChecklist={handleGenerateChecklist}
+                              onExportEvidence={() => handleExportEvidence(m.res)}
+                            />}
                       </div>
                     </div>
                   ))}
