@@ -6,4 +6,19 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: process.env.BASE_URL || (process.env.VERCEL ? '/' : '/NOTARYFIX/'),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React runtime — loaded on every page
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Heavy UI libs — split so they don't block initial paint
+          'vendor-charts': ['recharts'],
+          'vendor-motion': ['framer-motion'],
+        },
+      },
+    },
+    // Silence the warning now that we're properly splitting
+    chunkSizeWarningLimit: 600,
+  },
 })

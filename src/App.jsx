@@ -1,33 +1,50 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Schedule from './pages/Schedule';
-import Clients from './pages/Clients';
-import Invoices from './pages/Invoices';
-import Settings from './pages/Settings';
-import Mileage from './pages/mileage';
-import Landing from './pages/Landing';
-import Auth from './pages/Auth';
-import Onboarding from './pages/Onboarding';
-import Compliance from './pages/Legal';
-import Credentials from './pages/Credentials';
-import Pricing from './pages/Pricing';
-import SignerPortal from './pages/SignerPortal';
-import Journal from './pages/Journal';
-import ArriveMode from './pages/ArriveMode';
-import TeamDispatch from './pages/TeamDispatch';
-import AITrainer from './pages/AITrainer';
-import FormGuide from './pages/FormGuide';
-import Admin from './pages/Admin';
-import AgentPage from './pages/AgentPage';
-import AuditPage from './pages/AuditPage';
-import ReviewQueuePage from './pages/ReviewQueuePage';
-import NavFeaturePaywall from './pages/NavFeaturePaywall';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
-import PublicSignerView from './pages/PublicSignerView';
 import AppErrorBoundary from './components/AppErrorBoundary';
+
+// ─── Lazy-loaded pages ────────────────────────────────────────────────────────
+// Public
+const Landing        = lazy(() => import('./pages/Landing'));
+const Auth           = lazy(() => import('./pages/Auth'));
+const Onboarding     = lazy(() => import('./pages/Onboarding'));
+const Compliance     = lazy(() => import('./pages/Legal'));
+const Credentials    = lazy(() => import('./pages/Credentials'));
+const Pricing        = lazy(() => import('./pages/Pricing'));
+const NavFeaturePaywall = lazy(() => import('./pages/NavFeaturePaywall'));
+const PublicSignerView  = lazy(() => import('./pages/PublicSignerView'));
+
+// Core app
+const Dashboard      = lazy(() => import('./pages/Dashboard'));
+const Schedule       = lazy(() => import('./pages/Schedule'));
+const Clients        = lazy(() => import('./pages/Clients'));
+const Invoices       = lazy(() => import('./pages/Invoices'));
+const Journal        = lazy(() => import('./pages/Journal'));
+const ArriveMode     = lazy(() => import('./pages/ArriveMode'));
+const Settings       = lazy(() => import('./pages/Settings'));
+const Mileage        = lazy(() => import('./pages/mileage'));
+const FormGuide      = lazy(() => import('./pages/FormGuide'));
+
+// Gated / admin
+const SignerPortal   = lazy(() => import('./pages/SignerPortal'));
+const TeamDispatch   = lazy(() => import('./pages/TeamDispatch'));
+const AITrainer      = lazy(() => import('./pages/AITrainer'));
+const Admin          = lazy(() => import('./pages/Admin'));
+const AgentPage      = lazy(() => import('./pages/AgentPage'));
+const AuditPage      = lazy(() => import('./pages/AuditPage'));
+const ReviewQueuePage = lazy(() => import('./pages/ReviewQueuePage'));
+
+// ─── Loading fallback ─────────────────────────────────────────────────────────
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-950">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <span className="text-sm text-gray-400 font-medium">Loading…</span>
+    </div>
+  </div>
+);
 
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
 const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing', '/feature-paywall'];
@@ -39,12 +56,10 @@ const RouteGuard = ({ children }) => {
   const isPublic = PUBLIC_ROUTES.includes(location.pathname) || location.pathname.startsWith('/portal');
   const onboarded = data.settings?.onboardingComplete;
 
-  // On a protected route but onboarding not done → send to onboarding
   if (!isPublic && !onboarded) {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // If onboarding is complete, avoid rendering onboarding again
   if (onboarded && location.pathname === '/onboarding') {
     return <Navigate to="/dashboard" replace />;
   }
@@ -63,52 +78,54 @@ function App() {
   return (
     <Router basename={import.meta.env.BASE_URL}>
       <AppErrorBoundary>
-      <Routes>
-        {/* Public signer portal — no auth, no layout */}
-        <Route path="/portal/:id" element={<PublicSignerView />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public signer portal — no auth, no layout */}
+            <Route path="/portal/:id" element={<PublicSignerView />} />
 
-        {/* All other routes */}
-        <Route path="/*" element={
-          <RouteGuard>
-            <AppLayout>
-              <Routes>
-                {/* Public */}
-                <Route path="/"            element={<Landing />} />
-                <Route path="/auth"        element={<Auth />} />
-                <Route path="/onboarding"  element={<Onboarding />} />
-                <Route path="/legal"       element={<Compliance />} />
-                <Route path="/compliance"  element={<Credentials />} />
-                <Route path="/credentials" element={<Credentials />} />
-                <Route path="/pricing"     element={<Pricing />} />
-                <Route path="/feature-paywall" element={<NavFeaturePaywall />} />
+            {/* All other routes */}
+            <Route path="/*" element={
+              <RouteGuard>
+                <AppLayout>
+                  <Routes>
+                    {/* Public */}
+                    <Route path="/"                element={<Landing />} />
+                    <Route path="/auth"            element={<Auth />} />
+                    <Route path="/onboarding"      element={<Onboarding />} />
+                    <Route path="/legal"           element={<Compliance />} />
+                    <Route path="/compliance"      element={<Credentials />} />
+                    <Route path="/credentials"     element={<Credentials />} />
+                    <Route path="/pricing"         element={<Pricing />} />
+                    <Route path="/feature-paywall" element={<NavFeaturePaywall />} />
 
-                {/* App */}
-                <Route path="/dashboard"   element={<Dashboard />} />
-                <Route path="/schedule"    element={<Schedule />} />
-                <Route path="/clients"     element={<Clients />} />
-                <Route path="/invoices"    element={<Invoices />} />
-                <Route path="/journal"     element={<Journal />} />
-                <Route path="/arrive/:id"   element={<ArriveMode />} />
-                <Route path="/settings"    element={<Settings />} />
-                <Route path="/mileage"     element={<Mileage />} />
-                <Route path="/form-guide"  element={<FormGuide />} />
+                    {/* Core app */}
+                    <Route path="/dashboard"       element={<Dashboard />} />
+                    <Route path="/schedule"        element={<Schedule />} />
+                    <Route path="/clients"         element={<Clients />} />
+                    <Route path="/invoices"        element={<Invoices />} />
+                    <Route path="/journal"         element={<Journal />} />
+                    <Route path="/arrive/:id"      element={<ArriveMode />} />
+                    <Route path="/settings"        element={<Settings />} />
+                    <Route path="/mileage"         element={<Mileage />} />
+                    <Route path="/form-guide"      element={<FormGuide />} />
 
-                {/* Gated */}
-                <Route path="/signer-portal"  element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
-                <Route path="/team-dispatch"  element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
-                <Route path="/ai-trainer"     element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
-                <Route path="/admin"          element={<Admin />} />
-                <Route path="/agent"          element={<AgentPage />} />
-                <Route path="/audit"          element={<AuditPage />} />
-                <Route path="/review"         element={<ReviewQueuePage />} />
+                    {/* Gated */}
+                    <Route path="/signer-portal"   element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
+                    <Route path="/team-dispatch"   element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
+                    <Route path="/ai-trainer"      element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
+                    <Route path="/admin"           element={<Admin />} />
+                    <Route path="/agent"           element={<AgentPage />} />
+                    <Route path="/audit"           element={<AuditPage />} />
+                    <Route path="/review"          element={<ReviewQueuePage />} />
 
-                {/* Catch-all */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </AppLayout>
-          </RouteGuard>
-        } />
-      </Routes>
+                    {/* Catch-all */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </AppLayout>
+              </RouteGuard>
+            } />
+          </Routes>
+        </Suspense>
       </AppErrorBoundary>
     </Router>
   );
