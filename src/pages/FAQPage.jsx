@@ -281,6 +281,42 @@ All changes are versioned with a \`publishedAt\` timestamp. The AI agent always 
       },
     ],
   },
+,
+  {
+    id: 'job_intelligence',
+    label: 'Job Intelligence Agent',
+    icon: Zap,
+    color: 'text-amber-400',
+    bg: 'bg-amber-400/10',
+    border: 'border-amber-400/20',
+    items: [
+      {
+        q: 'How does the Job Intelligence Agent detect jobs?',
+        a: `When you paste an email, SMS, voicemail transcript, or platform notification into the Job Inbox, the agent scans it for job signals — keywords like "signing," "refi," "closing," "deed," or any mention of a fee, time, or location.\n\nIf a job is detected, it extracts structured fields automatically:\n- **Job type** (refinance, purchase, deed, POA, I-9, RON, etc.)\n- **Location** — city/state or address\n- **Date and time**\n- **Offered fee** — any dollar amount mentioned\n- **Contact** — email, phone, or name\n\nIf no job signal is found, you see a clear message explaining what to add for a more complete detection.`,
+      },
+      {
+        q: 'How does the platform estimate profit?',
+        a: `The profitability analysis uses three inputs:\n\n**1. Your configured settings:** minimum acceptable fee, travel radius, and IRS mileage rate (default 67¢/mile for 2025).\n\n**2. Estimated costs:** round-trip mileage × your rate, plus estimated printing cost (number of pages × 12¢) based on job type.\n\n**3. Market benchmarks:** current average market fees by job type (e.g. refinance: $150 avg, purchase: $165 avg, I-9: $65 avg) built into the engine.\n\nThe result: offered fee - total estimated cost = net profit. The agent compares your net profit against market averages and flags if you're leaving money on the table.`,
+      },
+      {
+        q: 'Does the AI automatically accept jobs?',
+        a: `Never. The Job Intelligence Agent is advisory by design — it generates a recommendation (Accept, Counter Offer, Request Info, or Decline) but you must tap the action button to confirm.\n\nThis is by design: accepting a job triggers calendar scheduling, client creation, and expense tracking. These are irreversible actions in your business workflow. The agent presents the clearest possible recommendation so your decision takes one tap — but that tap is always yours.`,
+      },
+      {
+        q: 'What is a counter offer negotiation script?',
+        a: `After evaluating a job, the agent generates a ready-to-send negotiation script tailored to the situation:\n\n- **Accept:** A professional confirmation message\n- **Counter offer:** A polite message explaining your rate and the market context, with the counter amount clearly stated\n- **Decline:** A gracious decline leaving the door open for future work\n- **Request info:** A brief message asking for fee, location, or package details\n\nYou can expand the script, copy it with one tap, and paste it directly into your email or SMS.`,
+      },
+      {
+        q: 'How are job expenses tracked for taxes?',
+        a: `Every job has an expense tracker linked to it. You can record:\n- **Mileage** (in dollars — enter your total per IRS rate)\n- **Printing costs**\n- **Supplies**\n- **Platform fees**\n- **Other**\n\nAll expenses roll up in the Job Analytics view, which shows total income (paid jobs), total expenses, and net profit — exportable as a tax-ready summary. Mileage deductions are tracked separately to match Schedule C reporting requirements.`,
+      },
+      {
+        q: 'Can I override AI recommendations?',
+        a: `Always. The recommendation is a starting point, not a directive. You can:\n- Accept a job the agent suggested declining (you know your schedule and relationships better)\n- Counter at a different amount than suggested\n- Ignore the script entirely and write your own\n- Edit any extracted field if the parser missed something\n\nThe agent learns nothing from your overrides (no feedback loop for job intelligence yet) — but every job you process builds your analytics, which refines the market benchmarks over time.`,
+      },
+    ],
+  }
+,
   {
     id: 'security',
     label: 'Security & Privacy',
