@@ -207,23 +207,19 @@ Be specific, professional but warm. Highlight wins and any action needed.`;
  * Returns the text response or null on failure.
  */
 async function callGeminiVision(imageBase64, mimeType, prompt) {
-  try {
-    const response = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64, mimeType, prompt }),
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      console.error('[agentService] /api/gemini vision error:', err);
-      return null;
-    }
-    const data = await response.json();
-    return data.text ? data.text.trim() : null;
-  } catch (err) {
-    console.error('[agentService] callGeminiVision failed:', err);
-    return null;
+  const response = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageBase64, mimeType, prompt }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    const msg = err.error || `API error ${response.status}`;
+    console.error('[agentService] /api/gemini vision error:', msg, err);
+    throw new Error(msg);
   }
+  const data = await response.json();
+  return data.text ? data.text.trim() : null;
 }
 
 /**
@@ -234,31 +230,42 @@ async function callGeminiVision(imageBase64, mimeType, prompt) {
  * @param {string} mimeType    - e.g. 'image/jpeg', 'image/png'
  */
 export async function parseJobImage(imageBase64, mimeType) {
-  const prompt = `You are a notary signing agent's AI assistant. This is a screenshot or photo of a signing job offer from a platform like Snapdocs, SigningOrder, Amrock, Notarize, or a similar service. Extract all job details visible in the image and return ONLY a valid JSON object with these keys (use null for anything not found or not visible):
+  const prompt = `You are a notary signing agent's AI assistant. This image is a screenshot of a signing job offer from a platform such as Snapdocs, SigningOrder, Amrock, Notarize, or a similar service.
+
+Extract every job detail visible in the image and return ONLY a raw JSON object (no markdown, no explanation). Use null for any field that cannot be found. Example format:
 {
-  "clientName": "signer full name or null",
-  "documentType": "document type e.g. Refinance, Purchase, HELOC, Reverse Mortgage, Power of Attorney, General Notary",
-  "jobType": "one of: loan_signing, general_notary, ron, deed, affidavit, i9, apostille",
-  "date": "ISO date YYYY-MM-DD or null",
-  "time": "time string like '2:30 PM' or null",
-  "address": "full signing address or null",
-  "location": "zip code or city/state or null",
-  "offeredFee": fee as a plain number (no $ symbol) or null,
-  "documentCount": number of documents or pages or null,
-  "contact": "signing service or coordinator name or null",
-  "phone": "phone number or null",
-  "email": "email address or null",
-  "notes": "any other relevant details as a short string or null"
-}`;
+  "clientName": "Jane Doe",
+  "documentType": "Refinance",
+  "jobType": "loan_signing",
+  "date": "2025-06-15",
+  "time": "2:30 PM",
+  "address": "123 Main St, Dallas, TX 75201",
+  "location": "Dallas, TX",
+  "offeredFee": 125,
+  "documentCount": 150,
+  "contact": "ABC Title Company",
+  "phone": "555-123-4567",
+  "email": "orders@abctitle.com",
+  "notes": "Bring extra pens"
+}
 
+jobType must be one of: loan_signing, general_notary, ron, deed, affidavit, i9, apostille
+offeredFee must be a number only (no $ sign). Respond with ONLY the JSON object.`;
+
+  // Throws on API error so caller gets a meaningful message
   const raw = await callGeminiVision(imageBase64, mimeType, prompt);
-  if (!raw) return null;
+  if (!raw) throw new Error('No response from AI. Check your connection and try again.');
 
+  // Extract JSON — handle both bare objects and markdown-wrapped ones
   try {
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
+    const stripped = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // Find the outermost { ... } in the response
+    const match = stripped.match(/\{[\s\S]*\}/);
+    const jsonStr = match ? match[0] : stripped;
+    return JSON.parse(jsonStr);
   } catch {
-    return null;
+    console.error('[agentService] parseJobImage: JSON parse failed. Raw response:', raw);
+    throw new Error('AI returned an unexpected format. Please try again.');
   }
 }
 

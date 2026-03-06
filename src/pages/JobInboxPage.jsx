@@ -648,14 +648,30 @@ export default function JobInboxPage() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target.result;
-      setImagePreview(dataUrl);
-      const [header, b64] = dataUrl.split(',');
-      const mime = header.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
-      setImageBase64(b64);
-      setImageMime(mime);
+      // Compress via canvas — resize to max 1280px, JPEG 82%
+      // This keeps the image sharp enough for OCR while staying well under API limits
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1280;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width >= height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.82);
+        const [, b64] = compressed.split(',');
+        setImagePreview(compressed);
+        setImageBase64(b64);
+        setImageMime('image/jpeg');
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
-    // Reset file input so the same file can be re-selected
+    // Reset so the same file can be re-selected
     e.target.value = '';
   };
 
@@ -668,7 +684,7 @@ export default function JobInboxPage() {
     try {
       const extracted = await parseJobImage(imageBase64, imageMime);
       if (!extracted) {
-        setParseError('Could not extract job details from this image. Try a clearer screenshot or crop it to just the offer details.');
+        setParseError('No job details found. Try cropping the screenshot to just the offer card and scan again.');
         setImageScanning(false);
         return;
       }
@@ -688,8 +704,8 @@ export default function JobInboxPage() {
       const eval_ = evaluateProfitability(mapped, userSettings);
       setParsedJob(mapped);
       setEvaluation(eval_);
-    } catch {
-      setParseError('Image scan failed. Please try again or paste the text instead.');
+    } catch (err) {
+      setParseError(err?.message || 'Image scan failed. Please try again or paste the text instead.');
     }
     setImageScanning(false);
   };

@@ -79,8 +79,8 @@ export default async function handler(req, res) {
   }
   // Validate image payload: base64 string + valid mime
   if (imageBase64) {
-    if (typeof imageBase64 !== 'string' || imageBase64.length > 5_000_000) {
-      return res.status(400).json({ error: 'Invalid or oversized image data.' });
+    if (typeof imageBase64 !== 'string' || imageBase64.length > 10_000_000) {
+      return res.status(400).json({ error: 'Image too large. Please use a smaller screenshot (under ~7MB).' });
     }
     const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic'];
     if (mimeType && !allowedMimes.includes(mimeType)) {
