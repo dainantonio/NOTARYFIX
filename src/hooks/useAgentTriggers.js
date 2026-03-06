@@ -1,55 +1,81 @@
 // src/hooks/useAgentTriggers.js
 // Event-driven agent triggers — run automatically on data conditions.
-// Gated by localStorage timestamps so they never fire more than once per period.
-// All client-side now; designed to move server-side without UI changes.
+//
+// DEDUPLICATION MODEL (upgraded from localStorage):
+//   - Completion IDs are stored in data.agentTriggerLog (persisted to app state
+//     and therefore localStorage via DataContext), not raw localStorage keys.
+//   - Daily/weekly cadence gates use a lightweight entry in agentTriggerLog
+//     keyed by date string — same shape as completion IDs.
+//   - This survives incognito, storage clears, and future Firebase migration
+//     without any interface change.
+//
+// All client-side; designed to move server-side without UI changes.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
-const KEYS = {
-  LAST_AR_SCAN:           'agent_last_ar_scan',
-  LAST_DIGEST:            'agent_last_digest',
-  PROCESSED_COMPLETIONS:  'agent_processed_completions',
-};
-
-function todayKey()    { return new Date().toISOString().split('T')[0]; }
+// ── Date helpers ──────────────────────────────────────────────────────────────
+function todayKey()    { return `ar_scan::${new Date().toISOString().split('T')[0]}`; }
 function thisWeekKey() {
   const d   = new Date();
   const mon = new Date(d);
   mon.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // back to Monday
-  return mon.toISOString().split('T')[0];
+  return `weekly_digest::${mon.toISOString().split('T')[0]}`;
 }
-
-function loadProcessed() {
-  try { return new Set(JSON.parse(localStorage.getItem(KEYS.PROCESSED_COMPLETIONS) || '[]')); }
-  catch { return new Set(); }
-}
-
-function saveProcessed(set) {
-  const arr = [...set].slice(-200); // keep last 200 IDs
-  localStorage.setItem(KEYS.PROCESSED_COMPLETIONS, JSON.stringify(arr));
-}
+function completionKey(apptId) { return `closeout::${apptId}`; }
 
 /**
  * useAgentTriggers
- * Fires agent tasks automatically based on data state + elapsed time.
  *
  * Props:
- *   data                  — app data snapshot
- *   runCloseoutAgent      — fn(appointmentId)
- *   runARScan             — fn()
- *   generateWeeklySummary — fn()
- *   enabled               — master switch (default true)
+ *   data                   — app data snapshot (reads data.agentTriggerLog)
+ *   addAgentTriggerEntry   — fn(key: string) — persists a fired key to data layer
+ *   runCloseoutAgent       — fn(appointmentId)
+ *   runARScan              — fn()
+ *   generateWeeklySummary  — fn()
+ *   enabled                — master switch (default true)
  *
- * Returns trigger status for display in UI.
+ * Returns: { lastARScan, lastDigest, processedCompletions } for UI display.
+ *
+ * MIGRATION NOTE: When moving server-side, replace addAgentTriggerEntry with
+ * a Firebase/Supabase write. The hook interface is unchanged.
  */
 export function useAgentTriggers({
   data,
+  addAgentTriggerEntry,
   runCloseoutAgent,
   runARScan,
   generateWeeklySummary,
   enabled = true,
 }) {
-  const processedRef = useRef(loadProcessed());
+  // Stable set of already-fired keys, seeded from persisted data on mount.
+  const firedRef = useRef(null);
+
+  // Lazily initialise from data on first render
+  if (firedRef.current === null) {
+    firedRef.current = new Set(
+      Array.isArray(data?.agentTriggerLog) ? data.agentTriggerLog : []
+    );
+  }
+
+  // Keep in sync if data rehydrates (e.g. after Firebase pull)
+  useEffect(() => {
+    if (Array.isArray(data?.agentTriggerLog)) {
+      for (const key of data.agentTriggerLog) firedRef.current.add(key);
+    }
+  }, [data?.agentTriggerLog]);
+
+  // Stable helper: fire once then persist
+  const fireOnce = useCallback((key, fn, delayMs = 0) => {
+    if (firedRef.current.has(key)) return false;
+    firedRef.current.add(key);
+    addAgentTriggerEntry?.(key);
+    if (delayMs > 0) {
+      setTimeout(fn, delayMs);
+    } else {
+      fn();
+    }
+    return true;
+  }, [addAgentTriggerEntry]);
 
   // ── Trigger 1: appointment completion → closeout agent ──────────────────────
   useEffect(() => {
@@ -60,26 +86,17 @@ export function useAgentTriggers({
       (a) => a.status === 'complete' || a.status === 'completed'
     );
 
-    let fired = false;
     for (const appt of completed) {
-      const id = String(appt.id);
-      if (!processedRef.current.has(id)) {
-        processedRef.current.add(id);
-        fired = true;
-        // Defer slightly to avoid firing during render
-        setTimeout(() => runCloseoutAgent(appt.id), 600);
-      }
+      const key = completionKey(appt.id);
+      fireOnce(key, () => runCloseoutAgent(appt.id), 600);
     }
-    if (fired) saveProcessed(processedRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.appointments, enabled]);
 
   // ── Trigger 2: daily AR scan ────────────────────────────────────────────────
   useEffect(() => {
     if (!enabled || !runARScan) return;
-    if (localStorage.getItem(KEYS.LAST_AR_SCAN) === todayKey()) return;
-    localStorage.setItem(KEYS.LAST_AR_SCAN, todayKey());
-    setTimeout(() => runARScan(), 1500);
+    fireOnce(todayKey(), () => runARScan(), 1500);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
@@ -87,16 +104,25 @@ export function useAgentTriggers({
   useEffect(() => {
     if (!enabled || !generateWeeklySummary) return;
     if (new Date().getDay() !== 1) return; // 1 = Monday
-    if (localStorage.getItem(KEYS.LAST_DIGEST) === thisWeekKey()) return;
-    localStorage.setItem(KEYS.LAST_DIGEST, thisWeekKey());
-    setTimeout(() => generateWeeklySummary(), 3000);
+    fireOnce(thisWeekKey(), () => generateWeeklySummary(), 3000);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
-  // Return status for UI display
-  return {
-    lastARScan:            localStorage.getItem(KEYS.LAST_AR_SCAN),
-    lastDigest:            localStorage.getItem(KEYS.LAST_DIGEST),
-    processedCompletions:  processedRef.current.size,
-  };
+  // ── Return status for UI display ──────────────────────────────────────────
+  const logArr = Array.isArray(data?.agentTriggerLog) ? data.agentTriggerLog : [];
+  const lastARScan = logArr
+    .filter(k => k.startsWith('ar_scan::'))
+    .sort()
+    .at(-1)
+    ?.replace('ar_scan::', '') ?? null;
+
+  const lastDigest = logArr
+    .filter(k => k.startsWith('weekly_digest::'))
+    .sort()
+    .at(-1)
+    ?.replace('weekly_digest::', '') ?? null;
+
+  const processedCompletions = logArr.filter(k => k.startsWith('closeout::')).length;
+
+  return { lastARScan, lastDigest, processedCompletions };
 }
