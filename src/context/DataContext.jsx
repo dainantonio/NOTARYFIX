@@ -5,7 +5,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { createCrudOps }     from './slices/crudOps';
 import { createDispatchOps } from './slices/dispatchOps';
 import { createAgentOps }    from './slices/agentOps';
-import { createJobOps } from './slices/jobOps';
+import { createJobOps }     from './slices/jobOps';
+import { createFinanceOps } from './slices/financeOps';
 
 const DataContext = createContext();
 
@@ -63,6 +64,8 @@ const defaultData = {
   jobMessages:     [],
   jobs:            [],
   jobExpenses:     [],
+  businessExpenses:[],
+  taxDocuments:    [],
 
   settings: {
     name: '',
@@ -192,7 +195,8 @@ export const DataProvider = ({ children }) => {
   const crudOps     = useMemo(() => createCrudOps(setData),          []);       // eslint-disable-line react-hooks/exhaustive-deps
   const dispatchOps = useMemo(() => createDispatchOps(setData),      []);       // eslint-disable-line react-hooks/exhaustive-deps
   const agentOps    = useMemo(() => createAgentOps(setData, getData), [getData]); // eslint-disable-line react-hooks/exhaustive-deps
-  const jobOps      = useMemo(() => createJobOps(setData, getData),   [getData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const jobOps      = useMemo(() => createJobOps(setData, getData),     [getData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const financeOps  = useMemo(() => createFinanceOps(setData, getData),  [getData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wrap the three async/callback ops that were originally useCallback in DataContext
   const runCloseoutAgentWithAI = useCallback(agentOps.runCloseoutAgentWithAI, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -211,6 +215,8 @@ export const DataProvider = ({ children }) => {
         ...agentOps,
         // ── Job Intelligence ops ──────────────────────────────────────────
         ...jobOps,
+        // ── Finance / Tax ops ─────────────────────────────────────────────
+        ...financeOps,
         runCloseoutAgentWithAI,
         checkAutoScanAR,
         generateWeeklySummary,

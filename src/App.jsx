@@ -39,7 +39,9 @@ const AgentPage      = lazy(() => import('./pages/AgentPage'));
 const AuditPage      = lazy(() => import('./pages/AuditPage'));
 const ReviewQueuePage = lazy(() => import('./pages/ReviewQueuePage'));
 const FAQPage         = lazy(() => import('./pages/FAQPage'));
-const JobInboxPage = lazy(() => import('./pages/JobInboxPage'));
+const JobInboxPage        = lazy(() => import('./pages/JobInboxPage'));
+const TaxCenterPage       = lazy(() => import('./pages/TaxCenterPage'));
+const NetworkInsightsPage = lazy(() => import('./pages/NetworkInsightsPage'));
 
 // ─── Loading fallback ─────────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -123,6 +125,8 @@ function App() {
                     <Route path="/settings"        element={<Settings />} />
                     <Route path="/mileage"         element={<Mileage />} />
                     <Route path="/job-inbox"       element={<JobInboxPage />} />
+                    <Route path="/tax-center"       element={<TaxCenterPage />} />
+                    <Route path="/market-insights"  element={<NetworkInsightsPage />} />
 
                     {/* FIX 5: /form-guide is PRO — gate it */}
                     <Route path="/form-guide"      element={<GatedRoute featureKey="formGuide"><FormGuide /></GatedRoute>} />

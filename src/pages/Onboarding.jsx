@@ -156,6 +156,7 @@ export default function Onboarding() {
     travelRadiusMiles:    data.settings?.travelRadiusMiles || 40,
     negotiationStyle:     data.settings?.negotiationStyle  || 'market_rate',
     enabledSources:       data.settings?.enabledSources    || ['manual'],
+    enableNetworkInsights: data.settings?.enableNetworkInsights ?? true,
     name:                 data.settings?.name          || '',
     businessName:         data.settings?.businessName  || '',
     businessLogo:         data.settings?.businessLogo || '',
@@ -202,6 +203,11 @@ export default function Onboarding() {
       autonomyMode:         form.autonomyMode,
       feeSchedule:          form.feeSchedule,
       onboardingComplete:   true,
+      enableNetworkInsights: form.enableNetworkInsights,
+      minAcceptableFee:     Number(form.minAcceptableFee) || 75,
+      travelRadiusMiles:    Number(form.travelRadiusMiles) || 40,
+      negotiationStyle:     form.negotiationStyle || 'market_rate',
+      enabledSources:       form.enabledSources || ['manual'],
       agentMode:            form.agentMode,
     });
     navigate('/dashboard');

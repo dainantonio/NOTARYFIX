@@ -344,6 +344,60 @@ All changes are versioned with a \`publishedAt\` timestamp. The AI agent always 
       },
     ],
   },
+  {
+    id: 'network-insights',
+    title: 'Network & Market Insights',
+    icon: TrendingUp,
+    questions: [
+      {
+        q: 'What is the Learning Network?',
+        a: 'The Learning Network is an anonymized market intelligence layer that shows you average signing fees, typical travel distances, payment timelines, and other industry benchmarks. It helps you compare your rates against market averages so you never undercharge. All "network average" data is based on industry survey data — no personal data is shared.'
+      },
+      {
+        q: 'How does the platform estimate signing fees?',
+        a: 'Fee benchmarks are based on NSA, NNA, and LSS industry surveys covering 12 job types. When a job request arrives, the Job Intelligence Agent compares the offered fee against the regional market average and recommends whether to accept, counter, or decline. You always make the final decision.'
+      },
+      {
+        q: 'How does the Learning Network protect my privacy?',
+        a: 'Your personal job data never leaves your device. All insights are generated locally using your own history stored in your browser. The "market averages" displayed are static industry benchmarks — not aggregated from other users. There is no data collection or external transmission of your job records.'
+      },
+      {
+        q: 'What is the Payment Risk database?',
+        a: 'The Payment Risk database tracks average payment timelines for common signing companies based on community-reported data. It helps you identify fast payers vs. slow payers before you accept a job. Ratings include average days to payment and risk level (Low, Medium, High). Always verify independently — payment practices can change.'
+      },
+      {
+        q: 'How does the Travel Calculator work?',
+        a: 'Enter the one-way distance to a job and the calculator uses the current IRS mileage rate to compute your round-trip travel cost, printing cost, and total job overhead. It then suggests a minimum profitable fee range. This helps you instantly evaluate whether an offered fee covers your actual costs.'
+      },
+    ],
+  },
+  {
+    id: 'tax-center',
+    title: 'Tax Center',
+    icon: DollarSign,
+    questions: [
+      {
+        q: 'What does the Tax Center track?',
+        a: 'The Tax Center tracks three things: (1) Income from completed jobs — pulled automatically from your job records. (2) Mileage deductions — calculated from your mileage log using the current IRS rate. (3) Business expenses — supplies, insurance, software, phone, and other Schedule C deductions you enter manually.'
+      },
+      {
+        q: 'How does the platform estimate tax deductions?',
+        a: 'The Finance Agent applies the current IRS mileage rate to your logged miles, sums your categorized business expenses, and computes Schedule C net income. It then estimates self-employment tax (15.3%) and your effective income tax rate to project your quarterly payment obligation. All figures are estimates — consult a CPA before filing.'
+      },
+      {
+        q: 'Can I export reports for my CPA?',
+        a: 'Yes. The Tax Center has two export options: (1) CSV Export — a complete spreadsheet of income, mileage, and expenses importable into Excel, Google Sheets, or QuickBooks. (2) CPA Report — a formatted Schedule C summary with income, deductions, net profit, and estimated tax that you can email directly to your accountant.'
+      },
+      {
+        q: 'Does the AI automatically file my taxes?',
+        a: 'No. NotaryOS never files taxes or submits information to the IRS. The Tax Center is a planning and organization tool only. All tax figures are estimates for your personal reference. You remain fully responsible for accurate tax filing, and we strongly recommend working with a licensed CPA or tax professional.'
+      },
+      {
+        q: 'How do I add a 1099-NEC or other tax document?',
+        a: 'In the Tax Center, go to the Documents tab and click "Add Document". Select the document type (1099-NEC, W-9, Receipt, etc.), enter the payer name and amount, and save. The agent will simulate extracting key fields from the document. You can then review and confirm before adding it to your income ledger.'
+      },
+    ],
+  },
 ];
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
