@@ -50,6 +50,8 @@ const NEW_WAY = [
   { title: 'Agent-Assisted Journaling', desc: 'Your agent prepares compliant journal drafts with state-specific prompts ready for review.', icon: Check },
   { title: 'Active Compliance Guardrails', desc: 'Your agent flags fee, ID, and act-level risks with grounded citations — citing the exact policy record and last-updated date behind every decision.', icon: Check },
   { title: 'Agent-Ready Team Dispatch', desc: 'Coordinate multi-notary teams while agent drafts keep closeout workflows consistent.', icon: Check },
+  { title: 'Network Market Insights', desc: 'Compare your fees against market benchmarks. The agent warns when an offer is below average and suggests a counter.', icon: Check },
+  { title: 'Tax-Ready Finance Tracking', desc: 'Income, mileage deductions, and business expenses tracked automatically. Export CPA-ready reports in one click.', icon: Check },
 ];
 
 const HOW_STEPS = [
@@ -74,7 +76,7 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Agent Runtime + Citations', 'Job Intelligence Inbox', 'Command Center', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    features: ['Unlimited Appointments', 'AI Agent Runtime + Citations', 'Job Intelligence Inbox', 'Market Insights', 'Tax Center', 'Command Center', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
@@ -1340,7 +1342,7 @@ export default function Landing() {
                 <span className="text-sm font-black text-white">NotaryFix</span>
               </div>
               <p className="mb-5 max-w-[240px] text-sm leading-relaxed text-slate-500">
-                The AI-native platform for modern notary professionals. Agent Runtime, grounded compliance citations, scheduling, invoicing, and team tools — all in one place.
+                The AI-native operating system for modern notary professionals. Detect jobs, optimize fees, stay compliant, track income, and run your entire business with intelligent automation.
               </p>
               <div className="flex gap-2">
                 {['𝕏', 'in', 'f', '◎'].map(s => (
