@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
   Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
-  Sparkles, Maximize2, Minimize2, MoreHorizontal} from 'lucide-react';
+  Sparkles, Maximize2, Minimize2, MoreHorizontal, Inbox} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -139,6 +139,7 @@ const LayoutInner = ({ children }) => {
         { icon: ScrollText, label: 'Journal', path: '/journal' },
         { icon: Wallet, label: 'Invoices', path: '/invoices' },
         { icon: MapPin, label: 'Mileage', path: '/mileage' },
+        { icon: Inbox, label: 'Job Inbox', path: '/job-inbox' },
       ]
     },
     {
@@ -171,6 +172,7 @@ const LayoutInner = ({ children }) => {
     { Icon: Sparkles, label: 'Command Center', path: '/agent', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Command Center', pendingCount: planTier !== 'free' ? pendingAgentCount : 0 },
     { Icon: Scale, label: 'Act Library', path: '/form-guide', locked: planTier === 'free', badge: 'PRO', featureKey: 'aiTrainer', paywallTitle: 'Act Library' },
     { Icon: MapPin, label: 'Mileage', path: '/mileage' },
+    { Icon: Inbox, label: 'Job Inbox', path: '/job-inbox' },
     { Icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

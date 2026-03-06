@@ -56,6 +56,7 @@ const HOW_STEPS = [
   { step: '01', title: 'Book the Job', desc: 'Capture signer details with Smart Fill and templates.', icon: CalendarCheck },
   { step: '02', title: 'Complete Signing', desc: 'Handle the appointment with guided compliance checks.', icon: FileCheck2 },
   { step: '03', title: 'Agent Closes Out', desc: 'Agent Runtime drafts journal + invoice, verifies compliance with grounded citations, and queues everything in Command Center.', icon: Bot },
+  { step: '03', title: 'Detect & Optimize Jobs', desc: 'Agent parses incoming messages for job requests and evaluates profitability against market benchmarks.', icon: '🔍' },
   { step: '04', title: 'Approve & Get Paid', desc: 'Review, approve, and send with one click.', icon: Wallet },
 ];
 
@@ -73,7 +74,7 @@ const PRICING = [
   },
   {
     name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Agent Runtime + Citations', 'Command Center', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    features: ['Unlimited Appointments', 'AI Agent Runtime + Citations', 'Job Intelligence Inbox', 'Command Center', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
@@ -102,6 +103,7 @@ const FAQ = [
   { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryFix is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
   { q: 'Can I switch plans or cancel anytime?', a: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.' },
   { q: 'How much time does the agent actually save?', a: 'Based on role profiles: Mobile Notaries recover ~9.5 agent hours per week, Loan Signing Agents recover ~14.2 hrs, and Signing Agencies recover 32+ hrs across their team. That\'s time the agent spends on closeouts, journaling, and invoicing — not you.' },
+  { q: 'How does the Job Intelligence Agent detect jobs?', a: 'Paste any email, SMS, or voicemail transcript into the Job Inbox. The agent scans for keywords (refi, closing, signing, deed, etc.) and extracts job type, location, date, time, fee, and contact automatically. It then runs a profitability analysis — factoring in travel cost, printing, and market benchmarks — and recommends Accept, Counter, or Decline. You always confirm the action.' },
   { q: 'What is the Command Center?', a: 'Command Center is your proactive AI hub — it shows pending suggestions from the agent, live KPIs, playbook shortcuts, and a full history of agent actions. It includes a live badge showing pending suggestion count. Use it to stay on top of your business; use the Review Queue when you need focused processing with filters and bulk actions.' },
 ];
 
@@ -689,6 +691,94 @@ export default function Landing() {
             </div>
           </div>
         </div>
+        </div>
+      </section>
+
+
+      {/* ══ JOB INTELLIGENCE ════════════════════════════════════════════════ */}
+      <section className="bg-[#0a1525] py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Left: content */}
+            <div>
+              <span className="inline-flex rounded-full border border-amber-400/25 bg-amber-400/8 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-300">
+                New — Job Intelligence Agent
+              </span>
+              <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight md:text-5xl">
+                Never miss a{' '}
+                <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                  profitable job
+                </span>{' '}again
+              </h2>
+              <p className="mt-4 text-lg text-slate-400">
+                Paste any email, SMS, or voicemail into your Job Inbox. The agent detects the opportunity, extracts every field, and evaluates the offer against real market benchmarks — in under three seconds.
+              </p>
+              <div className="mt-8 space-y-4">
+                {[
+                  { emoji: '📩', title: 'Message Detection', desc: 'Automatically identifies job requests from emails, texts, and platform notices.' },
+                  { emoji: '📊', title: 'Profitability Analysis', desc: 'Factors in travel cost, print cost, and market averages to calculate your net profit.' },
+                  { emoji: '💬', title: 'Negotiation Script', desc: 'Generates a ready-to-send counter offer or acceptance tailored to the specific job.' },
+                  { emoji: '🏁', title: 'Lifecycle Tracking', desc: 'Follows each job from detection → negotiation → scheduling → invoicing → payment.' },
+                ].map(({ emoji, title, desc }) => (
+                  <div key={title} className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-400/10 text-xl">
+                      {emoji}
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{title}</p>
+                      <p className="mt-0.5 text-sm text-slate-400">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8">
+                <a href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:brightness-110">
+                  Try Job Inbox →
+                </a>
+              </div>
+            </div>
+
+            {/* Right: demo card */}
+            <div className="rounded-2xl border border-white/10 bg-[#0d1a2e] p-6 shadow-2xl">
+              <div className="flex items-center gap-2 border-b border-white/[0.06] pb-4 mb-5">
+                <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Job Detected</span>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-xl bg-white/[0.04] p-4 border border-white/6">
+                  <p className="text-xs text-slate-500 mb-1">MESSAGE</p>
+                  <p className="text-sm text-slate-300 italic">"Refi signing tomorrow 2pm Columbus OH. $90 offered."</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Type', value: 'Refinance' },
+                    { label: 'Location', value: 'Columbus, OH' },
+                    { label: 'Offered Fee', value: '$90' },
+                    { label: 'Market Avg', value: '$150' },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="rounded-xl bg-white/[0.03] px-3 py-2 border border-white/6">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wide">{label}</p>
+                      <p className="text-sm font-bold text-white mt-0.5">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/8 p-3 flex items-center gap-3">
+                  <span className="text-xl">💡</span>
+                  <div>
+                    <p className="text-xs font-bold text-amber-300">Counter Offer Recommended</p>
+                    <p className="text-[11px] text-amber-400/80">Suggest $150 — 40% below market. Est. profit: $62 after costs.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {['Accept', 'Counter $150', 'Request Info', 'Decline'].map((action, i) => (
+                    <div key={action} className={`rounded-lg py-2 text-center text-[10px] font-bold cursor-default ${i === 1 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/5 text-slate-500 border border-white/8'}`}>
+                      {action}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

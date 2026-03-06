@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { createCrudOps }     from './slices/crudOps';
 import { createDispatchOps } from './slices/dispatchOps';
 import { createAgentOps }    from './slices/agentOps';
+import { createJobOps } from './slices/jobOps';
 
 const DataContext = createContext();
 
@@ -59,6 +60,9 @@ const defaultData = {
   dispatchAuditLog:[],
   adminAuditLog:   [],
   agentMemory:     { facts: [], updatedAt: null },
+  jobMessages:     [],
+  jobs:            [],
+  jobExpenses:     [],
 
   settings: {
     name: '',
@@ -188,6 +192,7 @@ export const DataProvider = ({ children }) => {
   const crudOps     = useMemo(() => createCrudOps(setData),          []);       // eslint-disable-line react-hooks/exhaustive-deps
   const dispatchOps = useMemo(() => createDispatchOps(setData),      []);       // eslint-disable-line react-hooks/exhaustive-deps
   const agentOps    = useMemo(() => createAgentOps(setData, getData), [getData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const jobOps      = useMemo(() => createJobOps(setData, getData),   [getData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wrap the three async/callback ops that were originally useCallback in DataContext
   const runCloseoutAgentWithAI = useCallback(agentOps.runCloseoutAgentWithAI, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -204,6 +209,8 @@ export const DataProvider = ({ children }) => {
         ...dispatchOps,
         // ── Agent ops (spread base, then override the three memoised fns) ───
         ...agentOps,
+        // ── Job Intelligence ops ──────────────────────────────────────────
+        ...jobOps,
         runCloseoutAgentWithAI,
         checkAutoScanAR,
         generateWeeklySummary,

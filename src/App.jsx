@@ -39,6 +39,7 @@ const AgentPage      = lazy(() => import('./pages/AgentPage'));
 const AuditPage      = lazy(() => import('./pages/AuditPage'));
 const ReviewQueuePage = lazy(() => import('./pages/ReviewQueuePage'));
 const FAQPage         = lazy(() => import('./pages/FAQPage'));
+const JobInboxPage = lazy(() => import('./pages/JobInboxPage'));
 
 // ─── Loading fallback ─────────────────────────────────────────────────────────
 const PageLoader = () => (
@@ -121,6 +122,7 @@ function App() {
                     <Route path="/arrive/:id"      element={<ArriveMode />} />
                     <Route path="/settings"        element={<Settings />} />
                     <Route path="/mileage"         element={<Mileage />} />
+                    <Route path="/job-inbox"       element={<JobInboxPage />} />
 
                     {/* FIX 5: /form-guide is PRO — gate it */}
                     <Route path="/form-guide"      element={<GatedRoute featureKey="formGuide"><FormGuide /></GatedRoute>} />

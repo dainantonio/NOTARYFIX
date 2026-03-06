@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import {
   ArrowRight, ArrowLeft, CheckCircle2, Building2, Target,
-  MapPin, Star, Zap, Shield, Users, Check,
+  MapPin, Star, Zap, Shield, Users, Check, Mail, MessageSquare,
 } from 'lucide-react';
 
 // ─── STEP CONFIG ──────────────────────────────────────────────────────────────
@@ -13,6 +13,8 @@ const STEPS = [
   { id: 'business', label: 'Business' },
   { id: 'license',  label: 'License'  },
   { id: 'fees',     label: 'Fees'     },
+  { id: 'intelligence', label: 'Intelligence' },
+  { id: 'sources',  label: 'Sources'  },
   { id: 'plan',     label: 'Plan'     },
   { id: 'agent',    label: 'Agent'    },
   { id: 'launch',   label: 'Launch'   },
@@ -150,6 +152,10 @@ export default function Onboarding() {
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
+    minAcceptableFee:     data.settings?.minAcceptableFee  || 75,
+    travelRadiusMiles:    data.settings?.travelRadiusMiles || 40,
+    negotiationStyle:     data.settings?.negotiationStyle  || 'market_rate',
+    enabledSources:       data.settings?.enabledSources    || ['manual'],
     name:                 data.settings?.name          || '',
     businessName:         data.settings?.businessName  || '',
     businessLogo:         data.settings?.businessLogo || '',
