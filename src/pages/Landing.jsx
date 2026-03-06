@@ -56,8 +56,8 @@ const HOW_STEPS = [
   { step: '01', title: 'Book the Job', desc: 'Capture signer details with Smart Fill and templates.', icon: CalendarCheck },
   { step: '02', title: 'Complete Signing', desc: 'Handle the appointment with guided compliance checks.', icon: FileCheck2 },
   { step: '03', title: 'Agent Closes Out', desc: 'Agent Runtime drafts journal + invoice, verifies compliance with grounded citations, and queues everything in Command Center.', icon: Bot },
-  { step: '03', title: 'Detect & Optimize Jobs', desc: 'Agent parses incoming messages for job requests and evaluates profitability against market benchmarks.', icon: '🔍' },
-  { step: '04', title: 'Approve & Get Paid', desc: 'Review, approve, and send with one click.', icon: Wallet },
+  { step: '04', title: 'Detect & Optimize Jobs', desc: 'Agent parses incoming messages for job requests and evaluates profitability against market benchmarks.', icon: Sparkles },
+  { step: '05', title: 'Approve & Get Paid', desc: 'Review, approve, and send with one click.', icon: Wallet },
 ];
 
 const BUSINESS_MODELS = [
@@ -602,7 +602,7 @@ export default function Landing() {
               {[
                 { label: 'Weekly Signings',        val: String(activeProfile.weekly),                      accent: 'border-cyan-500/30 bg-cyan-500/5'    },
                 { label: 'Revenue Potential',       val: `$${activeProfile.avgRevenue.toLocaleString()}/wk`, accent: 'border-blue-500/30 bg-blue-500/5'    },
-                { label: 'Agent Hours Recovered',   val: activeProfile.agentRecovery,                       accent: 'border-violet-500/30 bg-violet-500/5' },
+                { label: 'Agent Hours Recovered',   val: activeProfile.adminCut,                       accent: 'border-violet-500/30 bg-violet-500/5' },
               ].map(card => (
                 <div key={card.label} className={`rounded-2xl border ${card.accent} p-4 text-center`}>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{card.label}</p>
@@ -1007,10 +1007,10 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
             <span className="inline-flex rounded-full border border-blue-400/25 bg-blue-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">How It Works</span>
-            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 4 steps.</h2>
+            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 5 steps.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">A streamlined workflow designed for mobile-first notaries.</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
             {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => (
               <div key={title} className="relative rounded-2xl border border-white/8 bg-white/[0.03] p-7 transition-all hover:-translate-y-1 hover:border-white/15">
                 {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-700" /></div>}
