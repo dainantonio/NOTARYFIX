@@ -8,6 +8,27 @@ import { checkCompliance, STATE_RULES } from '../../hooks/useComplianceChecker';
 import { serviceTypeToActType } from '../../utils/notaryTypes';
 import { validateRecord } from '../../schemas/validate';
 import { AgentSuggestionSchema } from '../../schemas';
+
+// ── Autonomous action event bus ───────────────────────────────────────────────
+// Allows the UI to show a toast/banner when the agent auto-commits records
+// without user review. Uses a plain CustomEvent so there's no React dependency
+// in this slice. Components listen via useEffect + window.addEventListener.
+//
+// Event name : 'agent:autonomous_commit'
+// Event detail: { type, label, runId, journalId?, invoiceId?, approvedAt }
+//
+// Usage in any React component:
+//   useEffect(() => {
+//     const handler = (e) => showToast(e.detail);
+//     window.addEventListener('agent:autonomous_commit', handler);
+//     return () => window.removeEventListener('agent:autonomous_commit', handler);
+//   }, []);
+function emitAutonomousCommit(detail) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.dispatchEvent(new CustomEvent('agent:autonomous_commit', { detail }));
+  } catch { /* SSR / test environments */ }
+}
 import { buildCitations } from '../../agent/verifier';
 
 // ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
@@ -160,23 +181,15 @@ export function createAgentOps(setData, getData) {
     };
 
     if (autonomyMode === 'autonomous') {
-      return _appendAuditLog({
-        ...p,
-        appointments: nextAppointments,
-        invoices: [draftInvoice, ...(p.invoices || [])],
-        journalEntries: [draftJournal, ...(p.journalEntries || [])],
-        agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
-        agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
-      }, {
-        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
-        resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
-        diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
+      emitAutonomousCommit({
+        type:      'closeout',
+        label:     `Agent auto-closed: ${appointment.client || 'Unknown'}`,
+        runId,
+        journalId,
+        invoiceId,
+        approvedAt: nowIso,
       });
-    }
-
-    return _appendAuditLog({
-      ...p,
-      appointments: nextAppointments,
+      return _appendAuditLog({
       agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
       agentSuggestions: _addValidatedSuggestion(suggestion, p).slice(0, 200),
     }, {
@@ -341,14 +354,15 @@ export function createAgentOps(setData, getData) {
       }
 
       if (autonomyMode === 'autonomous') {
+        emitAutonomousCommit({
+          type:      'closeout',
+          label:     `Agent auto-closed: ${apt.client || 'Unknown'}`,
+          runId,
+          journalId,
+          invoiceId,
+          approvedAt: nowIso,
+        });
         return _appendAuditLog({
-          ...p,
-          appointments: nextAppointments,
-          invoices: [draftInvoice, ...(p.invoices || [])],
-          journalEntries: [draftJournal, ...(p.journalEntries || [])],
-          agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
-          agentSuggestions: [{ ...suggestion, status: 'approved', approvedAt: nowIso }, ...(p.agentSuggestions || [])].slice(0, 200),
-        }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `Auto-approved: journal ${draftJournal.entryNumber} + invoice ${invoiceId}` });
       }
 
       return _appendAuditLog({
