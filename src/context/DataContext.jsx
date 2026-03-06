@@ -60,6 +60,8 @@ const defaultData = {
   payouts:         [],
   dispatchAuditLog:[],
   adminAuditLog:   [],
+  agentTriggerLog: [],   // persisted deduplication log for useAgentTriggers
+  agentFeedback:   [],   // edit/outcome records for useFeedbackLoop confidence adjustment
   agentMemory:     { facts: [], updatedAt: null },
   jobMessages:     [],
   jobs:            [],
@@ -154,6 +156,8 @@ const hydrate = () => {
           payouts:          Array.isArray(parsed.payouts)          ? parsed.payouts          : defaultData.payouts,
           dispatchAuditLog: Array.isArray(parsed.dispatchAuditLog) ? parsed.dispatchAuditLog : defaultData.dispatchAuditLog,
           adminAuditLog:    Array.isArray(parsed.adminAuditLog)    ? parsed.adminAuditLog    : defaultData.adminAuditLog,
+          agentTriggerLog:  Array.isArray(parsed.agentTriggerLog)  ? parsed.agentTriggerLog  : defaultData.agentTriggerLog,
+          agentFeedback:    Array.isArray(parsed.agentFeedback)    ? parsed.agentFeedback    : defaultData.agentFeedback,
           agentMemory:      parsed.agentMemory && typeof parsed.agentMemory === 'object'
             ? { facts: Array.isArray(parsed.agentMemory.facts) ? parsed.agentMemory.facts : [], updatedAt: parsed.agentMemory.updatedAt || null }
             : defaultData.agentMemory,
@@ -203,6 +207,30 @@ export const DataProvider = ({ children }) => {
   const checkAutoScanAR        = useCallback(agentOps.checkAutoScanAR,        []); // eslint-disable-line react-hooks/exhaustive-deps
   const generateWeeklySummary  = useCallback(agentOps.generateWeeklySummary,  []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Agent feedback — persisted edit/outcome log for useFeedbackLoop ──────────
+  // Feeds confidence adjustment. Cap at 1000 records to prevent unbounded growth.
+  const addFeedback = useCallback((record) => {
+    if (!record?.id) return;
+    setData((p) => {
+      const existing = Array.isArray(p.agentFeedback) ? p.agentFeedback : [];
+      // Deduplicate by suggestionId + outcome to prevent double-recording
+      const isDupe = existing.some(
+        (f) => f.suggestionId === record.suggestionId && f.outcome === record.outcome
+      );
+      if (isDupe) return p;
+      return { ...p, agentFeedback: [record, ...existing].slice(0, 1000) };
+    });
+  }, []);
+  // Replaces localStorage-based deduplication. Survives incognito + storage clears.
+  const addAgentTriggerEntry = useCallback((key) => {
+    if (!key) return;
+    setData((p) => {
+      const existing = Array.isArray(p.agentTriggerLog) ? p.agentTriggerLog : [];
+      if (existing.includes(key)) return p;             // already recorded
+      return { ...p, agentTriggerLog: [...existing, key].slice(-500) }; // cap at 500 entries
+    });
+  }, []);
+
   return (
     <DataContext.Provider
       value={{
@@ -220,6 +248,8 @@ export const DataProvider = ({ children }) => {
         runCloseoutAgentWithAI,
         checkAutoScanAR,
         generateWeeklySummary,
+        addAgentTriggerEntry,
+        addFeedback,
       }}
     >
       {children}
