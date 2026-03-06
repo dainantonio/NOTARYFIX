@@ -190,6 +190,22 @@ export function createAgentOps(setData, getData) {
         approvedAt: nowIso,
       });
       return _appendAuditLog({
+        ...p,
+        appointments: nextAppointments,
+        journalEntries: [draftJournal, ...(p.journalEntries || [])],
+        invoices: [draftInvoice, ...(p.invoices || [])],
+        agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
+        agentSuggestions: _addValidatedSuggestion({ ...suggestion, status: 'approved', approvedAt: nowIso }, p).slice(0, 200),
+      }, {
+        actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
+        resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
+        diff: `AI auto-committed journal ${draftJournal.entryNumber} + invoice ${invoiceId}`,
+      });
+    }
+
+    return _appendAuditLog({
+      ...p,
+      appointments: nextAppointments,
       agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
       agentSuggestions: _addValidatedSuggestion(suggestion, p).slice(0, 200),
     }, {
