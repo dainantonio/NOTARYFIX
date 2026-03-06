@@ -1,6 +1,6 @@
 // File: src/context/slices/agentOps.js
 // AI/agent operations: closeout, AR, lead intake, weekly summary, autonomy.
-// No React imports — pure factory function.
+// No React imports -- pure factory function.
 // getData() is passed as second param to read current state snapshot.
 
 import { generateCloseoutDraft, generateWeeklySummary as generateWeeklySummaryAI, parseLeadText } from '../../services/agentService';
@@ -9,13 +9,13 @@ import { serviceTypeToActType } from '../../utils/notaryTypes';
 import { validateRecord } from '../../schemas/validate';
 import { AgentSuggestionSchema } from '../../schemas';
 
-// ── Autonomous action event bus ───────────────────────────────────────────────
+// -- Autonomous action event bus -----------------------------------------------
 // Allows the UI to show a toast/banner when the agent auto-commits records
 // without user review. Uses a plain CustomEvent so there's no React dependency
 // in this slice. Components listen via useEffect + window.addEventListener.
 //
 // Event name : 'agent:autonomous_commit'
-// Event detail: { type, label, runId, journalId?, invoiceId?, approvedAt }
+// Event detail: { type, label, runId, journalId-, invoiceId-, approvedAt }
 //
 // Usage in any React component:
 //   useEffect(() => {
@@ -31,15 +31,15 @@ function emitAutonomousCommit(detail) {
 }
 import { buildCitations } from '../../agent/verifier';
 
-// ─── SERVICE TYPE MAPPING ─────────────────────────────────────────
-// Now uses centralized mapping from notaryTypes.js — single source of truth.
+// --- SERVICE TYPE MAPPING -----------------------------------------
+// Now uses centralized mapping from notaryTypes.js -- single source of truth.
 const apptTypeToActType = (apptType = '', aiHint = '') => {
   // Use AI hint if present and valid, otherwise use appointment type
   const typeToUse = aiHint || apptType;
   return serviceTypeToActType(typeToUse);
 };
 
-// ── Internal helpers (module-private) ────────────────────────────────────────
+// -- Internal helpers (module-private) ----------------------------------------
 
 const todayISO = new Date().toISOString().split('T')[0];
 
@@ -58,11 +58,11 @@ const _appendAuditLog = (p, entry) => ({
   ].slice(0, 200),
 });
 
-// ── Factory ──────────────────────────────────────────────────────────────────
+// -- Factory ------------------------------------------------------------------
 
 export function createAgentOps(setData, getData) {
 
-  // ── Sync Closeout Agent ───────────────────────────────────────────────────
+  // -- Sync Closeout Agent ---------------------------------------------------
   const runCloseoutAgent = (appointmentId, actor = 'Closeout Agent') => setData((p) => {
     const appointment = (p.appointments || []).find((apt) => String(apt.id) === String(appointmentId));
     if (!appointment) return p;
@@ -158,7 +158,7 @@ export function createAgentOps(setData, getData) {
       actor,
       ranAt: nowIso,
       createdAt: nowIso,
-      label: `Closeout — ${appointment.client || 'Unknown'}`,
+      label: `Closeout -- ${appointment.client || 'Unknown'}`,
       actions: runRecord.actions,
       warnings: runRecord.warnings,
       missingFields,
@@ -195,11 +195,11 @@ export function createAgentOps(setData, getData) {
     }, {
       actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent',
       resourceId: runId, resourceLabel: `${appointment.client || 'Unknown'} closeout`,
-      diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval`,
+      diff: `Drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} -- pending approval`,
     });
   });
 
-  // ── AI-Enhanced Async Closeout Agent ─────────────────────────────────────
+  // -- AI-Enhanced Async Closeout Agent -------------------------------------
   // Note: DataContext.jsx wraps this with useCallback([]) for memoization.
   const runCloseoutAgentWithAI = async (appointmentId, actor = 'Closeout Agent') => {
     const currentData = getData();
@@ -315,7 +315,7 @@ export function createAgentOps(setData, getData) {
         actor,
         ranAt: nowIso,
         createdAt: nowIso,
-        label: `Closeout — ${apt.client || 'Unknown'}`,
+        label: `Closeout -- ${apt.client || 'Unknown'}`,
         actions: runRecord.actions,
         warnings: runRecord.warnings,
         missingFields,
@@ -370,11 +370,11 @@ export function createAgentOps(setData, getData) {
         appointments: nextAppointments,
         agentRuns: [runRecord, ...(p.agentRuns || [])].slice(0, 200),
         agentSuggestions: _addValidatedSuggestion(suggestion, p).slice(0, 200),
-      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} — pending approval` });
+      }, { actor, actorRole: 'ai_agent', action: 'created', resourceType: 'Closeout Agent', resourceId: runId, resourceLabel: `${apt.client || 'Unknown'} closeout`, diff: `AI-drafted journal ${draftJournal.entryNumber} + invoice ${invoiceId} -- pending approval` });
     });
   };
 
-  // ── Approve / Reject / Edit Agent Suggestion ──────────────────────────────
+  // -- Approve / Reject / Edit Agent Suggestion ------------------------------
   const approveAgentSuggestion = (id) => setData((p) => {
     const suggestion = (p.agentSuggestions || []).find((s) => s.id === id);
     if (!suggestion || suggestion.status !== 'pending') return p;
@@ -463,7 +463,7 @@ export function createAgentOps(setData, getData) {
       actor: p.settings?.name || 'User', actorRole: p.settings?.userRole || 'owner',
       action: 'approved', resourceType: 'agentSuggestion', resourceId: id,
       resourceLabel: suggestion.label || 'Agent draft',
-      diff: `Approved — journal + invoice committed${reminders.length ? ' + 2 reminders queued' : ''}`,
+      diff: `Approved -- journal + invoice committed${reminders.length ? ' + 2 reminders queued' : ''}`,
     });
   });
 
@@ -487,14 +487,14 @@ export function createAgentOps(setData, getData) {
     return { ...p, agentSuggestions: updated };
   });
 
-  // ── Autonomy Roadmap ──────────────────────────────────────────────────────
+  // -- Autonomy Roadmap ------------------------------------------------------
   const updateAutonomyRoadmap = (updater) => setData((p) => {
     const current = p.autonomyRoadmap || {};
     const next = typeof updater === 'function' ? updater(current) : { ...current, ...(updater || {}) };
     return { ...p, autonomyRoadmap: { ...current, ...next, updatedAt: new Date().toISOString() } };
   });
 
-  // ── Collections ────────────────────────────────────────────────────────
+  // -- Collections --------------------------------------------------------
   const runAgingARAgent = () => setData((p) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -521,7 +521,7 @@ export function createAgentOps(setData, getData) {
         id: `AR-${inv.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: 'aging_ar',
         status: 'pending',
-        label: `Overdue Invoice — ${inv.client}`,
+        label: `Overdue Invoice -- ${inv.client}`,
         appointmentClient: inv.client,
         ranAt: nowIso,
         createdAt: nowIso,
@@ -536,7 +536,7 @@ export function createAgentOps(setData, getData) {
           daysOverdue,
           state: '',
         },
-        diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
+        diff: `Invoice ${inv.id} -- $${inv.amount} -- ${daysOverdue} days overdue`,
         actions: [{ type: 'reminder_drafted', refId: inv.id }],
         confidenceScore: 90,
         warnings: [],
@@ -553,7 +553,7 @@ export function createAgentOps(setData, getData) {
   // Alias for AgentPage playbook launcher
   const runARScan = () => runAgingARAgent();
 
-  // ── Lead Parser ─────────────────────────────────────────────────────
+  // -- Lead Parser -----------------------------------------------------
   const runLeadIntakeAgent = async (rawText) => {
     if (!rawText?.trim()) return;
     const parsed = await parseLeadText(rawText);
@@ -566,7 +566,7 @@ export function createAgentOps(setData, getData) {
       id,
       type: 'lead_intake',
       status: 'pending',
-      label: `New Lead — ${parsed.clientName || 'Unknown'}`,
+      label: `New Lead -- ${parsed.clientName || 'Unknown'}`,
       appointmentClient: parsed.clientName || 'Unknown',
       ranAt: nowIso,
       createdAt: nowIso,
@@ -613,10 +613,10 @@ export function createAgentOps(setData, getData) {
     }));
   };
 
-  // ── Auto AR Scan on Mount ─────────────────────────────────────────────────
+  // -- Auto AR Scan on Mount -------------------------------------------------
   // Note: DataContext.jsx wraps this with useCallback([]) for memoization.
 
-  // ── Schema-validated suggestion helper ──────────────────────────────────────
+  // -- Schema-validated suggestion helper --------------------------------------
   const _addValidatedSuggestion = (suggestion, prevState) => {
     validateRecord(AgentSuggestionSchema, suggestion, 'AgentSuggestion');
     return [suggestion, ...(prevState.agentSuggestions || [])];
@@ -649,7 +649,7 @@ export function createAgentOps(setData, getData) {
         return {
           id: `AR-${inv.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           type: 'aging_ar', status: 'pending',
-          label: `Overdue Invoice — ${inv.client}`,
+          label: `Overdue Invoice -- ${inv.client}`,
           appointmentClient: inv.client, ranAt: nowIso, createdAt: nowIso,
           actor: 'Collections (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
           daysOverdue,
@@ -660,7 +660,7 @@ export function createAgentOps(setData, getData) {
             daysOverdue,
             state: '',
           },
-          diff: `Invoice ${inv.id} — $${inv.amount} — ${daysOverdue} days overdue`,
+          diff: `Invoice ${inv.id} -- $${inv.amount} -- ${daysOverdue} days overdue`,
           actions: [{ type: 'reminder_drafted', refId: inv.id }],
           confidenceScore: 90, warnings: [], missingFields: [],
         };
@@ -669,7 +669,7 @@ export function createAgentOps(setData, getData) {
     });
   };
 
-  // ── Weekly Digest ─────────────────────────────────────────────────────────
+  // -- Weekly Digest ---------------------------------------------------------
   // Note: DataContext.jsx wraps this with useCallback([]) for memoization.
   const generateWeeklySummary = async () => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
