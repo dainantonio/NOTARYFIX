@@ -4,7 +4,7 @@
 // Rate limited: 20 requests/minute per IP, plus origin check.
 
 const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 // In-memory rate limit store: IP → { count, resetAt }
 // Vercel functions are warm for ~5 min, so this provides meaningful protection
@@ -101,7 +101,7 @@ export default async function handler(req, res) {
     contents: [{ parts }],
     generationConfig: generationConfig || {
       temperature: 0.3,
-      maxOutputTokens: 512,
+      maxOutputTokens: 1024,
       topP: 0.8,
     },
     safetySettings: safetySettings || [
@@ -121,8 +121,12 @@ export default async function handler(req, res) {
 
     if (!upstream.ok) {
       const err = await upstream.json().catch(() => ({}));
-      console.error('[api/gemini] Upstream error:', upstream.status, err);
-      return res.status(upstream.status).json({ error: 'Gemini API error', details: err });
+      const geminiMsg = err?.error?.message || err?.error?.status || JSON.stringify(err);
+      console.error('[api/gemini] Upstream error:', upstream.status, geminiMsg);
+      return res.status(upstream.status).json({
+        error: `Gemini error (${upstream.status}): ${geminiMsg}`,
+        details: err,
+      });
     }
 
     const data = await upstream.json();

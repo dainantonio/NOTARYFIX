@@ -214,7 +214,7 @@ async function callGeminiVision(imageBase64, mimeType, prompt) {
   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    const msg = err.error || `API error ${response.status}`;
+    const msg = err.error || err.details?.error?.message || `API error ${response.status}`;
     console.error('[agentService] /api/gemini vision error:', msg, err);
     throw new Error(msg);
   }
