@@ -1,11 +1,12 @@
 // src/pages/JobInboxPage.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Inbox, Zap, MapPin, Clock, DollarSign, TrendingUp, TrendingDown,
   CheckCircle2, X, MessageSquare, Phone, Mail, Building2, Edit3,
   ChevronRight, AlertTriangle, Trash2, Plus, FileText, Car,
   Printer, BarChart2, ArrowRight, Sparkles, RefreshCw, Info,
+  Camera, Copy, UserPlus,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import {
@@ -18,6 +19,8 @@ import {
   MESSAGE_SOURCES,
   EXPENSE_CATEGORIES,
 } from '../services/jobIntelligenceService';
+import AppointmentModal from '../components/AppointmentModal';
+import { parseJobImage } from '../services/agentService';
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
 const Card = ({ children, className = '' }) => (
@@ -352,9 +355,110 @@ const ExpenseRecorder = ({ jobId, expenses, onAdd, onDelete }) => {
   );
 };
 
+// ─── ACCEPT FLOW MODAL (Changes #2 #3 #4) ────────────────────────────────────
+const AcceptModal = ({ job, onConfirm, onClose }) => {
+  const [createAppt,   setCreateAppt]   = useState(true);
+  const [doAddClient,  setDoAddClient]  = useState(!!job?.contact);
+  const [copied,       setCopied]       = useState(false);
+
+  const confirmMsg = [
+    `Confirmed! I'll be there on ${job?.date || 'the scheduled date'}`,
+    job?.time     ? ` at ${job.time}`         : '',
+    job?.location ? ` at ${job.location}`     : '',
+    ` for the ${job?.document_type || 'signing'}`,
+    job?.offered_fee ? ` at a fee of $${job.offered_fee}` : '',
+    '. Thank you for the assignment!',
+  ].join('');
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(confirmMsg);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0d1627] p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+            <h3 className="text-lg font-black text-white">Job Accepted! ✅</h3>
+          </div>
+          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Change #3: Confirmation draft */}
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+            <MessageSquare className="h-3 w-3" /> Confirmation Draft
+          </p>
+          <p className="text-sm text-slate-300 leading-relaxed">{confirmMsg}</p>
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 text-xs font-semibold text-emerald-300 hover:text-emerald-200 transition-colors mt-1"
+          >
+            <Copy className="h-3.5 w-3.5" />
+            {copied ? '✓ Copied!' : 'Copy to clipboard'}
+          </button>
+        </div>
+
+        {/* Options */}
+        <div className="space-y-1">
+          {/* Change #2: Create appointment */}
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl p-3 hover:bg-white/[0.03] transition-colors">
+            <input
+              type="checkbox"
+              checked={createAppt}
+              onChange={e => setCreateAppt(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded accent-blue-500"
+            />
+            <div>
+              <p className="text-sm font-semibold text-white">Create appointment in Schedule</p>
+              <p className="text-[11px] text-slate-500">Fields pre-filled from this job — one tap to confirm</p>
+            </div>
+          </label>
+
+          {/* Change #4: Add to Clients */}
+          {job?.contact && (
+            <label className="flex items-start gap-3 cursor-pointer rounded-xl p-3 hover:bg-white/[0.03] transition-colors">
+              <input
+                type="checkbox"
+                checked={doAddClient}
+                onChange={e => setDoAddClient(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded accent-blue-500"
+              />
+              <div>
+                <p className="text-sm font-semibold text-white flex items-center gap-1.5">
+                  <UserPlus className="h-3.5 w-3.5 text-blue-400" />
+                  Add <span className="text-blue-300 mx-1">"{job.contact}"</span> to Clients
+                </p>
+                <p className="text-[11px] text-slate-500">For follow-up, portal links &amp; invoicing</p>
+              </div>
+            </label>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 pt-1">
+          <Btn variant="ghost" size="sm" className="flex-1" onClick={onClose}>
+            Skip
+          </Btn>
+          <Btn variant="emerald" size="sm" className="flex-1" onClick={() => onConfirm({ createAppt, doAddClient })}>
+            {createAppt ? 'Confirm & Schedule →' : 'Confirm Job'}
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function JobInboxPage() {
-  const { data, addJob, updateJob, deleteJob, advanceJobLifecycle, addJobExpense, deleteJobExpense } = useData();
+  const { data, addJob, updateJob, deleteJob, advanceJobLifecycle, addJobExpense, deleteJobExpense, addAppointment, addClient } = useData();
   const navigate = useNavigate();
 
   const [messageText,  setMessageText]  = useState('');
@@ -366,6 +470,19 @@ export default function JobInboxPage() {
   const [selectedJob,  setSelectedJob]  = useState(null);
   const [tab,          setTab]          = useState('inbox'); // 'inbox' | 'detail' | 'analytics'
   const [toast,        setToast]        = useState('');
+
+  // ── Image upload state (Change #1) ─────────────────────────────────────
+  const [imagePreview,  setImagePreview]  = useState('');
+  const [imageBase64,   setImageBase64]   = useState('');
+  const [imageMime,     setImageMime]     = useState('');
+  const [imageScanning, setImageScanning] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // ── Accept flow state (Changes #2 #3 #4) ──────────────────────────────
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [acceptingJob,    setAcceptingJob]    = useState(null);
+  const [showApptModal,   setShowApptModal]   = useState(false);
+  const [apptInitial,     setApptInitial]     = useState(null);
 
   const jobs      = data.jobs || [];
   const expenses  = data.jobExpenses || [];
@@ -423,10 +540,23 @@ export default function JobInboxPage() {
       counter_offer: action === 'counter' ? evaluation?.counter_offer : undefined,
       evaluation,
     };
+
+    // ── Accept: show the Accept Flow modal (Changes #2 #3 #4) ─────────────
+    if (action === 'accept') {
+      setAcceptingJob(newJob);
+      setShowAcceptModal(true);
+      // Reset parse state
+      setMessageText('');
+      setParsedJob(null);
+      setEvaluation(null);
+      setImagePreview('');
+      setImageBase64('');
+      return;
+    }
+
     addJob(newJob);
     showToast(
-      action === 'accept'       ? '✅ Job accepted and added to your list.'
-      : action === 'counter'    ? `💬 Counter offer of $${evaluation?.counter_offer} logged.`
+      action === 'counter'    ? `💬 Counter offer of $${evaluation?.counter_offer} logged.`
       : action === 'decline'    ? '✗ Job declined.'
       : 'ℹ️ More info requested — job saved as pending.'
     );
@@ -438,6 +568,139 @@ export default function JobInboxPage() {
       setSelectedJob(newJob);
       setTab('detail');
     }
+  };
+
+  // ── Confirm accept (from AcceptModal) ──────────────────────────────────────
+  const handleConfirmAccept = ({ createAppt, doAddClient }) => {
+    if (!acceptingJob) return;
+    addJob(acceptingJob);
+
+    // Change #4: add signer to Clients if requested
+    if (doAddClient && acceptingJob.contact) {
+      const existing = (data.clients || []).find(
+        (c) => c.name?.toLowerCase() === acceptingJob.contact?.toLowerCase()
+      );
+      if (!existing) {
+        addClient({
+          id: `client_job_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+          name:      acceptingJob.contact,
+          phone:     acceptingJob.phone || '',
+          email:     '',
+          type:      'Signer',
+          notes:     `Added from Job Inbox — ${acceptingJob.document_type || 'signing job'}`,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    setShowAcceptModal(false);
+
+    // Change #2: open AppointmentModal pre-filled
+    if (createAppt) {
+      setApptInitial({
+        client:   acceptingJob.contact || '',
+        type:     MARKET_BENCHMARKS[acceptingJob.job_type]?.label || 'Loan Signing',
+        date:     acceptingJob.date || '',
+        time:     acceptingJob.time || '',
+        fee:      acceptingJob.offered_fee ? String(acceptingJob.offered_fee) : '',
+        address:  acceptingJob.location || '',
+        location: '',
+        phone:    acceptingJob.phone || '',
+        email:    '',
+        notes:    `From Job Inbox · Source: ${acceptingJob.source || 'unknown'}`,
+      });
+      setShowApptModal(true);
+    } else {
+      setSelectedJob(acceptingJob);
+      setTab('detail');
+      showToast('✅ Job accepted!');
+    }
+  };
+
+  // ── Save appointment created from accepted job ─────────────────────────────
+  const handleSaveFromJobAppt = (formData) => {
+    const newAppt = {
+      id:          `appt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      clientName:  formData.client,
+      date:        formData.date,
+      time:        formData.time,
+      notaryType:  formData.type,
+      status:      'scheduled',
+      clientEmail: formData.email  || '',
+      clientPhone: formData.phone  || '',
+      location:    formData.location || formData.address || '',
+      address:     formData.address || '',
+      fee:         formData.fee ? parseFloat(formData.fee) : 0,
+      notes:       formData.notes || '',
+      createdAt:   new Date().toISOString(),
+    };
+    addAppointment(newAppt);
+    setShowApptModal(false);
+    setSelectedJob(acceptingJob);
+    setTab('detail');
+    showToast('✅ Job accepted & appointment created!');
+  };
+
+  // ── Image upload handlers (Change #1) ──────────────────────────────────────
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setImagePreview(dataUrl);
+      const [header, b64] = dataUrl.split(',');
+      const mime = header.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
+      setImageBase64(b64);
+      setImageMime(mime);
+    };
+    reader.readAsDataURL(file);
+    // Reset file input so the same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleScanImage = async () => {
+    if (!imageBase64) return;
+    setImageScanning(true);
+    setParseError('');
+    setParsedJob(null);
+    setEvaluation(null);
+    try {
+      const extracted = await parseJobImage(imageBase64, imageMime);
+      if (!extracted) {
+        setParseError('Could not extract job details from this image. Try a clearer screenshot or crop it to just the offer details.');
+        setImageScanning(false);
+        return;
+      }
+      const mapped = {
+        id:            `job_img_${Date.now()}`,
+        document_type: extracted.documentType || 'Unknown',
+        job_type:      extracted.jobType      || 'general_notary',
+        location:      extracted.address      || extracted.location || '',
+        date:          extracted.date         || '',
+        time:          extracted.time         || '',
+        offered_fee:   extracted.offeredFee   || null,
+        contact:       extracted.clientName   || extracted.contact  || '',
+        phone:         extracted.phone        || '',
+        distance_miles:null,
+        source:        messageSource,
+      };
+      const eval_ = evaluateProfitability(mapped, userSettings);
+      setParsedJob(mapped);
+      setEvaluation(eval_);
+    } catch {
+      setParseError('Image scan failed. Please try again or paste the text instead.');
+    }
+    setImageScanning(false);
+  };
+
+  const clearImage = () => {
+    setImagePreview('');
+    setImageBase64('');
+    setImageMime('');
+    setParsedJob(null);
+    setEvaluation(null);
+    setParseError('');
   };
 
   // ── Lifecycle advance ──────────────────────────────────────────────────────
@@ -687,6 +950,52 @@ export default function JobInboxPage() {
                   </div>
                 </div>
 
+                {/* Change #1: Image upload section */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+                {!imagePreview ? (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/12 bg-white/[0.02] px-3 py-2.5 text-xs font-semibold text-slate-500 hover:border-blue-500/40 hover:text-blue-400 hover:bg-blue-500/[0.04] transition-all"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                    Upload Screenshot — Snapdocs, SigningOrder, Amrock, etc.
+                  </button>
+                ) : (
+                  <div className="mb-3 space-y-2">
+                    <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/20">
+                      <img src={imagePreview} alt="Job offer screenshot" className="w-full max-h-52 object-contain" />
+                      <button
+                        onClick={clearImage}
+                        className="absolute top-2 right-2 rounded-full bg-black/60 p-1.5 text-slate-400 hover:text-white transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <Btn
+                      variant="primary"
+                      onClick={handleScanImage}
+                      disabled={imageScanning}
+                      className="w-full"
+                    >
+                      {imageScanning
+                        ? <><RefreshCw className="h-4 w-4 animate-spin" /> Scanning Image…</>
+                        : <><Sparkles className="h-4 w-4" /> Scan with AI</>
+                      }
+                    </Btn>
+                    <div className="flex items-center gap-2 my-1">
+                      <div className="flex-1 h-px bg-white/8" />
+                      <span className="text-[10px] text-slate-600 font-semibold uppercase tracking-wider">or paste text below</span>
+                      <div className="flex-1 h-px bg-white/8" />
+                    </div>
+                  </div>
+                )}
+
                 <textarea
                   value={messageText}
                   onChange={e => setMessageText(e.target.value)}
@@ -805,6 +1114,32 @@ export default function JobInboxPage() {
           </div>
         )}
       </div>
+
+      {/* Change #2 #3 #4: Accept flow modal */}
+      {showAcceptModal && acceptingJob && (
+        <AcceptModal
+          job={acceptingJob}
+          onConfirm={handleConfirmAccept}
+          onClose={() => {
+            setShowAcceptModal(false);
+            addJob(acceptingJob);
+            setSelectedJob(acceptingJob);
+            setTab('detail');
+            showToast('✅ Job accepted!');
+          }}
+        />
+      )}
+
+      {/* Change #2: Appointment modal pre-filled from job */}
+      {showApptModal && (
+        <AppointmentModal
+          isOpen={showApptModal}
+          onClose={() => { setShowApptModal(false); setSelectedJob(acceptingJob); setTab('detail'); showToast('✅ Job accepted!'); }}
+          onSave={handleSaveFromJobAppt}
+          initialData={apptInitial}
+          submitLabel="Create Appointment"
+        />
+      )}
     </div>
   );
 }

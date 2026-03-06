@@ -1,5 +1,6 @@
 // api/gemini.js — Vercel serverless function
 // Proxies Gemini API calls server-side so the key never reaches the browser.
+// Supports text-only and multimodal (image + text) requests.
 // Rate limited: 20 requests/minute per IP, plus origin check.
 
 const GEMINI_API_URL =
@@ -63,17 +64,41 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GEMINI_API_KEY not configured on server.' });
   }
 
-  // ── Prompt validation ─────────────────────────────────────────────────────
-  const { prompt, generationConfig, safetySettings } = req.body || {};
-  if (!prompt || typeof prompt !== 'string') {
-    return res.status(400).json({ error: 'Missing or invalid prompt.' });
+  // ── Request validation ────────────────────────────────────────────────────
+  const { prompt, generationConfig, safetySettings, imageBase64, mimeType } = req.body || {};
+
+  // At least one of prompt or imageBase64 must be present
+  if (!prompt && !imageBase64) {
+    return res.status(400).json({ error: 'Missing prompt or image.' });
   }
-  if (prompt.length > 32_000) {
+  if (prompt && typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'Invalid prompt.' });
+  }
+  if (prompt && prompt.length > 32_000) {
     return res.status(400).json({ error: 'Prompt too long (max 32,000 chars).' });
+  }
+  // Validate image payload: base64 string + valid mime
+  if (imageBase64) {
+    if (typeof imageBase64 !== 'string' || imageBase64.length > 5_000_000) {
+      return res.status(400).json({ error: 'Invalid or oversized image data.' });
+    }
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic'];
+    if (mimeType && !allowedMimes.includes(mimeType)) {
+      return res.status(400).json({ error: `Unsupported image type: ${mimeType}` });
+    }
+  }
+
+  // ── Build content parts (text-only OR image+text multimodal) ─────────────
+  const parts = [];
+  if (imageBase64) {
+    parts.push({ inlineData: { mimeType: mimeType || 'image/jpeg', data: imageBase64 } });
+  }
+  if (prompt) {
+    parts.push({ text: prompt });
   }
 
   const body = {
-    contents: [{ parts: [{ text: prompt }] }],
+    contents: [{ parts }],
     generationConfig: generationConfig || {
       temperature: 0.3,
       maxOutputTokens: 512,

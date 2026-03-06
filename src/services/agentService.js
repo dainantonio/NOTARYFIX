@@ -202,4 +202,64 @@ Be specific, professional but warm. Highlight wins and any action needed.`;
   return text || `This week: ${stats.appointmentsCompleted} appointments completed, $${stats.totalRevenue?.toFixed(2) || '0.00'} revenue, ${stats.remindersSent} reminders sent.`;
 }
 
-export default { generateCloseoutDraft, generateComplianceSummary, parseLeadText, generateWeeklySummary };
+/**
+ * Call the /api/gemini proxy with an image (and optional prompt) for vision tasks.
+ * Returns the text response or null on failure.
+ */
+async function callGeminiVision(imageBase64, mimeType, prompt) {
+  try {
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, mimeType, prompt }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      console.error('[agentService] /api/gemini vision error:', err);
+      return null;
+    }
+    const data = await response.json();
+    return data.text ? data.text.trim() : null;
+  } catch (err) {
+    console.error('[agentService] callGeminiVision failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Parse a job offer screenshot/photo using Gemini Vision.
+ * Returns structured job fields or null on failure.
+ *
+ * @param {string} imageBase64 - Base64-encoded image data (no data: prefix)
+ * @param {string} mimeType    - e.g. 'image/jpeg', 'image/png'
+ */
+export async function parseJobImage(imageBase64, mimeType) {
+  const prompt = `You are a notary signing agent's AI assistant. This is a screenshot or photo of a signing job offer from a platform like Snapdocs, SigningOrder, Amrock, Notarize, or a similar service. Extract all job details visible in the image and return ONLY a valid JSON object with these keys (use null for anything not found or not visible):
+{
+  "clientName": "signer full name or null",
+  "documentType": "document type e.g. Refinance, Purchase, HELOC, Reverse Mortgage, Power of Attorney, General Notary",
+  "jobType": "one of: loan_signing, general_notary, ron, deed, affidavit, i9, apostille",
+  "date": "ISO date YYYY-MM-DD or null",
+  "time": "time string like '2:30 PM' or null",
+  "address": "full signing address or null",
+  "location": "zip code or city/state or null",
+  "offeredFee": fee as a plain number (no $ symbol) or null,
+  "documentCount": number of documents or pages or null,
+  "contact": "signing service or coordinator name or null",
+  "phone": "phone number or null",
+  "email": "email address or null",
+  "notes": "any other relevant details as a short string or null"
+}`;
+
+  const raw = await callGeminiVision(imageBase64, mimeType, prompt);
+  if (!raw) return null;
+
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
+}
+
+export default { generateCloseoutDraft, generateComplianceSummary, parseLeadText, generateWeeklySummary, parseJobImage };
