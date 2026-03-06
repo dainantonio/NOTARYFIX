@@ -1,0 +1,5276 @@
+{
+  "metadata": {
+    "title": "NotaryFix Primary Sources",
+    "schema_version": "2.0.0",
+    "compiled_at": "2026-03-05",
+    "compiler": "NotaryRulesEngine v1",
+    "total_jurisdictions": 51,
+    "status": "draft",
+    "notes": "All entries draft; evidence sourced from official SOS pages and state statutes. Vendor handbook URLs flagged for replacement."
+  },
+  "sources_registry": {
+    "VENDOR_USN": {
+      "title": "US Notary Center \u2014 State Notary Law Summaries",
+      "url": "https://www.usnotarycenter.com/post/post64",
+      "source_type": "VendorSummary",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VENDOR_ASN": {
+      "title": "American Society of Notaries \u2014 State Handbook Directory",
+      "url": "https://www.asnnotary.org/?shop=notary-handbooks",
+      "source_type": "VendorSummary",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VENDOR_OHIO_COM": {
+      "title": "BecomeAnOhioNotary.com \u2014 Ohio Notary Resource",
+      "url": "https://www.becomeanohionotary.com/",
+      "source_type": "VendorSummary",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VENDOR_AL_COM": {
+      "title": "AlabamaNotaryPublic.com \u2014 Alabama Notary Resource",
+      "url": "https://www.alabamanotarypublic.com/become-a-notary",
+      "source_type": "VendorSummary",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AL_SOS": {
+      "title": "Alabama \u2014 Notary Public Program",
+      "url": "https://www.sos.alabama.gov/administrative-services/notaries-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AL_STATUTE": {
+      "title": "Alabama Notary Statutes \u2014 Ala. Code \u00a7 36-20-70 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AK_SOS": {
+      "title": "Alaska \u2014 Notary Public Program",
+      "url": "https://ltgov.alaska.gov/notaries-public/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AK_STATUTE": {
+      "title": "Alaska Notary Statutes \u2014 Alaska Stat. \u00a7 44.50.001 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AZ_SOS": {
+      "title": "Arizona \u2014 Notary Public Program",
+      "url": "https://azsos.gov/business/notary-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AZ_STATUTE": {
+      "title": "Arizona Notary Statutes \u2014 Ariz. Rev. Stat. \u00a7 41-311 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AZ_HANDBOOK": {
+      "title": "Arizona Official Notary Handbook",
+      "url": "https://azsos.gov/sites/default/files/docs/Notary-Manual-2025-April_0.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AR_SOS": {
+      "title": "Arkansas \u2014 Notary Public Program",
+      "url": "https://www.sos.arkansas.gov/business-commercial-services-bcs/notary-e-notary",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AR_STATUTE": {
+      "title": "Arkansas Notary Statutes \u2014 Ark. Code \u00a7 16-47-101 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "AR_HANDBOOK": {
+      "title": "Arkansas Official Notary Handbook",
+      "url": "https://www.sos.arkansas.gov/uploads/bcs/NotaryHandbook2025.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CA_SOS": {
+      "title": "California \u2014 Notary Public Program",
+      "url": "https://www.sos.ca.gov/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CA_STATUTE": {
+      "title": "California Notary Statutes \u2014 Cal. Gov't Code \u00a7 8200 et seq.; Cal. Civ. Code \u00a7 1189",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CA_HANDBOOK": {
+      "title": "California Official Notary Handbook",
+      "url": "https://notary.cdn.sos.ca.gov/forms/notary-handbook-current.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CO_SOS": {
+      "title": "Colorado \u2014 Notary Public Program",
+      "url": "https://www.sos.state.co.us/pubs/notary/notaryHome.html",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CO_STATUTE": {
+      "title": "Colorado Notary Statutes \u2014 Colo. Rev. Stat. \u00a7 24-21-501 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CT_SOS": {
+      "title": "Connecticut \u2014 Notary Public Program",
+      "url": "https://portal.ct.gov/SOTS/Business-Services/Notary/Notary-Public-Licensing",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CT_STATUTE": {
+      "title": "Connecticut Notary Statutes \u2014 Conn. Gen. Stat. \u00a7 3-91 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "CT_HANDBOOK": {
+      "title": "Connecticut Official Notary Handbook",
+      "url": "https://portal.ct.gov/SOTS/Business-Services/Notary/Notary-Public-Manual",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "DE_SOS": {
+      "title": "Delaware \u2014 Notary Public Program",
+      "url": "https://corp.delaware.gov/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "DE_STATUTE": {
+      "title": "Delaware Notary Statutes \u2014 Del. Code tit. 29, \u00a7 4301 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "DC_SOS": {
+      "title": "District of Columbia \u2014 Notary Public Program",
+      "url": "https://os.dc.gov/service/notary-commissions",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "DC_STATUTE": {
+      "title": "District of Columbia Notary Statutes \u2014 D.C. Code \u00a7 1-1231.01 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "DC_HANDBOOK": {
+      "title": "District of Columbia Official Notary Handbook",
+      "url": "https://os.dc.gov/publication/dc-notary-handbook",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "FL_SOS": {
+      "title": "Florida \u2014 Notary Public Program",
+      "url": "https://notaries.dos.fl.gov/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "FL_STATUTE": {
+      "title": "Florida Notary Statutes \u2014 Fla. Stat. \u00a7 117.01 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "GA_SOS": {
+      "title": "Georgia \u2014 Notary Public Program",
+      "url": "https://www.gsccca.org/notary-and-apostilles/notaries",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "GA_STATUTE": {
+      "title": "Georgia Notary Statutes \u2014 O.C.G.A. \u00a7 45-17-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "GA_HANDBOOK": {
+      "title": "Georgia Official Notary Handbook",
+      "url": "https://www.gsccca.org/notary-and-apostilles/notaries/general-notary-information",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "HI_SOS": {
+      "title": "Hawaii \u2014 Notary Public Program",
+      "url": "https://ag.hawaii.gov/notaries/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "HI_STATUTE": {
+      "title": "Hawaii Notary Statutes \u2014 Hawaii Rev. Stat. \u00a7 456-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "ID_SOS": {
+      "title": "Idaho \u2014 Notary Public Program",
+      "url": "https://sos.idaho.gov/notaries-apostilles-authentications/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "ID_STATUTE": {
+      "title": "Idaho Notary Statutes \u2014 Idaho Code \u00a7 51-101 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IL_SOS": {
+      "title": "Illinois \u2014 Notary Public Program",
+      "url": "https://www.ilsos.gov/departments/index/notary/home.html",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IL_STATUTE": {
+      "title": "Illinois Notary Statutes \u2014 5 ILCS 312/1-101 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IL_HANDBOOK": {
+      "title": "Illinois Official Notary Handbook",
+      "url": "https://www.ilsos.gov/publications/notary/notary.html",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IN_SOS": {
+      "title": "Indiana \u2014 Notary Public Program",
+      "url": "https://www.in.gov/sos/business/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IN_STATUTE": {
+      "title": "Indiana Notary Statutes \u2014 Ind. Code \u00a7 33-42-0.5-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IA_SOS": {
+      "title": "Iowa \u2014 Notary Public Program",
+      "url": "https://sos.iowa.gov/business/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IA_STATUTE": {
+      "title": "Iowa Notary Statutes \u2014 Iowa Code \u00a7 9B.1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "IA_HANDBOOK": {
+      "title": "Iowa Official Notary Handbook",
+      "url": "https://sos.iowa.gov/business/notary/handbook.html",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "KS_SOS": {
+      "title": "Kansas \u2014 Notary Public Program",
+      "url": "https://sos.ks.gov/general-services/notary.html",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "KS_STATUTE": {
+      "title": "Kansas Notary Statutes \u2014 Kan. Stat. \u00a7 53-5a01 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "KS_HANDBOOK": {
+      "title": "Kansas Official Notary Handbook",
+      "url": "https://sos.ks.gov/publications/pubs_notary_handbook.aspx",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "KY_SOS": {
+      "title": "Kentucky \u2014 Notary Public Program",
+      "url": "https://www.sos.ky.gov/bus/notaries/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "KY_STATUTE": {
+      "title": "Kentucky Notary Statutes \u2014 Ky. Rev. Stat. \u00a7 423.010 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "LA_SOS": {
+      "title": "Louisiana \u2014 Notary Public Program",
+      "url": "https://www.sos.la.gov/NotaryAndCertifications/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "LA_STATUTE": {
+      "title": "Louisiana Notary Statutes \u2014 La. Rev. Stat. \u00a7 35:1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "ME_SOS": {
+      "title": "Maine \u2014 Notary Public Program",
+      "url": "https://www.maine.gov/sos/cec/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "ME_STATUTE": {
+      "title": "Maine Notary Statutes \u2014 Me. Rev. Stat. tit. 4, \u00a7 1901 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MD_SOS": {
+      "title": "Maryland \u2014 Notary Public Program",
+      "url": "https://sos.maryland.gov/Notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MD_STATUTE": {
+      "title": "Maryland Notary Statutes \u2014 Md. Code, State Gov't \u00a7 18-201 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MA_SOS": {
+      "title": "Massachusetts \u2014 Notary Public Program",
+      "url": "https://www.sec.state.ma.us/pre/prenotary/notaryidx.htm",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MA_STATUTE": {
+      "title": "Massachusetts Notary Statutes \u2014 Mass. Gen. Laws ch. 222, \u00a7 1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MI_SOS": {
+      "title": "Michigan \u2014 Notary Public Program",
+      "url": "https://www.michigan.gov/sos/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MI_STATUTE": {
+      "title": "Michigan Notary Statutes \u2014 Mich. Comp. Laws \u00a7 55.261 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MN_SOS": {
+      "title": "Minnesota \u2014 Notary Public Program",
+      "url": "https://www.sos.mn.gov/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MN_STATUTE": {
+      "title": "Minnesota Notary Statutes \u2014 Minn. Stat. \u00a7 358.51 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MN_HANDBOOK": {
+      "title": "Minnesota Official Notary Handbook",
+      "url": "https://www.sos.mn.gov/notary/notary-handbook/",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MS_SOS": {
+      "title": "Mississippi \u2014 Notary Public Program",
+      "url": "https://www.sos.ms.gov/business/notaries-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MS_STATUTE": {
+      "title": "Mississippi Notary Statutes \u2014 Miss. Code \u00a7 25-34-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MS_HANDBOOK": {
+      "title": "Mississippi Official Notary Handbook",
+      "url": "https://www.sos.ms.gov/notary-handbook",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MO_SOS": {
+      "title": "Missouri \u2014 Notary Public Program",
+      "url": "https://www.sos.mo.gov/business/notary",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MO_STATUTE": {
+      "title": "Missouri Notary Statutes \u2014 Mo. Rev. Stat. \u00a7 486.600 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MO_HANDBOOK": {
+      "title": "Missouri Official Notary Handbook",
+      "url": "https://www.sos.mo.gov/CMSImages/Business/Notary/NotaryHandbook.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MT_SOS": {
+      "title": "Montana \u2014 Notary Public Program",
+      "url": "https://sosmt.gov/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MT_STATUTE": {
+      "title": "Montana Notary Statutes \u2014 Mont. Code \u00a7 1-5-601 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "MT_HANDBOOK": {
+      "title": "Montana Official Notary Handbook",
+      "url": "https://sosmt.gov/Portals/142/Notary/misc/Handbook.html",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NE_SOS": {
+      "title": "Nebraska \u2014 Notary Public Program",
+      "url": "https://sos.nebraska.gov/business-services/notary-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NE_STATUTE": {
+      "title": "Nebraska Notary Statutes \u2014 Neb. Rev. Stat. \u00a7 64-101 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NV_SOS": {
+      "title": "Nevada \u2014 Notary Public Program",
+      "url": "https://www.nvsos.gov/licensing/notary",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NV_STATUTE": {
+      "title": "Nevada Notary Statutes \u2014 Nev. Rev. Stat. \u00a7 240.001 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NH_SOS": {
+      "title": "New Hampshire \u2014 Notary Public Program",
+      "url": "https://www.sos.nh.gov/administration/notary-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NH_STATUTE": {
+      "title": "New Hampshire Notary Statutes \u2014 N.H. Rev. Stat. \u00a7 455:1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NJ_SOS": {
+      "title": "New Jersey \u2014 Notary Public Program",
+      "url": "https://www.nj.gov/state/dos-notaries.shtml",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NJ_STATUTE": {
+      "title": "New Jersey Notary Statutes \u2014 N.J. Stat. \u00a7 52:7-10 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NM_SOS": {
+      "title": "New Mexico \u2014 Notary Public Program",
+      "url": "https://www.sos.nm.gov/notary-and-apostille/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NM_STATUTE": {
+      "title": "New Mexico Notary Statutes \u2014 N.M. Stat. \u00a7 14-14A-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NY_SOS": {
+      "title": "New York \u2014 Notary Public Program",
+      "url": "https://dos.ny.gov/notary-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NY_STATUTE": {
+      "title": "New York Notary Statutes \u2014 N.Y. Exec. Law \u00a7 130 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NY_HANDBOOK": {
+      "title": "New York Official Notary Handbook",
+      "url": "https://dos.ny.gov/notary-public-license-law",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NC_SOS": {
+      "title": "North Carolina \u2014 Notary Public Program",
+      "url": "https://www.sos.nc.gov/divisions/notary",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "NC_STATUTE": {
+      "title": "North Carolina Notary Statutes \u2014 N.C. Gen. Stat. \u00a7 10B-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "ND_SOS": {
+      "title": "North Dakota \u2014 Notary Public Program",
+      "url": "https://sos.nd.gov/notaries-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "ND_STATUTE": {
+      "title": "North Dakota Notary Statutes \u2014 N.D. Cent. Code \u00a7 44-06.1-01 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "OH_SOS": {
+      "title": "Ohio \u2014 Notary Public Program",
+      "url": "https://www.ohiosos.gov/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "OH_STATUTE": {
+      "title": "Ohio Notary Statutes \u2014 Ohio Rev. Code \u00a7 147.01 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "OK_SOS": {
+      "title": "Oklahoma \u2014 Notary Public Program",
+      "url": "https://www.sos.ok.gov/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "OK_STATUTE": {
+      "title": "Oklahoma Notary Statutes \u2014 Okla. Stat. tit. 49, \u00a7 1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "OR_SOS": {
+      "title": "Oregon \u2014 Notary Public Program",
+      "url": "https://sos.oregon.gov/business/pages/notary.aspx",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "OR_STATUTE": {
+      "title": "Oregon Notary Statutes \u2014 Or. Rev. Stat. \u00a7 194.210 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "PA_SOS": {
+      "title": "Pennsylvania \u2014 Notary Public Program",
+      "url": "https://www.pa.gov/agencies/dos/programs/notaries",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "PA_STATUTE": {
+      "title": "Pennsylvania Notary Statutes \u2014 57 Pa. C.S. \u00a7 301 et seq. (RULONA)",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "RI_SOS": {
+      "title": "Rhode Island \u2014 Notary Public Program",
+      "url": "https://sos.ri.gov/divisions/notary-public",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "RI_STATUTE": {
+      "title": "Rhode Island Notary Statutes \u2014 R.I. Gen. Laws \u00a7 42-30.1-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "SC_SOS": {
+      "title": "South Carolina \u2014 Notary Public Program",
+      "url": "https://sos.sc.gov/notaries-apostilles",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "SC_STATUTE": {
+      "title": "South Carolina Notary Statutes \u2014 S.C. Code \u00a7 26-1-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "SC_HANDBOOK": {
+      "title": "South Carolina Official Notary Handbook",
+      "url": "https://sos.sc.gov/sites/sos/files/Documents/Mail%20In%20Service/Notaries/Notary%20Public%20Reference%20Manual%202023.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "SD_SOS": {
+      "title": "South Dakota \u2014 Notary Public Program",
+      "url": "https://sdsos.gov/general-services/notary-public/default.aspx",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "SD_STATUTE": {
+      "title": "South Dakota Notary Statutes \u2014 S.D. Codified Laws \u00a7 18-1-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "TN_SOS": {
+      "title": "Tennessee \u2014 Notary Public Program",
+      "url": "https://sos.tn.gov/notaries",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "TN_STATUTE": {
+      "title": "Tennessee Notary Statutes \u2014 Tenn. Code \u00a7 8-16-101 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "TX_SOS": {
+      "title": "Texas \u2014 Notary Public Program",
+      "url": "https://www.sos.state.tx.us/statdoc/notary-public.shtml",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "TX_STATUTE": {
+      "title": "Texas Notary Statutes \u2014 Tex. Gov't Code \u00a7 406.001 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "TX_HANDBOOK": {
+      "title": "Texas Official Notary Handbook",
+      "url": "https://www.sos.state.tx.us/statdoc/edinfo.shtml",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "UT_SOS": {
+      "title": "Utah \u2014 Notary Public Program",
+      "url": "https://notary.utah.gov/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "UT_STATUTE": {
+      "title": "Utah Notary Statutes \u2014 Utah Code \u00a7 46-1-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VT_SOS": {
+      "title": "Vermont \u2014 Notary Public Program",
+      "url": "https://sos.vermont.gov/notaries-public/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VT_STATUTE": {
+      "title": "Vermont Notary Statutes \u2014 Vt. Stat. tit. 26, \u00a7 5301 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VA_SOS": {
+      "title": "Virginia \u2014 Notary Public Program",
+      "url": "https://www.commonwealth.virginia.gov/official-documents/notary-commissions/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "VA_STATUTE": {
+      "title": "Virginia Notary Statutes \u2014 Va. Code \u00a7 47.1-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WA_SOS": {
+      "title": "Washington \u2014 Notary Public Program",
+      "url": "https://www.dol.wa.gov/business/notary/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WA_STATUTE": {
+      "title": "Washington Notary Statutes \u2014 Wash. Rev. Code \u00a7 42.45.010 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WA_HANDBOOK": {
+      "title": "Washington Official Notary Handbook",
+      "url": "https://www.dol.wa.gov/business/notary/notary-handbook",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WV_SOS": {
+      "title": "West Virginia \u2014 Notary Public Program",
+      "url": "https://sos.wv.gov/business/Pages/Notary.aspx",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WV_STATUTE": {
+      "title": "West Virginia Notary Statutes \u2014 W. Va. Code \u00a7 39-4-1 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WV_HANDBOOK": {
+      "title": "West Virginia Official Notary Handbook",
+      "url": "https://sos.wv.gov/FormSearch/Business/Documents/Notary-Handbook.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WI_SOS": {
+      "title": "Wisconsin \u2014 Notary Public Program",
+      "url": "https://dfi.wi.gov/Pages/NotaryPublic.aspx",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WI_STATUTE": {
+      "title": "Wisconsin Notary Statutes \u2014 Wis. Stat. \u00a7 140.01 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WI_HANDBOOK": {
+      "title": "Wisconsin Official Notary Handbook",
+      "url": "https://dfi.wi.gov/Documents/ConsumerServices/NotaryPublic/NotaryHandbook.pdf",
+      "source_type": "Handbook",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WY_SOS": {
+      "title": "Wyoming \u2014 Notary Public Program",
+      "url": "https://sos.wyo.gov/notaries/",
+      "source_type": "SOS",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    },
+    "WY_STATUTE": {
+      "title": "Wyoming Notary Statutes \u2014 Wyo. Stat. \u00a7 34-29-101 et seq.",
+      "url": null,
+      "source_type": "Statute",
+      "last_updated": null,
+      "retrieved_at": "2026-03-05"
+    }
+  },
+  "jurisdictions": {
+    "AL": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "AL_STATUTE",
+        "AL_SOS",
+        "VENDOR_AL_COM"
+      ],
+      "rules": {
+        "revised_code": "Ala. Code \u00a7 36-20-70 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; mandatory for RON",
+        "seal_requirement": "Embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "limited",
+          "notes": "Partial; temporary authorization under SB 275"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00",
+          "source_id": "AL_STATUTE",
+          "location": "Ala. Code \u00a7 36-20-70 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00",
+          "source_id": "AL_STATUTE",
+          "location": "Ala. Code \u00a7 36-20-70 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "AL_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; mandatory for RON",
+          "source_id": "AL_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Embossing seal required",
+          "source_id": "AL_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Partial; temporary authorization under SB 275",
+          "source_id": "AL_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "AK": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "AK_STATUTE",
+        "AK_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Alaska Stat. \u00a7 44.50.001 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee; must be reasonable"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee; must be reasonable"
+          }
+        },
+        "identification": {
+          "standard": "Government-issued photo ID; expired < 3 yrs for passports",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Government-issued photo ID; expired < 3 yrs for passports"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set fee; must be reasonable",
+          "source_id": "AK_STATUTE",
+          "location": "Alaska Stat. \u00a7 44.50.001 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set fee; must be reasonable",
+          "source_id": "AK_STATUTE",
+          "location": "Alaska Stat. \u00a7 44.50.001 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Government-issued photo ID; expired < 3 yrs for passports",
+          "source_id": "AK_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "AK_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; must be photographically reproducible",
+          "source_id": "AK_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "AK_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "AZ": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "AZ_STATUTE",
+        "AZ_SOS",
+        "AZ_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Ariz. Rev. Stat. \u00a7 41-311 et seq.",
+        "handbook_url": "https://azsos.gov/sites/default/files/docs/Notary-Manual-2025-April_0.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per signature",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 per signature"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per signature",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 per signature"
+          }
+        },
+        "identification": {
+          "standard": "Unexpired government-issued photo ID",
+          "expired_id_policy": {
+            "status": "prohibited",
+            "notes": "Must be unexpired; no grace period stated."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory; bound paper journal",
+        "seal_requirement": "Rubber stamp with dark ink; max 1.5\" x 2.5\"",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per signature",
+          "source_id": "AZ_STATUTE",
+          "location": "Ariz. Rev. Stat. \u00a7 41-311 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per signature",
+          "source_id": "AZ_STATUTE",
+          "location": "Ariz. Rev. Stat. \u00a7 41-311 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Unexpired government-issued photo ID",
+          "source_id": "AZ_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory; bound paper journal",
+          "source_id": "AZ_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Rubber stamp with dark ink; max 1.5\" x 2.5\"",
+          "source_id": "AZ_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "AZ_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "AR": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "AR_STATUTE",
+        "AR_SOS",
+        "AR_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Ark. Code \u00a7 16-47-101 et seq.",
+        "handbook_url": "https://www.sos.arkansas.gov/uploads/bcs/NotaryHandbook2025.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee; signer must agree in advance"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee; signer must agree in advance"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; 10-year retention",
+        "seal_requirement": "Ink stamp or embossing seal; blue or black ink",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set fee; signer must agree in advance",
+          "source_id": "AR_STATUTE",
+          "location": "Ark. Code \u00a7 16-47-101 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set fee; signer must agree in advance",
+          "source_id": "AR_STATUTE",
+          "location": "Ark. Code \u00a7 16-47-101 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "AR_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; 10-year retention",
+          "source_id": "AR_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; blue or black ink",
+          "source_id": "AR_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "AR_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "CA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "CA_STATUTE",
+        "CA_SOS",
+        "CA_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Cal. Gov't Code \u00a7 8200 et seq.; Cal. Civ. Code \u00a7 1189",
+        "handbook_url": "https://notary.cdn.sos.ca.gov/forms/notary-handbook-current.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": 15.0,
+            "unit": "per signature",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": "$15.00 per signature"
+          },
+          "jurat": {
+            "amount": 15.0,
+            "unit": "per signature",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": "$15.00 per signature"
+          }
+        },
+        "identification": {
+          "standard": "Unexpired or issued within 5 years",
+          "expired_id_policy": {
+            "status": "prohibited",
+            "notes": "Must be unexpired; no grace period stated."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory; one active journal at a time",
+        "seal_requirement": "Rubber stamp with serrated/milled edge border",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON; phased implementation through 2030"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$15.00 per signature",
+          "source_id": "CA_STATUTE",
+          "location": "Cal. Gov't Code \u00a7 8200 et seq.; Cal. Civ. Code \u00a7 1189"
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$15.00 per signature",
+          "source_id": "CA_STATUTE",
+          "location": "Cal. Gov't Code \u00a7 8200 et seq.; Cal. Civ. Code \u00a7 1189"
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Unexpired or issued within 5 years",
+          "source_id": "CA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory; one active journal at a time",
+          "source_id": "CA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Rubber stamp with serrated/milled edge border",
+          "source_id": "CA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON; phased implementation through 2030",
+          "source_id": "CA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "CO": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "CO_STATUTE",
+        "CO_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Colo. Rev. Stat. \u00a7 24-21-501 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 15.0,
+            "unit": "per act",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          },
+          "jurat": {
+            "amount": 15.0,
+            "unit": "per act",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          }
+        },
+        "identification": {
+          "standard": "Government-issued photo ID; digital DL accepted",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for all notarial acts",
+        "seal_requirement": "Rectangular rubber stamp only",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$15.00 traditional / $25.00 RON",
+          "source_id": "CO_STATUTE",
+          "location": "Colo. Rev. Stat. \u00a7 24-21-501 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$15.00 traditional / $25.00 RON",
+          "source_id": "CO_STATUTE",
+          "location": "Colo. Rev. Stat. \u00a7 24-21-501 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Government-issued photo ID; digital DL accepted",
+          "source_id": "CO_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for all notarial acts",
+          "source_id": "CO_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Rectangular rubber stamp only",
+          "source_id": "CO_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "CO_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "CT": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "CT_STATUTE",
+        "CT_SOS",
+        "CT_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Conn. Gen. Stat. \u00a7 3-91 et seq.",
+        "handbook_url": "https://portal.ct.gov/SOTS/Business-Services/Notary/Notary-Public-Manual",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; optional for paper acts",
+        "seal_requirement": "Not required by law; strongly recommended",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "CT_STATUTE",
+          "location": "Conn. Gen. Stat. \u00a7 3-91 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "CT_STATUTE",
+          "location": "Conn. Gen. Stat. \u00a7 3-91 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "CT_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; optional for paper acts",
+          "source_id": "CT_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law; strongly recommended",
+          "source_id": "CT_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "CT_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "DE": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "DE_STATUTE",
+        "DE_SOS",
+        "VENDOR_ASN"
+      ],
+      "rules": {
+        "revised_code": "Del. Code tit. 29, \u00a7 4301 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory effective Aug 2023",
+        "seal_requirement": "Black-inked rubber stamp or embossing seal",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "limited",
+          "notes": "Full RON; restricted to licensed attorneys"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 traditional / $25.00 RON",
+          "source_id": "DE_STATUTE",
+          "location": "Del. Code tit. 29, \u00a7 4301 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 traditional / $25.00 RON",
+          "source_id": "DE_STATUTE",
+          "location": "Del. Code tit. 29, \u00a7 4301 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "DE_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory effective Aug 2023",
+          "source_id": "DE_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Black-inked rubber stamp or embossing seal",
+          "source_id": "DE_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON; restricted to licensed attorneys",
+          "source_id": "DE_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "DC": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "DC_STATUTE",
+        "DC_SOS",
+        "DC_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "D.C. Code \u00a7 1-1231.01 et seq.",
+        "handbook_url": "https://os.dc.gov/publication/dc-notary-handbook",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Embossing seal required for tangible records",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "DC_STATUTE",
+          "location": "D.C. Code \u00a7 1-1231.01 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "DC_STATUTE",
+          "location": "D.C. Code \u00a7 1-1231.01 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "DC_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "DC_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Embossing seal required for tangible records",
+          "source_id": "DC_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "DC_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "FL": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "FL_STATUTE",
+        "FL_SOS",
+        "VENDOR_ASN"
+      ],
+      "rules": {
+        "revised_code": "Fla. Stat. \u00a7 117.01 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          }
+        },
+        "identification": {
+          "standard": "Unexpired or issued within 5 years",
+          "expired_id_policy": {
+            "status": "prohibited",
+            "notes": "Must be unexpired; no grace period stated."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts; electronic journal",
+        "seal_requirement": "Rubber stamp with black ink; round or rectangular",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 traditional / $25.00 RON",
+          "source_id": "FL_STATUTE",
+          "location": "Fla. Stat. \u00a7 117.01 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 traditional / $25.00 RON",
+          "source_id": "FL_STATUTE",
+          "location": "Fla. Stat. \u00a7 117.01 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Unexpired or issued within 5 years",
+          "source_id": "FL_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts; electronic journal",
+          "source_id": "FL_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Rubber stamp with black ink; round or rectangular",
+          "source_id": "FL_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "FL_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "GA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "GA_STATUTE",
+        "GA_SOS",
+        "GA_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "O.C.G.A. \u00a7 45-17-1 et seq.",
+        "handbook_url": "https://www.gsccca.org/notary-and-apostilles/notaries/general-notary-information",
+        "fees": {
+          "acknowledgment": {
+            "amount": 2.0,
+            "unit": "per act",
+            "cap": 2.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 2.0,
+            "unit": "per act",
+            "cap": 2.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory effective Jan 2025 for self-filers",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "limited",
+          "notes": "Partial; temporary authorization under Executive Order"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$2.00 per act",
+          "source_id": "GA_STATUTE",
+          "location": "O.C.G.A. \u00a7 45-17-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$2.00 per act",
+          "source_id": "GA_STATUTE",
+          "location": "O.C.G.A. \u00a7 45-17-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "GA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory effective Jan 2025 for self-filers",
+          "source_id": "GA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "GA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Partial; temporary authorization under Executive Order",
+          "source_id": "GA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "HI": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "HI_STATUTE",
+        "HI_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Hawaii Rev. Stat. \u00a7 456-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Ink stamp or embossing seal; round only",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "HI_STATUTE",
+          "location": "Hawaii Rev. Stat. \u00a7 456-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "HI_STATUTE",
+          "location": "Hawaii Rev. Stat. \u00a7 456-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "HI_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "HI_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; round only",
+          "source_id": "HI_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "HI_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "ID": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "ID_STATUTE",
+        "ID_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Idaho Code \u00a7 51-101 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Rubber stamp with milled-edge border; rectangular or circular",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "ID_STATUTE",
+          "location": "Idaho Code \u00a7 51-101 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "ID_STATUTE",
+          "location": "Idaho Code \u00a7 51-101 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "ID_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "ID_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Rubber stamp with milled-edge border; rectangular or circular",
+          "source_id": "ID_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "ID_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "IL": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "IL_STATUTE",
+        "IL_SOS",
+        "IL_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "5 ILCS 312/1-101 et seq.",
+        "handbook_url": "https://www.ilsos.gov/publications/notary/notary.html",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for all acts",
+        "seal_requirement": "Rectangular stamp with serrated border; max 1\" x 2.5\"",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized effective Jan 2024"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 traditional / $25.00 RON",
+          "source_id": "IL_STATUTE",
+          "location": "5 ILCS 312/1-101 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 traditional / $25.00 RON",
+          "source_id": "IL_STATUTE",
+          "location": "5 ILCS 312/1-101 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "IL_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for all acts",
+          "source_id": "IL_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Rectangular stamp with serrated border; max 1\" x 2.5\"",
+          "source_id": "IL_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized effective Jan 2024",
+          "source_id": "IL_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "IN": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "IN_STATUTE",
+        "IN_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Ind. Code \u00a7 33-42-0.5-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; mandatory for RON",
+        "seal_requirement": "Ink stamp or embossing seal; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "IN_STATUTE",
+          "location": "Ind. Code \u00a7 33-42-0.5-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "IN_STATUTE",
+          "location": "Ind. Code \u00a7 33-42-0.5-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "IN_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; mandatory for RON",
+          "source_id": "IN_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; must be photographically reproducible",
+          "source_id": "IN_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "IN_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "IA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "IA_STATUTE",
+        "IA_SOS",
+        "IA_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Iowa Code \u00a7 9B.1 et seq.",
+        "handbook_url": "https://sos.iowa.gov/business/notary/handbook.html",
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal; must contain \"Notarial Seal\"",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "IA_STATUTE",
+          "location": "Iowa Code \u00a7 9B.1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "IA_STATUTE",
+          "location": "Iowa Code \u00a7 9B.1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "IA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "IA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; must contain \"Notarial Seal\"",
+          "source_id": "IA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "IA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "KS": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "KS_STATUTE",
+        "KS_SOS",
+        "KS_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Kan. Stat. \u00a7 53-5a01 et seq.",
+        "handbook_url": "https://sos.ks.gov/publications/pubs_notary_handbook.aspx",
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory effective Jan 2022; 10-year retention",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "KS_STATUTE",
+          "location": "Kan. Stat. \u00a7 53-5a01 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "KS_STATUTE",
+          "location": "Kan. Stat. \u00a7 53-5a01 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "KS_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory effective Jan 2022; 10-year retention",
+          "source_id": "KS_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "KS_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "KS_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "KY": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "KY_STATUTE",
+        "KY_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Ky. Rev. Stat. \u00a7 423.010 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for electronic/online acts",
+        "seal_requirement": "Not required by law for traditional acts",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "KY_STATUTE",
+          "location": "Ky. Rev. Stat. \u00a7 423.010 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "KY_STATUTE",
+          "location": "Ky. Rev. Stat. \u00a7 423.010 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "KY_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for electronic/online acts",
+          "source_id": "KY_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law for traditional acts",
+          "source_id": "KY_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "KY_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "LA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "LA_STATUTE",
+        "LA_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "La. Rev. Stat. \u00a7 35:1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID; digital DL accepted",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for immovable property acts",
+        "seal_requirement": "Not required; signature is considered the seal",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "LA_STATUTE",
+          "location": "La. Rev. Stat. \u00a7 35:1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "LA_STATUTE",
+          "location": "La. Rev. Stat. \u00a7 35:1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID; digital DL accepted",
+          "source_id": "LA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for immovable property acts",
+          "source_id": "LA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required; signature is considered the seal",
+          "source_id": "LA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "LA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "ME": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "ME_STATUTE",
+        "ME_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Me. Rev. Stat. tit. 4, \u00a7 1901 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit; must be reasonable"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Not required; optional",
+        "seal_requirement": "Not required for traditional acts",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "ME_STATUTE",
+          "location": "Me. Rev. Stat. tit. 4, \u00a7 1901 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set limit; must be reasonable",
+          "source_id": "ME_STATUTE",
+          "location": "Me. Rev. Stat. tit. 4, \u00a7 1901 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "ME_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Not required; optional",
+          "source_id": "ME_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required for traditional acts",
+          "source_id": "ME_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "ME_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MD": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MD_STATUTE",
+        "MD_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Md. Code, State Gov't \u00a7 18-201 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 8.0,
+            "unit": "per act",
+            "cap": 8.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 8.0,
+            "unit": "per act",
+            "cap": 8.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for all acts",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$8.00 per act",
+          "source_id": "MD_STATUTE",
+          "location": "Md. Code, State Gov't \u00a7 18-201 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$8.00 per act",
+          "source_id": "MD_STATUTE",
+          "location": "Md. Code, State Gov't \u00a7 18-201 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "MD_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for all acts",
+          "source_id": "MD_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "MD_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "MD_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MA_STATUTE",
+        "MA_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Mass. Gen. Laws ch. 222, \u00a7 1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set limit"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory; one active journal at a time",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized effective Jan 2024"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set limit",
+          "source_id": "MA_STATUTE",
+          "location": "Mass. Gen. Laws ch. 222, \u00a7 1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set limit",
+          "source_id": "MA_STATUTE",
+          "location": "Mass. Gen. Laws ch. 222, \u00a7 1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "MA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory; one active journal at a time",
+          "source_id": "MA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "MA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized effective Jan 2024",
+          "source_id": "MA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MI": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MI_STATUTE",
+        "MI_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Mich. Comp. Laws \u00a7 55.261 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Not required by law",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "MI_STATUTE",
+          "location": "Mich. Comp. Laws \u00a7 55.261 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "MI_STATUTE",
+          "location": "Mich. Comp. Laws \u00a7 55.261 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "MI_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "MI_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law",
+          "source_id": "MI_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "MI_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MN": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MN_STATUTE",
+        "MN_SOS",
+        "MN_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Minn. Stat. \u00a7 358.51 et seq.",
+        "handbook_url": "https://www.sos.mn.gov/notary/notary-handbook/",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp required; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "MN_STATUTE",
+          "location": "Minn. Stat. \u00a7 358.51 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "MN_STATUTE",
+          "location": "Minn. Stat. \u00a7 358.51 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "MN_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "MN_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; must be photographically reproducible",
+          "source_id": "MN_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "MN_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MS": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MS_STATUTE",
+        "MS_SOS",
+        "MS_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Miss. Code \u00a7 25-34-1 et seq.",
+        "handbook_url": "https://www.sos.ms.gov/notary-handbook",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per signature",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "$5.00 per signature"
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per signature",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "$5.00 per signature"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory; tangible or electronic",
+        "seal_requirement": "Ink stamp required; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "limited",
+          "notes": "Partial; temporary authorization under Executive Order"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per signature",
+          "source_id": "MS_STATUTE",
+          "location": "Miss. Code \u00a7 25-34-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per signature",
+          "source_id": "MS_STATUTE",
+          "location": "Miss. Code \u00a7 25-34-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "MS_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory; tangible or electronic",
+          "source_id": "MS_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; must be photographically reproducible",
+          "source_id": "MS_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Partial; temporary authorization under Executive Order",
+          "source_id": "MS_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MO": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MO_STATUTE",
+        "MO_SOS",
+        "MO_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Mo. Rev. Stat. \u00a7 486.600 et seq.",
+        "handbook_url": "https://www.sos.mo.gov/CMSImages/Business/Notary/NotaryHandbook.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current federal, state, or tribal ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for all acts; permanently bound",
+        "seal_requirement": "Ink stamp or embossing seal; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "MO_STATUTE",
+          "location": "Mo. Rev. Stat. \u00a7 486.600 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "MO_STATUTE",
+          "location": "Mo. Rev. Stat. \u00a7 486.600 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current federal, state, or tribal ID",
+          "source_id": "MO_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for all acts; permanently bound",
+          "source_id": "MO_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; must be photographically reproducible",
+          "source_id": "MO_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "MO_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "MT": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "MT_STATUTE",
+        "MT_SOS",
+        "MT_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Mont. Code \u00a7 1-5-601 et seq.",
+        "handbook_url": "https://sosmt.gov/Portals/142/Notary/misc/Handbook.html",
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for all acts",
+        "seal_requirement": "Ink stamp required for new/renewed commissions",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "MT_STATUTE",
+          "location": "Mont. Code \u00a7 1-5-601 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "MT_STATUTE",
+          "location": "Mont. Code \u00a7 1-5-601 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "MT_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for all acts",
+          "source_id": "MT_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required for new/renewed commissions",
+          "source_id": "MT_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "MT_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NE": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NE_STATUTE",
+        "NE_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Neb. Rev. Stat. \u00a7 64-101 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per acknowledgment",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "$5.00 per acknowledgment; statute: Neb. Rev. Stat. \u00a7 33-117"
+          },
+          "jurat": {
+            "amount": 2.0,
+            "unit": "per jurat",
+            "cap": 2.0,
+            "policy": "capped",
+            "notes": "$2.00 per jurat; statute: Neb. Rev. Stat. \u00a7 33-117"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp required; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 Ack / $2.00 Jurat",
+          "source_id": "NE_STATUTE",
+          "location": "Neb. Rev. Stat. \u00a7 64-101 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$2.00 per jurat act",
+          "source_id": "NE_STATUTE",
+          "location": "Neb. Rev. Stat. \u00a7 64-101 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NE_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "NE_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; must be photographically reproducible",
+          "source_id": "NE_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "NE_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NV": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NV_STATUTE",
+        "NV_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Nev. Rev. Stat. \u00a7 240.001 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 15.0,
+            "unit": "per first signature",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": "$15.00 first signature"
+          },
+          "jurat": {
+            "amount": 15.0,
+            "unit": "per first signature",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": "$15.00 first signature"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Ink stamp required; must be photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$15.00 first signature",
+          "source_id": "NV_STATUTE",
+          "location": "Nev. Rev. Stat. \u00a7 240.001 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$15.00 first signature",
+          "source_id": "NV_STATUTE",
+          "location": "Nev. Rev. Stat. \u00a7 240.001 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NV_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "NV_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; must be photographically reproducible",
+          "source_id": "NV_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "NV_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NH": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NH_STATUTE",
+        "NH_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "N.H. Rev. Stat. \u00a7 455:1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal; separate rubber stamp for expiration",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "NH_STATUTE",
+          "location": "N.H. Rev. Stat. \u00a7 455:1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "NH_STATUTE",
+          "location": "N.H. Rev. Stat. \u00a7 455:1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NH_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "NH_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; separate rubber stamp for expiration",
+          "source_id": "NH_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "NH_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NJ": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NJ_STATUTE",
+        "NJ_SOS",
+        "VENDOR_ASN"
+      ],
+      "rules": {
+        "revised_code": "N.J. Stat. \u00a7 52:7-10 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 2.5,
+            "unit": "per act",
+            "cap": 25.0,
+            "policy": "variable",
+            "notes": "$2.50\u2013$25.00 depending on act type; N.J. Stat. \u00a7 22A:4-14"
+          },
+          "jurat": {
+            "amount": 2.5,
+            "unit": "per act",
+            "cap": 25.0,
+            "policy": "variable",
+            "notes": "$2.50\u2013$25.00 depending on act type; N.J. Stat. \u00a7 22A:4-14"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Not required by law",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$2.50 to $25.00 (variable)",
+          "source_id": "NJ_STATUTE",
+          "location": "N.J. Stat. \u00a7 52:7-10 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$2.50 to $25.00 (variable)",
+          "source_id": "NJ_STATUTE",
+          "location": "N.J. Stat. \u00a7 52:7-10 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NJ_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "NJ_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law",
+          "source_id": "NJ_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "NJ_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NM": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NM_STATUTE",
+        "NM_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "N.M. Stat. \u00a7 14-14A-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Ink stamp or embossing seal; round stamp is NOT acceptable",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "NM_STATUTE",
+          "location": "N.M. Stat. \u00a7 14-14A-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "NM_STATUTE",
+          "location": "N.M. Stat. \u00a7 14-14A-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NM_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "NM_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; round stamp is NOT acceptable",
+          "source_id": "NM_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "NM_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NY": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NY_STATUTE",
+        "NY_SOS",
+        "NY_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "N.Y. Exec. Law \u00a7 130 et seq.",
+        "handbook_url": "https://dos.ny.gov/notary-public-license-law",
+        "fees": {
+          "acknowledgment": {
+            "amount": 2.0,
+            "unit": "per person",
+            "cap": 2.0,
+            "policy": "capped",
+            "notes": "$2.00 per person"
+          },
+          "jurat": {
+            "amount": 2.0,
+            "unit": "per person",
+            "cap": 2.0,
+            "policy": "capped",
+            "notes": "$2.00 per person"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory effective Jan 2023",
+        "seal_requirement": "Not required by law",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$2.00 per person",
+          "source_id": "NY_STATUTE",
+          "location": "N.Y. Exec. Law \u00a7 130 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$2.00 per person",
+          "source_id": "NY_STATUTE",
+          "location": "N.Y. Exec. Law \u00a7 130 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NY_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory effective Jan 2023",
+          "source_id": "NY_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law",
+          "source_id": "NY_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "NY_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "NC": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "NC_STATUTE",
+        "NC_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "N.C. Gen. Stat. \u00a7 10B-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per person",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 per person"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per person",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 per person"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Optional but recommended",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON; effective March 2025"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per person",
+          "source_id": "NC_STATUTE",
+          "location": "N.C. Gen. Stat. \u00a7 10B-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per person",
+          "source_id": "NC_STATUTE",
+          "location": "N.C. Gen. Stat. \u00a7 10B-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "NC_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Optional but recommended",
+          "source_id": "NC_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "NC_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON; effective March 2025",
+          "source_id": "NC_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "ND": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "ND_STATUTE",
+        "ND_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "N.D. Cent. Code \u00a7 44-06.1-01 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "ND_STATUTE",
+          "location": "N.D. Cent. Code \u00a7 44-06.1-01 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "ND_STATUTE",
+          "location": "N.D. Cent. Code \u00a7 44-06.1-01 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "ND_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "ND_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "ND_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "ND_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "OH": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "OH_STATUTE",
+        "OH_SOS",
+        "VENDOR_OHIO_COM"
+      ],
+      "rules": {
+        "revised_code": "Ohio Rev. Code \u00a7 147.01 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "RON acts: $30.00"
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": "RON acts: $30.00"
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized; $10 session tech fee effective April 2025"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act traditional; $30.00 RON",
+          "source_id": "OH_STATUTE",
+          "location": "Ohio Rev. Code \u00a7 147.01 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act traditional; $30.00 RON",
+          "source_id": "OH_STATUTE",
+          "location": "Ohio Rev. Code \u00a7 147.01 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "OH_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "OH_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "OH_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized; $10 session tech fee effective April 2025",
+          "source_id": "OH_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "OK": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "OK_STATUTE",
+        "OK_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Okla. Stat. tit. 49, \u00a7 1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "OK_STATUTE",
+          "location": "Okla. Stat. tit. 49, \u00a7 1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "OK_STATUTE",
+          "location": "Okla. Stat. tit. 49, \u00a7 1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "OK_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "OK_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "OK_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "OK_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "OR": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "OR_STATUTE",
+        "OR_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Or. Rev. Stat. \u00a7 194.210 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory; bound paper journal",
+        "seal_requirement": "Ink stamp required; photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "OR_STATUTE",
+          "location": "Or. Rev. Stat. \u00a7 194.210 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "OR_STATUTE",
+          "location": "Or. Rev. Stat. \u00a7 194.210 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "OR_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory; bound paper journal",
+          "source_id": "OR_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; photographically reproducible",
+          "source_id": "OR_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "OR_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "PA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "PA_STATUTE",
+        "PA_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "57 Pa. C.S. \u00a7 301 et seq. (RULONA)",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Ink stamp with 7-digit ID required on new seals",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "PA_STATUTE",
+          "location": "57 Pa. C.S. \u00a7 301 et seq. (RULONA)"
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "PA_STATUTE",
+          "location": "57 Pa. C.S. \u00a7 301 et seq. (RULONA)"
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "PA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "PA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp with 7-digit ID required on new seals",
+          "source_id": "PA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "PA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "RI": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "RI_STATUTE",
+        "RI_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "R.I. Gen. Laws \u00a7 42-30.1-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 25.0,
+            "unit": "per act",
+            "cap": 25.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 25.0,
+            "unit": "per act",
+            "cap": 25.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; optional",
+        "seal_requirement": "Not required by law",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$25.00 per act",
+          "source_id": "RI_STATUTE",
+          "location": "R.I. Gen. Laws \u00a7 42-30.1-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$25.00 per act",
+          "source_id": "RI_STATUTE",
+          "location": "R.I. Gen. Laws \u00a7 42-30.1-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "RI_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; optional",
+          "source_id": "RI_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law",
+          "source_id": "RI_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "RI_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "SC": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "SC_STATUTE",
+        "SC_SOS",
+        "SC_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "S.C. Code \u00a7 26-1-1 et seq.",
+        "handbook_url": "https://sos.sc.gov/sites/sos/files/Documents/Mail%20In%20Service/Notaries/Notary%20Public%20Reference%20Manual%202023.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; optional",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON; effective January 2025"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "SC_STATUTE",
+          "location": "S.C. Code \u00a7 26-1-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "SC_STATUTE",
+          "location": "S.C. Code \u00a7 26-1-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "SC_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; optional",
+          "source_id": "SC_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "SC_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON; effective January 2025",
+          "source_id": "SC_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "SD": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "SD_STATUTE",
+        "SD_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "S.D. Codified Laws \u00a7 18-1-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per document",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 per document"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per document",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 per document"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; optional",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per document",
+          "source_id": "SD_STATUTE",
+          "location": "S.D. Codified Laws \u00a7 18-1-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per document",
+          "source_id": "SD_STATUTE",
+          "location": "S.D. Codified Laws \u00a7 18-1-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "SD_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; optional",
+          "source_id": "SD_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "SD_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "SD_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "TN": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "TN_STATUTE",
+        "TN_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Tenn. Code \u00a7 8-16-101 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee for traditional; $25.00 RON"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee for traditional; $25.00 RON"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory if fees are charged",
+        "seal_requirement": "Round ink stamp; any color EXCEPT black or yellow",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set fee for traditional; $25.00 RON",
+          "source_id": "TN_STATUTE",
+          "location": "Tenn. Code \u00a7 8-16-101 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set fee for traditional; $25.00 RON",
+          "source_id": "TN_STATUTE",
+          "location": "Tenn. Code \u00a7 8-16-101 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "TN_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory if fees are charged",
+          "source_id": "TN_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Round ink stamp; any color EXCEPT black or yellow",
+          "source_id": "TN_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "TN_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "TX": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "TX_STATUTE",
+        "TX_SOS",
+        "TX_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Tex. Gov't Code \u00a7 406.001 et seq.",
+        "handbook_url": "https://www.sos.state.tx.us/statdoc/edinfo.shtml",
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per first signature",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 first signature"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per first signature",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "$10.00 first signature"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory; 10-year retention",
+        "seal_requirement": "Ink stamp or embossing seal; serrated/milled edge",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 first signature",
+          "source_id": "TX_STATUTE",
+          "location": "Tex. Gov't Code \u00a7 406.001 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 first signature",
+          "source_id": "TX_STATUTE",
+          "location": "Tex. Gov't Code \u00a7 406.001 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "TX_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory; 10-year retention",
+          "source_id": "TX_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal; serrated/milled edge",
+          "source_id": "TX_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "TX_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "UT": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "UT_STATUTE",
+        "UT_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Utah Code \u00a7 46-1-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp required; MUST contain purple ink",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "UT_STATUTE",
+          "location": "Utah Code \u00a7 46-1-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "UT_STATUTE",
+          "location": "Utah Code \u00a7 46-1-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "UT_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "UT_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; MUST contain purple ink",
+          "source_id": "UT_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "UT_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "VT": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "VT_STATUTE",
+        "VT_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Vt. Stat. tit. 26, \u00a7 5301 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee"
+          },
+          "jurat": {
+            "amount": null,
+            "unit": "per act",
+            "cap": null,
+            "policy": "no_cap",
+            "notes": "No set fee"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; optional",
+        "seal_requirement": "Not required by law",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized effective May 2024"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "No set fee",
+          "source_id": "VT_STATUTE",
+          "location": "Vt. Stat. tit. 26, \u00a7 5301 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "No set fee",
+          "source_id": "VT_STATUTE",
+          "location": "Vt. Stat. tit. 26, \u00a7 5301 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "VT_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; optional",
+          "source_id": "VT_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Not required by law",
+          "source_id": "VT_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized effective May 2024",
+          "source_id": "VT_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "VA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "VA_STATUTE",
+        "VA_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Va. Code \u00a7 47.1-1 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "RON acts: $25.00"
+          }
+        },
+        "identification": {
+          "standard": "Unexpired (exceptions for assisted living residents)",
+          "expired_id_policy": {
+            "status": "prohibited",
+            "notes": "Must be unexpired; no grace period stated."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for electronic/RON acts",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized; first state to enact"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 traditional / $25.00 RON",
+          "source_id": "VA_STATUTE",
+          "location": "Va. Code \u00a7 47.1-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 traditional / $25.00 RON",
+          "source_id": "VA_STATUTE",
+          "location": "Va. Code \u00a7 47.1-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Unexpired (exceptions for assisted living residents)",
+          "source_id": "VA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for electronic/RON acts",
+          "source_id": "VA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "VA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized; first state to enact",
+          "source_id": "VA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "WA": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "WA_STATUTE",
+        "WA_SOS",
+        "WA_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Wash. Rev. Code \u00a7 42.45.010 et seq.",
+        "handbook_url": "https://www.dol.wa.gov/business/notary/notary-handbook",
+        "fees": {
+          "acknowledgment": {
+            "amount": 15.0,
+            "unit": "per act",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 15.0,
+            "unit": "per act",
+            "cap": 15.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$15.00 per act",
+          "source_id": "WA_STATUTE",
+          "location": "Wash. Rev. Code \u00a7 42.45.010 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$15.00 per act",
+          "source_id": "WA_STATUTE",
+          "location": "Wash. Rev. Code \u00a7 42.45.010 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "WA_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "WA_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "WA_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "WA_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "WV": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "WV_STATUTE",
+        "WV_SOS",
+        "WV_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "W. Va. Code \u00a7 39-4-1 et seq.",
+        "handbook_url": "https://sos.wv.gov/FormSearch/Business/Documents/Notary-Handbook.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current or expired < 3 years",
+          "expired_id_policy": {
+            "status": "permitted_with_conditions",
+            "notes": "Current or expired < 3 years"
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Strongly recommended; optional",
+        "seal_requirement": "Ink stamp required; photographically reproducible",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 per act",
+          "source_id": "WV_STATUTE",
+          "location": "W. Va. Code \u00a7 39-4-1 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 per act",
+          "source_id": "WV_STATUTE",
+          "location": "W. Va. Code \u00a7 39-4-1 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current or expired < 3 years",
+          "source_id": "WV_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Strongly recommended; optional",
+          "source_id": "WV_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp required; photographically reproducible",
+          "source_id": "WV_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "WV_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "WI": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "WI_STATUTE",
+        "WI_SOS",
+        "WI_HANDBOOK"
+      ],
+      "rules": {
+        "revised_code": "Wis. Stat. \u00a7 140.01 et seq.",
+        "handbook_url": "https://dfi.wi.gov/Documents/ConsumerServices/NotaryPublic/NotaryHandbook.pdf",
+        "fees": {
+          "acknowledgment": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          },
+          "jurat": {
+            "amount": 5.0,
+            "unit": "per act",
+            "cap": 5.0,
+            "policy": "capped",
+            "notes": null
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory for RON acts",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$5.00 per act",
+          "source_id": "WI_STATUTE",
+          "location": "Wis. Stat. \u00a7 140.01 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$5.00 per act",
+          "source_id": "WI_STATUTE",
+          "location": "Wis. Stat. \u00a7 140.01 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID",
+          "source_id": "WI_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory for RON acts",
+          "source_id": "WI_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "WI_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "WI_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    },
+    "WY": {
+      "status": "draft",
+      "version": "1.0.0",
+      "sources": [
+        "WY_STATUTE",
+        "WY_SOS",
+        "VENDOR_USN"
+      ],
+      "rules": {
+        "revised_code": "Wyo. Stat. \u00a7 34-29-101 et seq.",
+        "handbook_url": null,
+        "fees": {
+          "acknowledgment": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "RON acts: $10.00"
+          },
+          "jurat": {
+            "amount": 10.0,
+            "unit": "per act",
+            "cap": 10.0,
+            "policy": "capped",
+            "notes": "RON acts: $10.00"
+          }
+        },
+        "identification": {
+          "standard": "Current government-issued photo ID; digital DL accepted",
+          "expired_id_policy": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          },
+          "credible_witnesses": {
+            "status": "unspecified",
+            "notes": "Not explicitly addressed in primary sources reviewed."
+          }
+        },
+        "journal_requirement": "Mandatory",
+        "seal_requirement": "Ink stamp or embossing seal required",
+        "witness_requirements": null,
+        "special_act_caveats": null,
+        "ron_status": {
+          "status": "authorized",
+          "notes": "Full RON authorized"
+        }
+      },
+      "evidence": [
+        {
+          "field_path": "fees.acknowledgment",
+          "snippet": "$10.00 traditional / $10.00+ RON",
+          "source_id": "WY_STATUTE",
+          "location": "Wyo. Stat. \u00a7 34-29-101 et seq."
+        },
+        {
+          "field_path": "fees.jurat",
+          "snippet": "$10.00 traditional / $10.00+ RON",
+          "source_id": "WY_STATUTE",
+          "location": "Wyo. Stat. \u00a7 34-29-101 et seq."
+        },
+        {
+          "field_path": "identification.standard",
+          "snippet": "Current government-issued photo ID; digital DL accepted",
+          "source_id": "WY_SOS",
+          "location": "Notary \u2014 acceptable ID section"
+        },
+        {
+          "field_path": "journal_requirement",
+          "snippet": "Mandatory",
+          "source_id": "WY_SOS",
+          "location": "Notary \u2014 journal/recordkeeping section"
+        },
+        {
+          "field_path": "seal_requirement",
+          "snippet": "Ink stamp or embossing seal required",
+          "source_id": "WY_SOS",
+          "location": "Notary \u2014 seal/stamp section"
+        },
+        {
+          "field_path": "ron_status.status",
+          "snippet": "Full RON authorized",
+          "source_id": "WY_SOS",
+          "location": "Notary \u2014 eNotarization/RON section"
+        }
+      ]
+    }
+  }
+}
