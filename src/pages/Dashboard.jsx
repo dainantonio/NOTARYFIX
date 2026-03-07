@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, AlertTriangle, ArrowUpRight, Award, BarChart3,
-  Bell, BookOpen, Brain, Building2, CalendarClock, CheckCircle2,
+  Bell, BookOpen, Brain, Building2, CalendarClock, Car, CheckCircle2,
   ChevronDown, ChevronRight, Clock, DollarSign, FileSignature,
   FileText, MapPin, Moon, Plus, ScrollText, Search, Shield,
   Sparkles, Sun, Sunset, TrendingUp, Truck, Users, Wallet, Zap,
@@ -12,6 +12,7 @@ import {
   Button, Badge, Select, CircularProgress, Skeleton, Progress,
 } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
+import DepartureChecklistModal from '../components/DepartureChecklistModal';
 import { useTheme } from '../context/ThemeContext';
 import { PendingSuggestionsPanel } from '../components/AgentSuggestionCard';
 import { useData } from '../context/DataContext';
@@ -509,7 +510,8 @@ const DailyBrief = ({ data, navigate }) => {
 };
 
 // ─── TODAY'S TIMELINE ─────────────────────────────────────────────────────────
-const TodayTimeline = ({ appointments, navigate }) => {
+const TodayTimeline = ({ appointments, navigate, updateAppointment }) => {
+  const [departingApt, setDepartingApt] = useState(null);
   const today    = todayISO();
   const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
 
@@ -539,43 +541,71 @@ const TodayTimeline = ({ appointments, navigate }) => {
   );
 
   return (
+    <>
     <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
       {all.map(apt => {
         const { bar } = aptAccent(apt.type);
         const done = apt.status === 'completed';
         return (
-          <button key={apt.id}
-            onClick={() => navigate('/schedule', { state: { editAppointmentId: apt.id } })}
-            className="group flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30">
-            {/* time */}
-            <div className="w-14 shrink-0 text-right">
-              <p className={`text-xs font-bold tabular-nums ${done ? 'text-slate-300 dark:text-slate-600 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
-                {apt.time || '—'}
-              </p>
-              <p className="text-[10px] text-slate-400">{apt._day}</p>
-            </div>
-            {/* accent bar */}
-            <div className={`h-10 w-0.5 shrink-0 rounded-full ${bar.replace('border-l-2 ','bg-').replace('border-','bg-')} opacity-80`} />
-            {/* content */}
-            <div className="min-w-0 flex-1">
-              <p className={`truncate text-sm font-semibold ${done ? 'text-slate-400 line-through dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
-                {apt.client}
-              </p>
-              <p className="truncate text-xs text-slate-400">{apt.type} · {apt.location || 'TBD'}</p>
-            </div>
-            {/* right */}
-            <div className="shrink-0 text-right">
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${apt.amount || 0}</p>
-              {done
-                ? <p className="text-[10px] font-bold text-emerald-500">Done</p>
-                : <p className="text-[10px] text-blue-500">Upcoming</p>
-              }
-            </div>
-            <ChevronRight className="ml-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 dark:text-slate-600" />
-          </button>
+          <div key={apt.id}
+            className="group flex w-full items-center gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30">
+            {/* clickable area → edit in Schedule */}
+            <button
+              className="flex flex-1 items-center gap-3 text-left min-w-0"
+              onClick={() => navigate('/schedule', { state: { editAppointmentId: apt.id } })}
+            >
+              {/* time */}
+              <div className="w-14 shrink-0 text-right">
+                <p className={`text-xs font-bold tabular-nums ${done ? 'text-slate-300 dark:text-slate-600 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
+                  {apt.time || '—'}
+                </p>
+                <p className="text-[10px] text-slate-400">{apt._day}</p>
+              </div>
+              {/* accent bar */}
+              <div className={`h-10 w-0.5 shrink-0 rounded-full ${bar.replace('border-l-2 ','bg-').replace('border-','bg-')} opacity-80`} />
+              {/* content */}
+              <div className="min-w-0 flex-1">
+                <p className={`truncate text-sm font-semibold ${done ? 'text-slate-400 line-through dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
+                  {apt.client}
+                </p>
+                <p className="truncate text-xs text-slate-400">{apt.type} · {apt.location || 'TBD'}</p>
+              </div>
+              {/* fee */}
+              <div className="shrink-0 text-right mr-1">
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">${apt.amount || 0}</p>
+                {done
+                  ? <p className="text-[10px] font-bold text-emerald-500">Done</p>
+                  : <p className="text-[10px] text-blue-500">Upcoming</p>
+                }
+              </div>
+            </button>
+            {/* Depart button — only for upcoming */}
+            {!done && (
+              <button
+                onClick={() => setDepartingApt(apt)}
+                title="Pre-Departure Checklist"
+                className="shrink-0 flex items-center gap-1 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+              >
+                <Car className="h-3.5 w-3.5" /> Depart
+              </button>
+            )}
+          </div>
         );
       })}
     </div>
+
+    {/* Pre-Departure Checklist Modal */}
+    <DepartureChecklistModal
+      appointment={departingApt}
+      isOpen={!!departingApt}
+      onClose={() => setDepartingApt(null)}
+      onDepart={(aptId) => {
+        updateAppointment?.(aptId, { status: 'en_route', departed_at: new Date().toISOString() });
+        setDepartingApt(null);
+        navigate(`/arrive/${aptId}`);
+      }}
+    />
+    </>
   );
 };
 
@@ -736,7 +766,7 @@ const Dashboard = () => {
 
   const { theme }             = useTheme();
   const navigate              = useNavigate();
-  const { data, addAppointment, approveAgentSuggestion, rejectAgentSuggestion } = useData();
+  const { data, addAppointment, updateAppointment, approveAgentSuggestion, rejectAgentSuggestion } = useData();
 
   const planTier  = data.settings?.planTier  || 'free';
   const userRole  = data.settings?.userRole  || 'owner';
@@ -985,7 +1015,7 @@ const Dashboard = () => {
               <CardContent className="p-0">
                 {loading
                   ? [1,2].map(i => <div key={i} className="mx-5 my-3 h-12 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />)
-                  : <TodayTimeline appointments={data.appointments||[]} navigate={navigate} />
+                  : <TodayTimeline appointments={data.appointments||[]} navigate={navigate} updateAppointment={updateAppointment} />
                 }
               </CardContent>
             </Card>

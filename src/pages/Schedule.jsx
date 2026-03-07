@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus, LayoutList, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, MapPin, Car, Download, Upload, Link, AlertTriangle, Activity, Bell, Mail, MessageSquare, CalendarPlus, LayoutList, CalendarDays } from 'lucide-react';
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal, { appointmentTypeToActType } from '../components/AppointmentModal';
+import DepartureChecklistModal from '../components/DepartureChecklistModal';
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';
@@ -73,6 +74,7 @@ const Schedule = () => {
   const [viewMode, setViewMode] = useState('agenda');
   const calendarFileInputRef = useRef(null);
   const { data, addAppointment, updateAppointment, deleteAppointment } = useData();
+  const [departingApt, setDepartingApt] = useState(null);
   const { completeAppointment } = useLinker();
   const location = useLocation();
   const navigate = useNavigate();
@@ -447,7 +449,7 @@ const Schedule = () => {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {apt.status !== 'completed' ? <button onClick={() => completeAppointment(apt)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"><CheckCircle2 className="h-4 w-4" /></button> : null}
-                      {apt.status !== 'completed' ? <button onClick={() => navigate(`/arrive/${apt.id}`)} className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"><MapPin className="h-4 w-4" /></button> : null}
+                      {apt.status !== 'completed' ? <button onClick={() => setDepartingApt(apt)} title="Pre-Departure Checklist" className="p-2 rounded-xl text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"><Car className="h-4 w-4" /></button> : null}
                       <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><Pencil className="h-4 w-4" /></button>
                       <button
                         onClick={() => {
@@ -490,7 +492,7 @@ const Schedule = () => {
                   <button onClick={() => completeAppointment(apt)} className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Mark Complete"><CheckCircle2 className="h-4 w-4" /></button>
                 ) : null}
                 {apt.status !== 'completed' && (
-                  <button onClick={() => navigate(`/arrive/${apt.id}`)} className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Arrive Mode"><MapPin className="h-4 w-4" /></button>
+                  <button onClick={() => setDepartingApt(apt)} className="p-2 rounded-xl text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors" title="Pre-Departure Checklist"><Car className="h-4 w-4" /></button>
                 )}
                 <button onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => { deleteAppointment(apt.id); toast.success('Appointment deleted'); }} className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="h-4 w-4" /></button>
@@ -542,7 +544,7 @@ const Schedule = () => {
                         <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 px-2"><CheckCircle2 className="h-3.5 w-3.5" /> Done</span>
                       )}
                       {apt.status !== 'completed' && (
-                        <Button size="sm" variant="ghost" title="Arrive Mode" onClick={() => navigate(`/arrive/${apt.id}`)} className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"><MapPin className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" title="Pre-Departure Checklist" onClick={() => setDepartingApt(apt)} className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"><Car className="h-4 w-4" /></Button>
                       )}
                       <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(apt); setIsModalOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="danger" onClick={() => { deleteAppointment(apt.id); toast.success('Appointment deleted'); }}><Trash2 className="h-4 w-4" /></Button>
@@ -689,6 +691,17 @@ const Schedule = () => {
 
       )}
 
+      {/* Pre-Departure Checklist Modal */}
+      <DepartureChecklistModal
+        appointment={departingApt}
+        isOpen={!!departingApt}
+        onClose={() => setDepartingApt(null)}
+        onDepart={(aptId) => {
+          updateAppointment(aptId, { status: 'en_route', departed_at: new Date().toISOString() });
+          setDepartingApt(null);
+          navigate(`/arrive/${aptId}`);
+        }}
+      />
     </div>
   );
 };

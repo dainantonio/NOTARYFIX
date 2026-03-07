@@ -9,6 +9,7 @@ import {
   Camera, Copy, UserPlus,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { toast as globalToast, promptBus } from '../hooks/useLinker';
 import {
   parseJobMessage,
   evaluateProfitability,
@@ -619,26 +620,48 @@ export default function JobInboxPage() {
 
   // ── Save appointment created from accepted job ─────────────────────────────
   const handleSaveFromJobAppt = (formData) => {
+    const planTier = (data.settings?.planTier || 'free').toLowerCase();
+
     const newAppt = {
-      id:          `appt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      clientName:  formData.client,
-      date:        formData.date,
-      time:        formData.time,
-      notaryType:  formData.type,
-      status:      'scheduled',
-      clientEmail: formData.email  || '',
-      clientPhone: formData.phone  || '',
-      location:    formData.location || formData.address || '',
-      address:     formData.address || '',
-      fee:         formData.fee ? parseFloat(formData.fee) : 0,
-      notes:       formData.notes || '',
-      createdAt:   new Date().toISOString(),
+      id:       `appt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      client:   formData.client,
+      type:     formData.type,
+      date:     formData.date,
+      time:     formData.time,
+      status:   'upcoming',
+      amount:   parseFloat(formData.fee) || 0,
+      phone:    formData.phone    || '',
+      email:    formData.email    || '',
+      address:  formData.address  || '',
+      location: formData.location || formData.address || 'TBD',
+      notes:    formData.notes    || '',
+      createdAt: new Date().toISOString(),
     };
     addAppointment(newAppt);
     setShowApptModal(false);
     setSelectedJob(acceptingJob);
     setTab('detail');
-    showToast('✅ Job accepted & appointment created!');
+
+    // Use the same global toast system as Schedule
+    globalToast.success('✅ Job accepted & appointment scheduled!');
+
+    // Show the same-style promptBus flow as completeAppointment does in Schedule
+    // Pro/Agency also get the option to copy the portal confirmation link
+    const portalBody = (planTier === 'pro' || planTier === 'agency')
+      ? `${formData.client} · ${formData.date}${formData.time ? ' at ' + formData.time : ''} · $${formData.fee || 0}\n\nPro tip: copy the portal link from Schedule to send your client a confirmation.`
+      : `${formData.client} · ${formData.date}${formData.time ? ' at ' + formData.time : ''} · $${formData.fee || 0}`;
+
+    setTimeout(() => {
+      promptBus.show({
+        type: 'default',
+        title: 'Appointment Created',
+        body: portalBody,
+        confirmLabel: 'View in Schedule',
+        cancelLabel: 'Stay Here',
+        onConfirm: () => { promptBus.dismiss(); navigate('/schedule'); },
+        onDismiss: () => promptBus.dismiss(),
+      });
+    }, 400);
   };
 
   // ── Image upload handlers (Change #1) ──────────────────────────────────────
