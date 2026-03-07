@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Calendar, Clock, DollarSign, User, FileText, MapPin, Phone, Mail, Mic, MicOff } from 'lucide-react';
 import { Button } from './UI';
 import { getServiceTypeMapping, serviceTypeToActType } from '../utils/notaryTypes';
+import SignerConfirmationModal from './SignerConfirmationModal';
 
 const DEFAULT_FORM = {
   client: '',
@@ -70,11 +71,12 @@ const parseQuickEntry = (text) => {
   return next;
 };
 
-const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitLabel = 'Save Appointment' }) => {
+const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitLabel = 'Save Appointment', notaryName = '', showSignerConfirmation = true }) => {
   const [formData, setFormData] = useState(DEFAULT_FORM);
   const [quickInput, setQuickInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported] = useState(() => typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition));
+  const [savedAppt, setSavedAppt] = useState(null); // triggers signer confirmation
   const recognitionRef = useRef(null);
 
   useEffect(() => {
@@ -134,13 +136,21 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
-    onClose();
+    const saved = onSave(formData);
+    // onSave may return the saved appointment object (with id) or we build one from formData
+    const apptForConfirm = (saved && typeof saved === 'object') ? saved : { ...formData, id: Date.now() };
     setFormData(DEFAULT_FORM);
     setQuickInput('');
+    if (showSignerConfirmation) {
+      // Keep the backdrop up — SignerConfirmationModal will render on top
+      setSavedAppt(apptForConfirm);
+    } else {
+      onClose();
+    }
   };
 
   return (
+  <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl animate-in zoom-in-95 duration-200 flex flex-col">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-6 py-4">
@@ -259,6 +269,15 @@ const AppointmentModal = ({ isOpen, onClose, onSave, initialData = null, submitL
         </form>
       </div>
     </div>
+
+    {/* Signer confirmation — fires automatically after appointment is saved */}
+    <SignerConfirmationModal
+      isOpen={!!savedAppt}
+      appointment={savedAppt}
+      notaryName={notaryName}
+      onClose={() => { setSavedAppt(null); onClose(); }}
+    />
+  </>
   );
 };
 
