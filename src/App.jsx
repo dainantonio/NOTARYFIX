@@ -27,7 +27,6 @@ const Settings       = lazy(() => import('./pages/Settings'));
 const Mileage        = lazy(() => import('./pages/mileage'));
 const FormGuide      = lazy(() => import('./pages/FormGuide'));
 
-// FIX 3: Public payment page for /pay/:invoiceId links
 const PayInvoicePage = lazy(() => import('./pages/PayInvoicePage'));
 
 // Gated / admin
@@ -56,20 +55,25 @@ const PageLoader = () => (
 // ─── Public routes — no Layout wrapper, no auth check ────────────────────────
 const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing', '/feature-paywall'];
 
-// ─── Guard: redirect new users to onboarding, protect app routes ──────────────
+// ─── Guard ────────────────────────────────────────────────────────────────────
+// Unauthenticated users are sent to /auth (not /onboarding) so returning
+// users who cleared cache land on the sign-in page, not a blank setup wizard.
+// Onboarding is reached only by explicit "Get started" navigation.
 const RouteGuard = ({ children }) => {
   const location = useLocation();
   const { data } = useData();
   const isPublic =
     PUBLIC_ROUTES.includes(location.pathname) ||
     location.pathname.startsWith('/portal') ||
-    location.pathname.startsWith('/pay/'); // FIX 3: payment pages are public
+    location.pathname.startsWith('/pay/');
   const onboarded = data.settings?.onboardingComplete;
 
+  // Not authenticated — send to sign-in page (not onboarding)
   if (!isPublic && !onboarded) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
+  // Already authenticated — bounce away from onboarding back to dashboard
   if (onboarded && location.pathname === '/onboarding') {
     return <Navigate to="/dashboard" replace />;
   }
@@ -83,7 +87,7 @@ const AppLayout = ({ children }) => {
   if (
     PUBLIC_ROUTES.includes(location.pathname) ||
     location.pathname.startsWith('/portal') ||
-    location.pathname.startsWith('/pay/') // FIX 3: payment page has no sidebar
+    location.pathname.startsWith('/pay/')
   ) return children;
   return <Layout>{children}</Layout>;
 };
@@ -97,7 +101,7 @@ function App() {
             {/* Public signer portal — no auth, no layout */}
             <Route path="/portal/:id" element={<PublicSignerView />} />
 
-            {/* FIX 3: Public payment page — no auth, no layout */}
+            {/* Public payment page — no auth, no layout */}
             <Route path="/pay/:invoiceId" element={<PayInvoicePage />} />
 
             {/* All other routes */}
@@ -125,18 +129,15 @@ function App() {
                     <Route path="/settings"        element={<Settings />} />
                     <Route path="/mileage"         element={<Mileage />} />
                     <Route path="/job-inbox"       element={<JobInboxPage />} />
-                    <Route path="/tax-center"       element={<TaxCenterPage />} />
-                    <Route path="/market-insights"  element={<NetworkInsightsPage />} />
+                    <Route path="/tax-center"      element={<TaxCenterPage />} />
+                    <Route path="/market-insights" element={<NetworkInsightsPage />} />
 
-                    {/* FIX 5: /form-guide is PRO — gate it */}
                     <Route path="/form-guide"      element={<GatedRoute featureKey="formGuide"><FormGuide /></GatedRoute>} />
 
                     {/* Gated */}
                     <Route path="/signer-portal"   element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
                     <Route path="/team-dispatch"   element={<GatedRoute featureKey="teamDispatch"><TeamDispatch /></GatedRoute>} />
                     <Route path="/ai-trainer"      element={<GatedRoute featureKey="aiTrainer"><AITrainer /></GatedRoute>} />
-
-                    {/* FIX 5: /admin, /agent, /review are gated — wrap with GatedRoute */}
                     <Route path="/admin"           element={<GatedRoute featureKey="admin"><Admin /></GatedRoute>} />
                     <Route path="/agent"           element={<GatedRoute featureKey="agent"><AgentPage /></GatedRoute>} />
                     <Route path="/audit"           element={<GatedRoute featureKey="agent"><AuditPage /></GatedRoute>} />
@@ -144,7 +145,7 @@ function App() {
 
                     {/* Catch-all */}
                     <Route path="/faq"  element={<FAQPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </AppLayout>
               </RouteGuard>

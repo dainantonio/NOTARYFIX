@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import {
   ArrowRight, ArrowLeft, CheckCircle2, Building2, Target,
@@ -13,8 +13,6 @@ const STEPS = [
   { id: 'business', label: 'Business' },
   { id: 'license',  label: 'License'  },
   { id: 'fees',     label: 'Fees'     },
-  { id: 'intelligence', label: 'Intelligence' },
-  { id: 'sources',  label: 'Sources'  },
   { id: 'plan',     label: 'Plan'     },
   { id: 'agent',    label: 'Agent'    },
   { id: 'launch',   label: 'Launch'   },
@@ -179,8 +177,6 @@ export default function Onboarding() {
     if (step === 1) return form.name.trim().length > 1 && (form.commissionedStates || []).length > 0;
     if (step === 2) return form.businessName.trim().length > 1;
     if (step === 3) return form.licenseNumber.trim().length > 3;
-    if (step === 4) return true;
-    if (step === 5) return true;
     return true;
   };
 
@@ -216,17 +212,17 @@ export default function Onboarding() {
   const pct = Math.round((step / (STEPS.length - 1)) * 100);
 
   // ── LEFT PANEL CONTENT PER STEP ─────────────────────────────────────────
-  const leftContent = {
-    0: { title: `Your business, one platform.`,    sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — with a consistent interface across every core module.', Illustration: IllustrationWelcome },
-    1: { title: `Let's get to know you.`,           sub: 'Your name and profile power your invoices, journal entries, and client-facing documents.', Illustration: IllustrationWelcome },
-    2: { title: `Build your business identity.`,   sub: 'Your business name appears on every invoice and client-facing document you generate.', Illustration: IllustrationBusiness },
-    3: { title: `Your notary credentials.`,        sub: 'Your license number and commission details appear on compliance records and client documents.', Illustration: IllustrationBusiness },
-    4: { title: `Set your fee schedule.`,          sub: 'Establish your standard per-act fees. These power invoice automation and AI drafts.', Illustration: IllustrationBusiness },
-    5: { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
-    6: { title: `Meet your closeout agent.`,       sub: 'After each appointment, your agent drafts the journal entry, invoice, and compliance checks — automatically.', Illustration: IllustrationLaunch },
-    7: { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
-  };
-  const lc = leftContent[step];
+  const leftContent = [
+    { title: `Your business, one platform.`,    sub: 'Everything a professional notary needs — scheduling, compliance, invoicing, and team tools — with a consistent interface across every core module.', Illustration: IllustrationWelcome },
+    { title: `Let's get to know you.`,           sub: 'Your name and profile power your invoices, journal entries, and client-facing documents.', Illustration: IllustrationWelcome },
+    { title: `Build your business identity.`,   sub: 'Your business name appears on every invoice and client-facing document you generate.', Illustration: IllustrationBusiness },
+    { title: `Your notary credentials.`,        sub: 'Your license number and commission details appear on compliance records and client documents.', Illustration: IllustrationBusiness },
+    { title: `Set your fee schedule.`,          sub: 'Establish your standard per-act fees. These power invoice automation and AI drafts.', Illustration: IllustrationBusiness },
+    { title: `Pick the plan that fits you.`,    sub: 'Start free, upgrade anytime. Every plan includes a 14-day full-feature trial.', Illustration: IllustrationBusiness },
+    { title: `Meet your closeout agent.`,       sub: 'After each appointment, your agent drafts the journal entry, invoice, and compliance checks — automatically.', Illustration: IllustrationLaunch },
+    { title: `Ready to launch.`,                sub: 'Your workspace is configured and waiting. Jump in — your first appointment is one tap away.', Illustration: IllustrationLaunch },
+  ];
+  const lc = leftContent[step] || leftContent[leftContent.length - 1];
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#0a0e1a]">
@@ -545,7 +541,7 @@ export default function Onboarding() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500">These are used as defaults when the Agent Runtime drafts invoices. Your state's published fee cap takes priority — the Verifier will flag any overages with a grounded citation.</p>
+                <p className="text-xs text-slate-500">These are used as defaults when the Agent Runtime drafts invoices.</p>
               </div>
             )}
 
@@ -603,17 +599,15 @@ export default function Onboarding() {
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-white">Your closeout agent is now active.</h1>
                   <p className="mt-1.5 text-sm text-slate-400">
-                    The Agent Runtime fires automatically after every completed appointment — Planner builds the plan, Tools execute it, Verifier attaches grounded citations. Everything lands in Command Center ready for your one-tap approval.
+                    The Agent Runtime fires automatically after every completed appointment.
                   </p>
                 </div>
-
-                {/* Agent expectations */}
                 <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/6 p-4 space-y-2.5">
                   {[
                     { icon: '🗺️', text: 'Planner maps your task into steps — journal, invoice, compliance — before anything runs' },
                     { icon: '📋', text: 'Drafts the journal entry with compliant per-act fields for your state' },
                     { icon: '🧾', text: 'Generates the invoice from your fee schedule, linked to the appointment' },
-                    { icon: '🔬', text: 'Verifier checks compliance and attaches grounded citations — the exact policy record behind every decision' },
+                    { icon: '🔬', text: 'Verifier checks compliance and attaches grounded citations' },
                     { icon: '✅', text: 'All drafts queue in Command Center for your one-tap approval, edit, or reject' },
                   ].map(({ icon, text }) => (
                     <div key={text} className="flex items-start gap-3">
@@ -622,45 +616,20 @@ export default function Onboarding() {
                     </div>
                   ))}
                 </div>
-
-                {/* Autonomy mode primer */}
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2.5">Choose your agent mode</p>
                   <div className="space-y-2">
                     {[
-                      {
-                        id: 'assistive',
-                        label: 'Assistive',
-                        desc: 'Drafts only — you review and submit everything manually.',
-                        icon: '✏️',
-                      },
-                      {
-                        id: 'supervised',
-                        label: 'Supervised',
-                        desc: 'Suggests actions and applies them after your one-tap approval.',
-                        icon: '👁️',
-                        recommended: true,
-                      },
-                      {
-                        id: 'autonomous',
-                        label: 'Autonomous',
-                        desc: 'Auto-commits safe actions. You review exceptions only.',
-                        icon: '⚡',
-                      },
+                      { id: 'assistive',  label: 'Assistive',  desc: 'Drafts only — you review and submit everything manually.', icon: '✏️' },
+                      { id: 'supervised', label: 'Supervised', desc: 'Suggests actions and applies them after your one-tap approval.', icon: '👁️', recommended: true },
+                      { id: 'autonomous', label: 'Autonomous', desc: 'Auto-commits safe actions. You review exceptions only.', icon: '⚡' },
                     ].map(mode => (
-                      <button
-                        key={mode.id}
-                        onClick={() => set('agentMode', mode.id)}
+                      <button key={mode.id} onClick={() => set('agentMode', mode.id)}
                         className={`relative w-full rounded-xl border p-3.5 text-left transition-all ${
-                          form.agentMode === mode.id
-                            ? 'border-cyan-500/50 bg-cyan-500/10'
-                            : 'border-white/8 bg-white/3 hover:border-white/15'
-                        }`}
-                      >
+                          form.agentMode === mode.id ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-white/8 bg-white/3 hover:border-white/15'
+                        }`}>
                         {mode.recommended && (
-                          <span className="absolute right-3 top-3 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                            Recommended
-                          </span>
+                          <span className="absolute right-3 top-3 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold text-white">Recommended</span>
                         )}
                         <div className="flex items-start gap-3 pr-24">
                           <span className="text-base leading-none mt-0.5">{mode.icon}</span>
@@ -693,16 +662,13 @@ export default function Onboarding() {
                 </div>
                 <div className="divide-y divide-white/8 rounded-2xl border border-white/10 bg-white/4 overflow-hidden">
                   {[
-                    { label: 'Name',       val: form.name          || '—' },
-                    { label: 'Business',   val: form.businessName  || '—' },
+                    { label: 'Name',          val: form.name          || '—' },
+                    { label: 'Business',      val: form.businessName  || '—' },
                     { label: 'Primary State', val: form.stateCode },
-                    { label: 'Commissioned States', val: (form.commissionedStates || []).join(', ') || '—' },
-                    { label: 'License',    val: form.licenseNumber || '—' },
-                    { label: 'Notary Type', val: Array.isArray(form.notaryType) ? form.notaryType.join(', ') : form.notaryType },
-                    { label: 'Autonomy Mode', val: form.autonomyMode.charAt(0).toUpperCase() + form.autonomyMode.slice(1) },
-                    { label: 'Goal',       val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
-                    { label: 'Plan',       val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
-                    { label: 'Agent Runtime', val: { assistive: 'Assistive — drafts only', supervised: 'Supervised — approve before commit', autonomous: 'Autonomous — auto-commit safe actions' }[form.agentMode] || '—' },
+                    { label: 'License',       val: form.licenseNumber || '—' },
+                    { label: 'Plan',          val: PLANS.find(p => p.id === form.selectedPlan)?.name || '—' },
+                    { label: 'Agent Mode',    val: { assistive: 'Assistive', supervised: 'Supervised', autonomous: 'Autonomous' }[form.agentMode] || '—' },
+                    { label: 'Goal',          val: `$${Number(form.monthlyGoal).toLocaleString()}/mo` },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                       <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{row.label}</span>
@@ -713,40 +679,8 @@ export default function Onboarding() {
                 <div className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/8 p-4">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                   <p className="text-xs text-emerald-300 leading-relaxed">
-                    You can change anything in Settings at any time. Your first 30 days are fully unlocked — explore every feature.
+                    You can change anything in Settings at any time. Your first 30 days are fully unlocked.
                   </p>
-                </div>
-
-                <div className="space-y-3 rounded-xl border border-blue-500/25 bg-blue-500/10 p-4">
-                  <p className="text-sm font-semibold text-blue-200">Your AI Agent Runtime is now active.</p>
-                  <p className="text-xs text-blue-100/90 leading-relaxed">
-                    Planner → Tools → Verifier runs automatically after each signing. Journal, invoice, and grounded compliance citations queue in Command Center for your approval. Feedback you give on edits improves confidence scoring over time.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Autonomy Mode</p>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {[
-                      { value: 'assistive', label: 'Assistive', desc: 'Drafts only' },
-                      { value: 'supervised', label: 'Supervised', desc: 'Suggests actions, you review before commit' },
-                      { value: 'autonomous', label: 'Autonomous', desc: 'Auto-commits safe actions' },
-                    ].map(({ value, label, desc }) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => set('autonomyMode', value)}
-                        className={`rounded-xl border p-3 text-left transition-all ${
-                          form.autonomyMode === value
-                            ? 'border-blue-400 bg-blue-500/15'
-                            : 'border-white/10 bg-white/5 hover:border-white/20'
-                        }`}
-                      >
-                        <p className="text-sm font-semibold text-white">{label}</p>
-                        <p className="mt-1 text-xs text-slate-400">{desc}</p>
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </div>
             )}
@@ -760,7 +694,10 @@ export default function Onboarding() {
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
             ) : (
-              <div />
+              // On step 0, show a "Sign in instead" link for returning users
+              <Link to="/auth" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                Already have an account? Sign in →
+              </Link>
             )}
 
             {step < STEPS.length - 1 ? (

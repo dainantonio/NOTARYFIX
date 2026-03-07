@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import {
   Eye, EyeOff, ArrowRight, Stamp,
@@ -16,7 +16,7 @@ const DEV_PROFILES = [
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { updateSettings } = useData();
+  const { data, updateSettings } = useData();
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +25,13 @@ export default function Auth() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
 
+  // ── Already signed in? Go straight to dashboard ───────────────────────────
+  // This handles the case where a user navigates to /auth while already
+  // authenticated (e.g. bookmarked the URL or used the back button after sign-in).
+  if (data.settings?.onboardingComplete) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -32,13 +39,23 @@ export default function Auth() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      // Restore full access — preserves all existing data (settings, appointments,
+      // dark mode, Stripe keys, etc.) by only flipping the auth gate.
       updateSettings({ onboardingComplete: true });
       navigate('/dashboard');
     }, 900);
   };
 
-  // Google SSO — routes to onboarding (new users set up account there, not here)
-  const handleGoogle = () => navigate('/onboarding');
+  // Google SSO — routes to onboarding for new users, dashboard for returning
+  const handleGoogle = () => {
+    // If there's existing data (name set), treat as returning user
+    if (data.settings?.name) {
+      updateSettings({ onboardingComplete: true });
+      navigate('/dashboard');
+    } else {
+      navigate('/onboarding');
+    }
+  };
 
   const signInAs = (profile) => {
     updateSettings({ ...profile.settings, onboardingComplete: true });
