@@ -2,6 +2,7 @@
 // Phase 1 — Suggestion card: Approve / Edit / Reject with confidence + missing fields
 import React, { useState } from 'react';
 import { useFeedbackLoop } from '../hooks/useFeedbackLoop';
+import { useData } from '../context/DataContext';
 import { CheckCircle2, XCircle, Pencil, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Clock, FileText, Receipt, UserPlus, DollarSign, Bell, Phone, Mail, MapPin, Calendar, Save, X, BookOpen, ExternalLink } from 'lucide-react';
 
 const CONFIDENCE_COLORS = {
@@ -94,7 +95,11 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
 
   const score = suggestion.confidenceScore ?? 65;
   // Feedback loop — record when user saves edits to AI drafts
-  const { recordEdit } = useFeedbackLoop({ addFeedback: null, feedbackHistory: [] });
+  const { data, addFeedback } = useData();
+  const { recordEdit, recordOutcome, adjustedConfidence } = useFeedbackLoop({
+    addFeedback,
+    feedbackHistory: data?.agentFeedback || [],
+  });
   const tier = confidenceTier(score);
   const colors = CONFIDENCE_COLORS[tier];
   const missingFields = suggestion.missingFields || [];
@@ -160,14 +165,14 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
         </div>
         <div className="flex items-center justify-end gap-2 border-t border-amber-200/60 dark:border-amber-700/40 px-4 py-3">
           <button
-            onClick={() => onReject?.(suggestion)}
+            onClick={() => { recordOutcome(suggestion, 'rejected'); onReject?.(suggestion); }}
             className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition-colors"
           >
             <XCircle className="h-3.5 w-3.5" />
             Dismiss
           </button>
           <button
-            onClick={() => onApprove?.(suggestion)}
+            onClick={() => { recordOutcome(suggestion, 'approved'); onApprove?.(suggestion); }}
             className="flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition-colors shadow-sm"
           >
             <CheckCircle2 className="h-3.5 w-3.5" />
@@ -287,7 +292,7 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
           </button>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onReject?.(suggestion)}
+              onClick={() => { recordOutcome(suggestion, 'rejected'); onReject?.(suggestion); }}
               className="flex items-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 transition-colors"
             >
               <XCircle className="h-3.5 w-3.5" />
@@ -301,7 +306,7 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
               Edit
             </button>
             <button
-              onClick={() => onApprove?.(suggestion)}
+              onClick={() => { recordOutcome(suggestion, 'approved'); onApprove?.(suggestion); }}
               className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -569,7 +574,7 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
         </button>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onReject?.(suggestion)}
+            onClick={() => { recordOutcome(suggestion, 'rejected'); onReject?.(suggestion); }}
             className="flex items-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
           >
             <XCircle className="h-3.5 w-3.5" />
@@ -583,7 +588,7 @@ export const AgentSuggestionCard = ({ suggestion, onApprove, onOpenEdit, onPatch
             {isEditingInline ? 'Cancel Edit' : 'Edit'}
           </button>
           <button
-            onClick={() => onApprove?.(suggestion)}
+            onClick={() => { recordOutcome(suggestion, 'approved'); onApprove?.(suggestion); }}
             className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
           >
             <CheckCircle2 className="h-3.5 w-3.5" />
