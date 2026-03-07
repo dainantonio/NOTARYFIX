@@ -25,7 +25,8 @@ import {
 } from 'recharts';
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
-const todayISO = () => new Date().toISOString().split('T')[0];
+// Use LOCAL date (not UTC) so appointments match correctly after 7 PM when UTC rolls to next day
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -513,7 +514,7 @@ const DailyBrief = ({ data, navigate }) => {
 const TodayTimeline = ({ appointments, navigate, updateAppointment }) => {
   const [departingApt, setDepartingApt] = useState(null);
   const today    = todayISO();
-  const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
+  const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
 
   const todayApts = useMemo(() =>
     appointments.filter(a => a.date === today).sort((a,b) => (a.time||'').localeCompare(b.time||'')),

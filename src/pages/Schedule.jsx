@@ -144,7 +144,7 @@ const Schedule = () => {
       id: Date.now(),
       client: formData.client,
       type: formData.type,
-      date: formData.date || prefillDate || new Date().toISOString().split('T')[0],
+      date: formData.date || prefillDate || localDateStr(),
       time: formData.time,
       status: 'upcoming',
       amount: parseFloat(formData.fee) || 0,
@@ -176,7 +176,7 @@ const Schedule = () => {
     const input = source.trim();
     if (!input) return null;
 
-    const date = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || new Date().toISOString().split('T')[0];
+    const date = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] || localDateStr();
     const time = input.match(/\b\d{1,2}:\d{2}\s?(?:AM|PM)?\b/i)?.[0] || '10:00 AM';
     const amount = input.match(/\$\s?(\d+(?:\.\d{1,2})?)/)?.[1] || '0';
     const type = normalizeServiceType(/i-?9/i.test(input) ? 'I-9 Verification' : /loan/i.test(input) ? 'Loan Signing' : /apostille/i.test(input) ? 'Apostille' : /ron|remote online/i.test(input) ? 'Remote Online Notary (RON)' : 'General Notary Work (GNW)');
@@ -308,17 +308,19 @@ const Schedule = () => {
 
   const sortedAppointments = useMemo(() => {
     const toStamp = (apt) => {
-      const date = /^\d{4}-\d{2}-\d{2}$/.test(apt?.date || '') ? apt.date : new Date().toISOString().split('T')[0];
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(apt?.date || '') ? apt.date : localDateStr();
       return new Date(`${date}T${String(toMinutes(apt.time) / 60 | 0).padStart(2, '0')}:${String(toMinutes(apt.time) % 60).padStart(2, '0')}:00`).getTime();
     };
     return [...(data.appointments || [])].sort((a, b) => toStamp(a) - toStamp(b));
   }, [data.appointments]);
 
-  const todayIso = new Date().toISOString().split('T')[0];
+  // Use LOCAL date (not UTC) so appointments match after 7 PM when UTC rolls to next day
+  const localDateStr = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const todayIso = localDateStr();
 
   const agendaSections = useMemo(() => {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    const today = localDateStr(now);
     const weekEnd = new Date(now);
     weekEnd.setDate(now.getDate() + 7);
 
