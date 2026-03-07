@@ -970,6 +970,18 @@ export default function ArriveMode() {
           defaultOpen
         >
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Tap to launch each step — check them off as you go.</p>
+
+          {/* Invoice close-out nudge — shown once signing has started */}
+          {signingStarted && !invoiceCreated && (
+            <div className="mb-3 flex items-center gap-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2.5 animate-pulse-slow">
+              <span className="text-lg">💰</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">Signing complete — close out the job!</p>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5">Tap <strong>Invoice</strong> below to draft and send your invoice.</p>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <ActionBtn
               icon={Car}
