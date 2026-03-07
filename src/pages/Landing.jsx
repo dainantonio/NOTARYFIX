@@ -71,44 +71,51 @@ const BUSINESS_MODELS = [
 const PRICING = [
   {
     name: 'Starter', price: 0,  yearly: 0,  sub: 'For the part-time notary.',
-    features: ['5 Appointments/mo', 'Basic Journal', 'Client Management', 'Local Storage'],
+    features: ['14 Signings/week', 'Pre-Departure Checklist', 'Signer Confirmation', 'Job Inbox (paste + image)', 'GPS Mileage Tracking', 'Invoice Preview & Send', 'Journal (10 entries/mo)', 'Client Management'],
     cta: 'Try Demo Free', highlight: false,
   },
   {
-    name: 'Pro', price: 29, yearly: 23, sub: 'For the full-time professional.',
-    features: ['Unlimited Appointments', 'AI Agent Runtime + Citations', 'Job Intelligence Inbox', 'Market Insights', 'Tax Center', 'Command Center', 'Signer Portal', 'GPS Mileage Tracking', 'Invoice Automation', 'Cloud Backup', 'Unified Dark UI'],
+    name: 'Pro', price: 19, yearly: 15, sub: 'For the full-time professional.',
+    features: ['Unlimited Appointments', 'Auto-Closeout Agent (3 modes)', 'AI Compliance Coach', 'Command Center', 'Act Library', 'Signer Portal', 'Job Intelligence Inbox', 'Market Insights', 'Tax Center', 'GPS Mileage Tracking', 'Unlimited Journal', 'Cloud Backup'],
     cta: 'Start 14-Day Trial', highlight: true, badge: 'Most Popular',
   },
   {
-    name: 'Agency', price: 79, yearly: 63, sub: 'For scaling operations.',
-    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'SLA Tracking', 'Admin Control Center', 'Compliance Manager Role', 'Dedicated Manager', 'Standardized UI System'],
+    name: 'Agency', price: 49, yearly: 39, sub: 'For scaling operations.',
+    features: ['Everything in Pro', 'Team Dispatch Board', 'Multi-Notary Routing', 'White-Label Signer Portal', 'Admin Control Center', 'Role-Based Permissions', 'SLA Tracking', 'Compliance Manager Role'],
     cta: 'Contact Sales', highlight: false,
   },
 ];
 
 const COMPARE_ROWS = [
-  { feature: 'Appointments per month', starter: '5',         pro: 'Unlimited',              agency: 'Unlimited + team routing', proHighlight: true  },
-  { feature: 'Journal workflows',      starter: 'Basic',     pro: '✓ Advanced + templates', agency: '✓ Team oversight',         proHighlight: true  },
-  { feature: 'Storage & sync',         starter: 'Local only',pro: 'Cloud sync + backups',   agency: 'Cloud sync + multi-user',  proHighlight: true  },
-  { feature: 'AI agent runtime',       starter: '—',         pro: '✓ Runtime + citations',  agency: '✓ Runtime + citations',    proHighlight: true  },
-  { feature: 'API access',             starter: '—',         pro: '—',                      agency: '✓ Included',               proHighlight: false },
-  { feature: 'Interface consistency', starter: 'Core layout', pro: '✓ Unified hero + spacing', agency: '✓ Unified + team surfaces', proHighlight: true  },
-  { feature: 'Best for',               starter: 'Getting started', pro: 'Full-time solo notary', agency: 'Growing signing teams', proHighlight: true },
+  { feature: 'Signings',               starter: '14/week',    pro: 'Unlimited',                  agency: 'Unlimited + team routing', proHighlight: true  },
+  { feature: 'Journal entries',        starter: '10/mo',      pro: 'Unlimited',                  agency: 'Unlimited',                proHighlight: true  },
+  { feature: 'Pre-Departure Checklist',starter: '✓',          pro: '✓',                          agency: '✓',                        proHighlight: false },
+  { feature: 'Signer Confirmation',    starter: '✓',          pro: '✓',                          agency: '✓',                        proHighlight: false },
+  { feature: 'Job Inbox (paste + image)', starter: '✓',       pro: '✓',                          agency: '✓',                        proHighlight: false },
+  { feature: 'GPS Mileage Tracking',   starter: '✓',          pro: '✓',                          agency: '✓',                        proHighlight: false },
+  { feature: 'Invoice Preview & Send', starter: '✓',          pro: '✓',                          agency: '✓',                        proHighlight: false },
+  { feature: 'Auto-Closeout Agent',    starter: '—',          pro: '✓ Assistive / Supervised / Autonomous', agency: '✓',           proHighlight: true  },
+  { feature: 'AI Compliance Coach',    starter: '—',          pro: '✓ Grounded in statutes',     agency: '✓',                        proHighlight: true  },
+  { feature: 'Command Center',         starter: '—',          pro: '✓ Review queue + agent history', agency: '✓',                   proHighlight: true  },
+  { feature: 'Signer Portal',          starter: '—',          pro: '✓ Standard',                 agency: '✓ White-label',            proHighlight: true  },
+  { feature: 'Team Dispatch',          starter: '—',          pro: '—',                          agency: '✓ Multi-notary routing',   proHighlight: false },
+  { feature: 'Admin Panel',            starter: '—',          pro: '—',                          agency: '✓ Roles + state policies', proHighlight: false },
+  { feature: 'Best for',               starter: 'Part-time notary', pro: 'Full-time solo notary', agency: 'Signing agency / team',   proHighlight: true  },
 ];
 
 const FAQ = [
-  { q: 'What are the core services of NotaryFix?', a: 'NotaryFix provides an AI notary agent runtime for appointment closeout, plus scheduling, journaling, invoicing, and compliance controls. Agency adds team dispatch and multi-notary coordination. Every AI decision is grounded in admin-published state policy records.' },
-  { q: 'How does the AI Agent Runtime work?', a: 'When you mark an appointment complete, the Agent Runtime fires automatically: a Planner maps your task into steps (journal → invoice → verify), Tools execute each step using your existing data, and a Verifier runs compliance checks then attaches grounded citations — showing exactly which policy record justified each decision. All drafts queue in Command Center for your one-tap approval.' },
-  { q: 'What are grounded citations?', a: 'Every AI suggestion includes citation chips: the exact admin-published policy record that grounded it (e.g. "Fee capped at $15 per VA Fee Schedule, updated Jan 2025"). Citations link to the official source so you can verify the rule yourself. If no admin policy record exists yet, the agent falls back to hardcoded baselines and flags it.' },
-  { q: 'Can I manage my entire team on NotaryFix?', a: 'Yes. The Agency plan includes a centralized Dispatch Board, SLA tracking, and standardized UI for all team members, ensuring consistent service quality across your entire operation.' },
+  { q: 'What are the core services of NotaryFix?', a: 'NotaryFix is a complete notary operating system: Job Inbox with AI parsing (text paste + screenshot upload), Pre-Departure Checklist, Signer Confirmation, ArriveMode on-site guide, electronic journal, invoicing with preview, GPS mileage tracking, Tax Center, and an AI closeout agent that drafts your journal + invoice after every signing. Agency adds team dispatch and multi-notary coordination.' },
+  { q: 'What does the Free plan include?', a: "The Free plan includes 14 signings per week, the Pre-Departure Checklist, Signer Confirmation Modal, Job Inbox (paste + image upload), GPS mileage tracking, Invoice Preview & Send, up to 10 journal entries per month, and client management. It's a full workflow tool — just without AI automation and unlimited entries." },
+  { q: 'How does the Auto-Closeout Agent work?', a: 'When you mark an appointment complete, the agent fires automatically. It drafts a compliant journal entry and invoice using your appointment data, attaches grounded compliance citations, then queues everything in Command Center for one-tap approval. Three modes: Assistive (you approve each step), Supervised (drafts wait for review), or Autonomous (fully hands-free).' },
+  { q: 'What is the Pre-Departure Checklist?', a: "Every appointment card has a car icon Depart button. Tapping it opens a type-specific blocking checklist — Loan Signing, GNW, I-9, Apostille, or RON each have their own critical and recommended items. Critical items must all be checked before you can leave. GPS mileage tracking starts automatically when you confirm departure." },
+  { q: 'Can I manage my entire team on NotaryFix?', a: 'Yes. The Agency plan ($49/mo) includes a centralized Dispatch Board, role-based permissions (Owner, Admin, Dispatcher, Notary), white-label Signer Portal, SLA tracking, and an Admin panel for managing state fee policies across your team.' },
   { q: 'Is my data and signer information secure?', a: 'Security is our priority. We use AES-256 encryption at rest, TLS 1.3 in transit, and maintain strict data isolation. Signer data is never shared or sold.' },
-  { q: 'Does it work for mobile notaries in the field?', a: 'Absolutely. NotaryFix is mobile-first and supports offline data capture. Your journal entries and appointment updates sync automatically once you&apos;re back online.' },
-  { q: 'Can I switch plans or cancel anytime?', a: 'Yes. You can upgrade, downgrade, or cancel your subscription at any time from your settings. Your data remains accessible according to your plan tier.' },
-  { q: 'How much time does the agent actually save?', a: 'Based on role profiles: Mobile Notaries recover ~9.5 agent hours per week, Loan Signing Agents recover ~14.2 hrs, and Signing Agencies recover 32+ hrs across their team. That\'s time the agent spends on closeouts, journaling, and invoicing — not you.' },
-  { q: 'How does the Job Intelligence Agent detect jobs?', a: 'Paste any email, SMS, or voicemail transcript into the Job Inbox. The agent scans for keywords (refi, closing, signing, deed, etc.) and extracts job type, location, date, time, fee, and contact automatically. It then runs a profitability analysis — factoring in travel cost, printing, and market benchmarks — and recommends Accept, Counter, or Decline. You always confirm the action.' },
-  { q: 'What is the Command Center?', a: 'Command Center is your proactive AI hub — it shows pending suggestions from the agent, live KPIs, playbook shortcuts, and a full history of agent actions. It includes a live badge showing pending suggestion count. Use it to stay on top of your business; use the Review Queue when you need focused processing with filters and bulk actions.' },
+  { q: 'Does it work for mobile notaries in the field?', a: "Yes — NotaryFix is mobile-first and installable as a PWA on iOS and Android. The Pre-Departure Checklist, ArriveMode on-site guide, and GPS mileage tracker are all optimized for one-handed mobile use while you're on the road." },
+  { q: 'Can I switch plans or cancel anytime?', a: 'Yes. Upgrade, downgrade, or cancel at any time from Settings. Pro is $19/mo ($15/mo annual). Agency is $49/mo ($39/mo annual). Your data stays accessible according to your plan tier.' },
+  { q: 'How much time does the agent actually save?', a: "Based on role profiles: Mobile Notaries recover ~9.5 agent hours per week, Loan Signing Agents recover ~14.2 hrs, and Signing Agencies recover 32+ hrs across their team. That's time the agent spends on closeouts, journaling, and invoicing — not you." },
+  { q: 'How does the Job Intelligence Agent detect jobs?', a: 'Paste any email or SMS into the Job Inbox, or upload a screenshot of the offer. The AI extracts job type, location, date, time, fee, document count, and contact — then runs a profitability analysis factoring in travel cost, print cost, and market benchmarks. Accepting auto-creates the appointment in Schedule and adds the signer to Clients.' },
+  { q: 'What is the Command Center?', a: "Command Center is your AI hub — it shows pending closeout suggestions, a live review queue for agent-drafted journal entries and invoices, KPI summaries, and full agent history. The nav badge shows how many items need your attention. Flip between Assistive, Supervised, and Autonomous mode in Settings." },
 ];
-
 const TRUST_ITEMS = [
   { icon: Lock,        label: '100% Local Privacy'  },
   { icon: Sparkles,    label: 'AI Agent Runtime'     },
@@ -245,7 +252,7 @@ export default function Landing() {
   }, [weeklyApts, adminMins]);
   const savedValue  = savedHours * hourlyRate;
   const stackCost   = Math.round(compSignings * 4.5 + 89);
-  const nosCost     = billing === 'monthly' ? 29 : 23;
+  const nosCost     = billing === 'monthly' ? 19 : 15;
   const savings     = Math.max(0, stackCost - nosCost);
 
   // AI submit
