@@ -111,6 +111,11 @@ textarea {
   background: linear-gradient(90deg, rgb(15 23 42) 0%, rgb(30 41 59) 50%, rgb(30 58 138) 100%);
 }
 
+/* Light mode hero — keep contrast, swap to blue-indigo */
+:root:not(.dark) .app-hero-card {
+  background: linear-gradient(90deg, rgb(30 58 138) 0%, rgb(37 99 235) 60%, rgb(79 70 229) 100%);
+}
+
 
 .app-hero-card > * {
   position: relative;
@@ -225,4 +230,175 @@ input[type="time"]::-webkit-datetime-edit-hour-field,
 input[type="time"]::-webkit-datetime-edit-minute-field,
 input[type="time"]::-webkit-datetime-edit-ampm-field {
   color: inherit;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT THEME — Clean legible surfaces, no distortion
+   All dark: classes still work. These override only the light root.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root:not(.dark) {
+  /* Base surfaces */
+  --surface-bg:        #f8fafc;   /* slate-50 — page background */
+  --surface-card:      #ffffff;   /* pure white cards */
+  --surface-sidebar:   #ffffff;   /* sidebar */
+  --surface-border:    #e2e8f0;   /* slate-200 */
+  --surface-hover:     #f1f5f9;   /* slate-100 */
+
+  /* Text */
+  --text-primary:      #0f172a;   /* slate-900 */
+  --text-secondary:    #475569;   /* slate-600 */
+  --text-muted:        #94a3b8;   /* slate-400 */
+
+  /* Scrollbars — already set above via :root, stays clean */
+  --scrollbar-track:   #f1f5f9;
+  --scrollbar-thumb:   #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
+:root:not(.dark) aside {
+  background: rgba(255,255,255,0.92) !important;
+  border-right-color: #e2e8f0 !important;
+}
+
+/* Sidebar footer profile card */
+:root:not(.dark) .ring-white\/\[0\.06\] {
+  --tw-ring-color: rgba(0,0,0,0.06);
+}
+
+/* Sidebar footer text contrast */
+:root:not(.dark) aside .text-slate-100 { color: #0f172a !important; }
+:root:not(.dark) aside .text-slate-200 { color: #1e293b !important; }
+:root:not(.dark) aside .text-slate-400 { color: #64748b !important; }
+:root:not(.dark) aside .text-slate-500 { color: #64748b !important; }
+:root:not(.dark) aside .text-slate-600 { color: #475569 !important; }
+
+/* Active nav item in light mode */
+:root:not(.dark) aside .bg-white\/10 { background-color: rgba(37,99,235,0.08) !important; }
+:root:not(.dark) aside .bg-white\/\[0\.03\] { background-color: rgba(0,0,0,0.03) !important; }
+:root:not(.dark) aside .bg-white\/5 { background-color: rgba(0,0,0,0.04) !important; }
+:root:not(.dark) aside .hover\:bg-white\/5:hover { background-color: rgba(0,0,0,0.05) !important; }
+
+/* Nav hover states */
+:root:not(.dark) aside button:hover,
+:root:not(.dark) aside a:hover {
+  background-color: #f1f5f9;
+}
+
+/* Sidebar gradient avatar — softer in light */
+:root:not(.dark) aside .bg-gradient-to-br.from-slate-700.to-slate-600 {
+  background: linear-gradient(135deg, #475569, #334155) !important;
+}
+
+/* Online dot — stays emerald */
+
+/* ── Cards & surfaces ────────────────────────────────────────────────── */
+:root:not(.dark) .dark\:bg-slate-800,
+:root:not(.dark) .dark\:bg-slate-800\/60,
+:root:not(.dark) .dark\:bg-slate-900 {
+  background-color: #ffffff;
+}
+
+/* ── AgentActivityFeed in light ──────────────────────────────────────── */
+/* The feed uses dark bg-[#080f1a] on the card — override in light */
+:root:not(.dark) .bg-\[#080f1a\] {
+  background-color: #ffffff !important;
+}
+
+/* Feed item left accent lines — keep colors, reduce opacity slightly */
+:root:not(.dark) [class*="bg-emerald-5"] { }  /* keep */
+:root:not(.dark) [class*="bg-blue-5"] { }     /* keep */
+
+/* Feed text colors — slate-100/500/600 in dark need to read in light */
+:root:not(.dark) .text-slate-100 { color: #0f172a; }
+:root:not(.dark) .text-slate-500 { color: #64748b; }
+:root:not(.dark) .text-slate-600 { color: #475569; }
+
+/* Feed item bg on hover */
+:root:not(.dark) .hover\:bg-white\/\[0\.02\]:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Feed border */
+:root:not(.dark) .border-white\/\[0\.04\] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Confidence chips in feed */
+:root:not(.dark) .bg-white\/\[0\.04\] {
+  background-color: #f1f5f9 !important;
+}
+:root:not(.dark) .border-white\/\[0\.06\] {
+  border-color: #e2e8f0 !important;
+}
+
+/* ── KPI tiles — already have color gradients, stay unchanged ────────── */
+
+/* ── ProactiveNudgeBar — already uses color-coded borders, fine ─────── */
+
+/* ── Notification drawer ─────────────────────────────────────────────── */
+:root:not(.dark) .bg-slate-950 {
+  background-color: #ffffff !important;
+}
+:root:not(.dark) .bg-slate-950 .text-slate-100 { color: #0f172a !important; }
+:root:not(.dark) .bg-slate-950 .text-slate-200 { color: #1e293b !important; }
+:root:not(.dark) .bg-slate-950 .text-slate-500 { color: #64748b !important; }
+:root:not(.dark) .bg-slate-950 .text-slate-600 { color: #64748b !important; }
+:root:not(.dark) .bg-slate-950 { border-color: #e2e8f0 !important; }
+:root:not(.dark) .shadow-black\/50 { box-shadow: 0 25px 50px rgba(0,0,0,0.12) !important; }
+
+/* ── Mobile header ───────────────────────────────────────────────────── */
+:root:not(.dark) header {
+  background: rgba(255,255,255,0.97) !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+/* ── Page background ─────────────────────────────────────────────────── */
+:root:not(.dark) body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* ── Inputs & selects ────────────────────────────────────────────────── */
+:root:not(.dark) input,
+:root:not(.dark) select,
+:root:not(.dark) textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+/* ── Modal overlays ──────────────────────────────────────────────────── */
+:root:not(.dark) .dark\:bg-slate-900.rounded-2xl,
+:root:not(.dark) .dark\:bg-slate-900.rounded-xl {
+  background-color: #ffffff;
+}
+
+/* ── Table headers ───────────────────────────────────────────────────── */
+:root:not(.dark) thead {
+  background-color: #f8fafc;
+}
+
+/* ── Borders ─────────────────────────────────────────────────────────── */
+:root:not(.dark) .border-slate-700,
+:root:not(.dark) .border-slate-800 {
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Dividers ────────────────────────────────────────────────────────── */
+:root:not(.dark) .divide-white\/\[0\.04\] > * + * {
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Typography legibility ───────────────────────────────────────────── */
+:root:not(.dark) {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure minimum contrast on slate-400 text */
+:root:not(.dark) .text-slate-400 {
+  color: #64748b;  /* bumped from slate-400 (#94a3b8) to slate-500 equivalent */
 }
