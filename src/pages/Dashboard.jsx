@@ -16,6 +16,7 @@ import DepartureChecklistModal from '../components/DepartureChecklistModal';
 import SignerConfirmationModal from '../components/SignerConfirmationModal';
 import { useTheme } from '../context/ThemeContext';
 import { PendingSuggestionsPanel } from '../components/AgentSuggestionCard';
+import { AgentActivityFeed } from '../components/AgentActivityFeed';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import {
@@ -686,39 +687,135 @@ const QuickActions = ({ navigate, onNew, planTier, userRole, pendingAgentDrafts 
   );
 };
 
-// ─── ACTIVITY FEED ────────────────────────────────────────────────────────────
-const ActivityFeed = ({ data, navigate }) => {
-  const events = useMemo(() => {
+// ─── PROACTIVE NUDGE BAR ──────────────────────────────────────────────────────
+// Scans all data conditions and surfaces actionable nudges at the top of dashboard.
+// Agent interrupts, not just reacts.
+const ProactiveNudgeBar = ({ data, navigate }) => {
+  const nudges = useMemo(() => {
     const list = [];
-    (data.appointments||[]).filter(a => a.status==='completed' && a.completedAt).slice(0,2).forEach(a =>
-      list.push({ Icon: CheckCircle2, cls:'text-emerald-500', label:`Completed: ${a.client}`, sub:a.type, ts:a.completedAt, path:'/schedule' })
-    );
-    (data.journalEntries||[]).slice(0,2).forEach(j =>
-      list.push({ Icon: ScrollText, cls:'text-indigo-500', label:`Journal: ${j.actType}`, sub:j.signerName, ts:j.createdAt, path:'/journal' })
-    );
-    (data.invoices||[]).slice(0,2).forEach(inv =>
-      list.push({ Icon: DollarSign, cls:'text-blue-500', label:`Invoice ${inv.id}`, sub:`${inv.client} · $${inv.amount}`, ts:null, path:'/invoices' })
-    );
-    (data.adminAuditLog||[]).slice(0,1).forEach(log =>
-      list.push({ Icon: Activity, cls:'text-slate-400', label:`${log.action}: ${log.resourceLabel}`, sub:log.actor, ts:log.timestamp, path:'/admin' })
-    );
-    return list.sort((a,b) => (b.ts||'0').localeCompare(a.ts||'0')).slice(0,6);
+    const now = new Date();
+
+    // 1. Pending agent drafts — highest priority
+    const pending = (data.agentSuggestions || []).filter(s => s.status === 'pending');
+    if (pending.length > 0) {
+      list.push({
+        key: 'agent_pending',
+        level: 'action',
+        icon: '⚡',
+        label: `${pending.length} agent draft${pending.length > 1 ? 's' : ''} awaiting your review`,
+        cta: 'Review now',
+        path: '/agent',
+      });
+    }
+
+    // 2. Overdue invoices
+    const overdue = (data.invoices || []).filter(i => i.status === 'Overdue');
+    if (overdue.length > 0) {
+      const amt = overdue.reduce((s, i) => s + Number(i.amount || 0), 0);
+      list.push({
+        key: 'overdue_invoices',
+        level: 'warn',
+        icon: '🧾',
+        label: `$${amt.toLocaleString()} overdue — ${overdue.length} unpaid invoice${overdue.length > 1 ? 's' : ''}`,
+        cta: 'Send reminders',
+        path: '/invoices',
+      });
+    }
+
+    // 3. Completed appointments missing journal entries
+    const journaledIds = new Set((data.journalEntries || []).map(j => j.linkedAppointmentId || j.appointmentId).filter(Boolean));
+    const missingJournal = (data.appointments || []).filter(a => a.status === 'completed' && !journaledIds.has(String(a.id)));
+    if (missingJournal.length > 0) {
+      list.push({
+        key: 'missing_journal',
+        level: 'warn',
+        icon: '📓',
+        label: `${missingJournal.length} completed signing${missingJournal.length > 1 ? 's' : ''} with no journal entry`,
+        cta: 'Auto-draft',
+        path: '/agent',
+      });
+    }
+
+    // 4. Signer confirmations not yet sent today
+    const todayISO = now.toISOString().slice(0, 10);
+    const todayApts = (data.appointments || []).filter(a => a.date === todayISO && a.status !== 'completed');
+    const unconfirmed = todayApts.filter(a => !a.signerConfirmedAt);
+    if (unconfirmed.length > 0) {
+      list.push({
+        key: 'unconfirmed_signers',
+        level: 'info',
+        icon: '📱',
+        label: `${unconfirmed.length} signer${unconfirmed.length > 1 ? 's' : ''} today without confirmation sent`,
+        cta: 'Send now',
+        path: '/schedule',
+      });
+    }
+
+    // 5. E&O / commission expiry
+    const eao = data.settings?.eAndOExpiresOn;
+    if (eao) {
+      const days = Math.ceil((new Date(eao) - now) / 86400000);
+      if (days <= 30 && days >= 0) {
+        list.push({
+          key: 'eao_expiry',
+          level: days <= 7 ? 'critical' : 'warn',
+          icon: '🛡',
+          label: `E&O insurance expires in ${days} day${days !== 1 ? 's' : ''}`,
+          cta: 'View compliance',
+          path: '/compliance',
+        });
+      }
+    }
+
+    // 6. Commission expiry
+    const commExp = data.settings?.commissionExpiresOn;
+    if (commExp) {
+      const days = Math.ceil((new Date(commExp) - now) / 86400000);
+      if (days <= 60 && days >= 0) {
+        list.push({
+          key: 'commission_expiry',
+          level: days <= 14 ? 'critical' : 'info',
+          icon: '🏛',
+          label: `Notary commission expires in ${days} day${days !== 1 ? 's' : ''}`,
+          cta: 'View settings',
+          path: '/settings',
+        });
+      }
+    }
+
+    return list.slice(0, 4); // cap at 4 nudges
   }, [data]);
 
-  if (!events.length) return <p className="px-5 py-6 text-center text-xs text-slate-400">No recent activity.</p>;
+  if (!nudges.length) return null;
+
+  const levelStyle = {
+    critical: 'bg-red-500/10 border-red-500/20 text-red-400',
+    action:   'bg-amber-500/10 border-amber-500/20 text-amber-300',
+    warn:     'bg-amber-500/8 border-amber-500/15 text-amber-400',
+    info:     'bg-blue-500/10 border-blue-500/20 text-blue-400',
+  };
+  const ctaStyle = {
+    critical: 'bg-red-500/20 hover:bg-red-500/30 text-red-300',
+    action:   'bg-amber-500/20 hover:bg-amber-500/30 text-amber-200',
+    warn:     'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300',
+    info:     'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300',
+  };
 
   return (
-    <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-      {events.map((ev,i) => (
-        <button key={i} onClick={() => navigate(ev.path)}
-          className="group flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30">
-          <ev.Icon className={`h-4 w-4 shrink-0 ${ev.cls}`} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-slate-700 dark:text-slate-200">{ev.label}</p>
-            <p className="truncate text-[10px] text-slate-400">{ev.sub}</p>
+    <div className="space-y-1.5">
+      {nudges.map(n => (
+        <div key={n.key} className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5 ${levelStyle[n.level]}`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm shrink-0">{n.icon}</span>
+            <span className="text-[12px] font-medium truncate">{n.label}</span>
           </div>
-          {ev.ts && <span className="shrink-0 text-[10px] text-slate-400">{timeAgo(ev.ts)}</span>}
-        </button>
+          <button
+            onClick={() => navigate(n.path)}
+            className={`shrink-0 rounded-lg px-3 py-1 text-[11px] font-semibold transition-all ${ctaStyle[n.level]}`}
+          >
+            {n.cta}
+          </button>
+        </div>
       ))}
     </div>
   );
@@ -943,6 +1040,11 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* ══ PROACTIVE NUDGE BAR — agent interrupts, not just reacts ══════════ */}
+        {!loading && (
+          <ProactiveNudgeBar data={data} navigate={navigate} />
+        )}
+
         {/* ══ AGENT COMMAND STRIP (always visible) ═══════════════════════════ */}
         {!loading && (
           <AgentCommandStrip
@@ -1090,17 +1192,26 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Activity Feed */}
-            <Card className="border-slate-200/70 dark:border-slate-700">
+            {/* Agent Activity Feed — real run history with confidence + reasoning */}
+            <Card className="border-slate-200/70 dark:border-slate-700 overflow-hidden">
               <CardHeader className="px-5 py-3.5">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                  <Activity className="h-4 w-4 text-slate-400" /> Recent Activity
+                  <Sparkles className="h-4 w-4 text-violet-500" /> Agent Activity
                 </CardTitle>
+                <Button size="sm" variant="secondary" onClick={() => navigate('/agent')}>
+                  Command Center <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                </Button>
               </CardHeader>
               <CardContent className="p-0">
                 {loading
-                  ? [1,2,3].map(i => <div key={i} className="mx-5 my-2.5 h-9 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />)
-                  : <ActivityFeed data={data} navigate={navigate} />
+                  ? [1,2,3].map(i => <div key={i} className="mx-5 my-2.5 h-12 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />)
+                  : <AgentActivityFeed
+                      runs={data.agentRuns || []}
+                      maxItems={5}
+                      compact={true}
+                      onViewAll={() => navigate('/agent')}
+                      emptyLabel="Complete an appointment to see agent activity here."
+                    />
                 }
               </CardContent>
             </Card>
