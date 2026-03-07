@@ -833,7 +833,12 @@ export default function JobInboxPage() {
                     <span className="text-xs font-bold text-slate-300 w-4 text-right">{count}</span>
                   </div>
                 ))}
-                {jobs.length === 0 && <p className="text-xs text-slate-600 py-4 text-center">No jobs yet</p>}
+                {jobs.length === 0 && (
+                  <div className="flex flex-col items-center py-6 text-center">
+                    <p className="text-xs font-semibold text-slate-400">No jobs parsed yet</p>
+                    <p className="text-[10px] text-slate-600 mt-1 max-w-[180px] leading-relaxed">Paste an email or signing order above — the agent will extract client, type, date, and fee.</p>
+                  </div>
+                )}
               </Card>
 
               <Card>
