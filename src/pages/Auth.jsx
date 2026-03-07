@@ -30,7 +30,11 @@ export default function Auth() {
     setError('');
     if (!email || !password) { setError('Please enter your email and password.'); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); navigate('/dashboard'); }, 900);
+    setTimeout(() => {
+      setLoading(false);
+      updateSettings({ onboardingComplete: true });
+      navigate('/dashboard');
+    }, 900);
   };
 
   // Google SSO — routes to onboarding (new users set up account there, not here)
