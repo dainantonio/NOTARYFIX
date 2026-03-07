@@ -768,7 +768,7 @@ const ProactiveNudgeBar = ({ data, navigate }) => {
     }
 
     // 6. Commission expiry
-    const commExp = data.settings?.commissionExpiresOn;
+    const commExp = data.settings?.commissionExpiryDate || data.settings?.commissionExpiresOn;
     if (commExp) {
       const days = Math.ceil((new Date(commExp) - now) / 86400000);
       if (days <= 60 && days >= 0) {
