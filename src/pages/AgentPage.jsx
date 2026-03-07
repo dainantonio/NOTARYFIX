@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
+import { AgentActivityFeed } from '../components/AgentActivityFeed';
 import { AgentSuggestionCard } from '../components/AgentSuggestionCard';
 import { toast } from '../hooks/useLinker';
 import { useAgentTriggers } from '../hooks/useAgentTriggers';
@@ -139,56 +140,7 @@ const TriggerStatusStrip = ({ triggerStatus }) => (
   </div>
 );
 
-// ─── Agent run history row ────────────────────────────────────────────────────
-const RunRow = ({ run }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-slate-100 dark:border-slate-800 last:border-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <Sparkles className="h-4 w-4 text-violet-400 flex-shrink-0" />
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-              {run.appointmentClient || 'Unknown'}
-            </p>
-            <p className="text-xs text-slate-400">
-              {run.actor} · {new Date(run.ranAt || run.createdAt || Date.now()).toLocaleString()}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-          {run.status === 'approved' && <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full px-2 py-0.5">Approved</span>}
-          {run.status === 'rejected' && <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 rounded-full px-2 py-0.5">Rejected</span>}
-          {run.status === 'pending'  && <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-full px-2 py-0.5">Pending</span>}
-          {run.warnings?.length > 0  && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
-          {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-        </div>
-      </button>
-      {open && (
-        <div className="px-4 pb-3 space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {(run.actions || []).map((a, i) => (
-              <span key={i} className="rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
-                {a.type === 'journal_drafted' ? '📓 Journal drafted' : a.type === 'invoice_drafted' ? '🧾 Invoice drafted' : a.type}
-              </span>
-            ))}
-          </div>
-          {run.warnings?.length > 0 && (
-            <div className="text-xs text-amber-700 dark:text-amber-300 space-y-0.5">
-              {run.warnings.map((w, i) => <p key={i}>⚠ {w}</p>)}
-            </div>
-          )}
-          {run.diff && (
-            <pre className="text-[11px] text-slate-500 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-900 rounded p-2 whitespace-pre-wrap">{run.diff}</pre>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
+// RunRow replaced by AgentActivityFeed component (see below in Run History section)
 
 
 // ─── Guardian constants ───────────────────────────────────────────────────────
@@ -863,7 +815,7 @@ const AgentPage = () => {
         )}
       </div>
 
-      {/* Run History */}
+      {/* Run History — replaced with AgentActivityFeed for inline confidence + reasoning */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -883,17 +835,18 @@ const AgentPage = () => {
           </div>
         </div>
 
-        <Card className="overflow-hidden">
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {filteredRuns.length > 0 ? (
-              filteredRuns.slice(0, 10).map((run) => (
-                <RunRow key={run.id} run={run} />
-              ))
-            ) : (
-              <div className="p-8 text-center text-slate-400 text-sm">No history found for this filter.</div>
-            )}
-          </div>
-          {filteredRuns.length > 10 && (
+        <Card className="overflow-hidden bg-[#080f1a] border-slate-800">
+          <AgentActivityFeed
+            runs={filteredRuns}
+            maxItems={20}
+            compact={false}
+            emptyLabel={historyTab === 'all'
+              ? 'No closeout runs yet. Mark an appointment complete to trigger the agent.'
+              : `No ${historyTab} runs.`
+            }
+            onViewAll={() => navigate('/audit')}
+          />
+          {filteredRuns.length > 20 && (
             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
               <button onClick={() => navigate('/audit')} className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">View full history in Audit Log →</button>
             </div>
