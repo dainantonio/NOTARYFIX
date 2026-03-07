@@ -13,7 +13,7 @@
  * Works for:  Loan Signing | General Notary Work | I-9 | Apostille | RON
  */
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertTriangle, ArrowLeft, BadgeCheck, BookOpen, Camera, Car,
@@ -533,8 +533,13 @@ export default function ArriveMode() {
   const [signingStarted, setSigningStarted] = useState(false);
   const [showBeginFlash, setShowBeginFlash] = useState(false);
 
-  // ID capture form state
-  const [idRecord, setIdRecord] = useState({});
+  // Session-storage key for back-button persistence
+  const sessionKey = `arrive_state_${id}`;
+
+  // ID capture form state — persisted across navigation
+  const [idRecord, setIdRecord] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(sessionKey) || '{}').idRecord || {}; } catch { return {}; }
+  });
 
   // Resolve appointment
   const appt = useMemo(
@@ -550,7 +555,9 @@ export default function ArriveMode() {
     () => ON_SITE_CHECKLIST[appt?.type] || DEFAULT_ON_SITE_CHECKLIST,
     [appt?.type],
   );
-  const [checks, setChecks] = useState({});
+  const [checks, setChecks] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(`arrive_state_${id}`) || '{}').checks || {}; } catch { return {}; }
+  });
   const toggleCheck = (itemId) => setChecks((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
 
   // Doc checklist state
@@ -558,8 +565,17 @@ export default function ArriveMode() {
     () => DOCS_BY_TYPE[appt?.type] || DOCS_BY_TYPE['General Notary Work (GNW)'],
     [appt?.type],
   );
-  const [docChecks, setDocChecks] = useState({});
+  const [docChecks, setDocChecks] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(`arrive_state_${id}`) || '{}').docChecks || {}; } catch { return {}; }
+  });
   const toggleDoc = (key) => setDocChecks((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // Persist state to sessionStorage on every change (back-button support)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(`arrive_state_${id}`, JSON.stringify({ idRecord, checks, docChecks }));
+    } catch (_) {}
+  }, [id, idRecord, checks, docChecks]);
 
   // Quick action state
   const [mileageStarted, setMileageStarted] = useState(false);
@@ -983,9 +999,9 @@ export default function ArriveMode() {
                 setJournalOpened(true);
                 navigate('/journal', {
                   state: {
-                    prefillAppointmentId: appt.id,
-                    prefillClient: appt.client,
-                    prefillActType: serviceTypeToActType(appt.type),
+                    prefillFromAppointment: appt.id,
+                    prefillIdRecord: idRecord,
+                    signingStartedAt: appt.signing_started_at || null,
                   },
                 });
               }}
@@ -1060,10 +1076,9 @@ export default function ArriveMode() {
                   completeAppointment(appt);
                   navigate('/journal', {
                     state: {
-                      prefillAppointmentId: appt.id,
-                      prefillClient: appt.client,
-                      prefillActType: appt.type,
+                      prefillFromAppointment: appt.id,
                       prefillIdRecord: idRecord,
+                      signingStartedAt: new Date().toISOString(),
                     },
                   });
                 }, 1800);
@@ -1078,10 +1093,9 @@ export default function ArriveMode() {
               className="flex-[2] py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all shadow-lg flex items-center justify-center gap-2"
               onClick={() => navigate('/journal', {
                 state: {
-                  prefillAppointmentId: appt.id,
-                  prefillClient: appt.client,
-                  prefillActType: appt.type,
+                  prefillFromAppointment: appt.id,
                   prefillIdRecord: idRecord,
+                  signingStartedAt: appt.signing_started_at || null,
                 },
               })}
             >

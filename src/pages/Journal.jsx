@@ -1744,7 +1744,23 @@ const Journal = () => {
     const apt = appointments.find((a) => a.id === aptId || a.id === Number(aptId));
     if (apt) {
       const alreadyLogged = entries.some((e) => e.linkedAppointmentId === apt.id);
-      if (!alreadyLogged) openNew(createJournalDraftFromAppointment(apt));
+      if (!alreadyLogged) {
+        const draft = createJournalDraftFromAppointment(apt);
+
+        // Overlay ID capture data from ArriveMode
+        const idRec = location.state?.prefillIdRecord || {};
+        if (idRec.idType)    draft.idType         = idRec.idType;
+        if (idRec.idLast4)   draft.idLast4        = idRec.idLast4;
+        if (idRec.idExpiry)  draft.idExpiration   = idRec.idExpiry;
+        if (idRec.idState)   draft.idIssuingState = idRec.idState;
+        if (idRec.nameOnId)  draft.idScanConfirmed = true;
+
+        // Signing phase timestamps (Issue 11)
+        if (location.state?.signingStartedAt) draft.signing_started_at = location.state.signingStartedAt;
+        draft.signing_completed_at = new Date().toISOString();
+
+        openNew(draft);
+      }
     }
     window.history.replaceState({}, '');
   }, [location.state]);
