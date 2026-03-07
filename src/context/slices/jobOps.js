@@ -13,10 +13,8 @@ export function createJobOps(set, get) {
         created_at: new Date().toISOString(),
       };
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobMessages: [newMsg, ...(prev.data.jobMessages || [])],
-        },
+        ...prev,
+        jobMessages: [newMsg, ...(prev.jobMessages || [])],
       }));
       return newMsg;
     },
@@ -30,51 +28,43 @@ export function createJobOps(set, get) {
         updated_at: new Date().toISOString(),
       };
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobs: [newJob, ...(prev.data.jobs || [])],
-        },
+        ...prev,
+        jobs: [newJob, ...(prev.jobs || [])],
       }));
       return newJob;
     },
 
     updateJob: (jobId, updates) => {
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobs: (prev.data.jobs || []).map(j =>
-            j.id === jobId
-              ? { ...j, ...updates, updated_at: new Date().toISOString() }
-              : j
-          ),
-        },
+        ...prev,
+        jobs: (prev.jobs || []).map(j =>
+          j.id === jobId
+            ? { ...j, ...updates, updated_at: new Date().toISOString() }
+            : j
+        ),
       }));
     },
 
     deleteJob: (jobId) => {
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobs: (prev.data.jobs || []).filter(j => j.id !== jobId),
-        },
+        ...prev,
+        jobs: (prev.jobs || []).filter(j => j.id !== jobId),
       }));
     },
 
     advanceJobLifecycle: (jobId, newStage) => {
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobs: (prev.data.jobs || []).map(j =>
-            j.id === jobId
-              ? {
-                  ...j,
-                  lifecycle_stage: newStage,
-                  [`${newStage}_at`]: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                }
-              : j
-          ),
-        },
+        ...prev,
+        jobs: (prev.jobs || []).map(j =>
+          j.id === jobId
+            ? {
+                ...j,
+                lifecycle_stage: newStage,
+                [`${newStage}_at`]: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }
+            : j
+        ),
       }));
     },
 
@@ -86,40 +76,36 @@ export function createJobOps(set, get) {
         created_at: new Date().toISOString(),
       };
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobExpenses: [newExpense, ...(prev.data.jobExpenses || [])],
-        },
+        ...prev,
+        jobExpenses: [newExpense, ...(prev.jobExpenses || [])],
       }));
       return newExpense;
     },
 
     deleteJobExpense: (expenseId) => {
       set(prev => ({
-        data: {
-          ...prev.data,
-          jobExpenses: (prev.data.jobExpenses || []).filter(e => e.id !== expenseId),
-        },
+        ...prev,
+        jobExpenses: (prev.jobExpenses || []).filter(e => e.id !== expenseId),
       }));
     },
 
     // ── Selectors (pure, no set) ─────────────────────────────────────────────
     getJobsByStatus: (status) => {
-      return (get().data.jobs || []).filter(j => j.status === status);
+      return (get().jobs || []).filter(j => j.status === status);
     },
 
     getJobExpensesForJob: (jobId) => {
-      return (get().data.jobExpenses || []).filter(e => e.job_id === jobId);
+      return (get().jobExpenses || []).filter(e => e.job_id === jobId);
     },
 
     getTotalJobIncome: () => {
-      return (get().data.jobs || [])
+      return (get().jobs || [])
         .filter(j => j.lifecycle_stage === 'payment_received')
         .reduce((sum, j) => sum + (j.offered_fee || 0), 0);
     },
 
     getTotalJobExpenses: () => {
-      return (get().data.jobExpenses || [])
+      return (get().jobExpenses || [])
         .reduce((sum, e) => sum + (e.amount || 0), 0);
     },
   };
