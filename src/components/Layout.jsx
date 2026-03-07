@@ -369,54 +369,95 @@ const LayoutInner = ({ children }) => {
           ))}
         </div>
 
-        {/* Sidebar footer */}
-        <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 overflow-hidden">
-              {businessLogo ? <img src={businessLogo} alt="Logo" className="w-full h-full object-cover rounded-2xl" /> : initials}
-            </div>
-            {!isSidebarCollapsed && (
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm text-slate-900 dark:text-white truncate">{userName}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">{userRole}</div>
+        {/* Sidebar footer — profile panel */}
+        <div className="shrink-0 border-t border-slate-800/60 dark:border-slate-800/60 bg-slate-950/40 dark:bg-black/20">
+
+          {/* Collapsed: icon column */}
+          {isSidebarCollapsed ? (
+            <div className="flex flex-col items-center gap-1 py-3 px-2">
+              {/* Avatar */}
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center font-bold text-[11px] text-slate-200 overflow-hidden ring-1 ring-white/10 mb-1">
+                {businessLogo ? <img src={businessLogo} alt="Logo" className="w-full h-full object-cover" /> : initials}
               </div>
-            )}
-          </div>
+              {/* Theme */}
+              <button onClick={toggleTheme} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all">
+                {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              </button>
+              {/* Fullscreen */}
+              <button onClick={toggleFullscreen} title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all">
+                {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              </button>
+              {/* Sign out */}
+              <button onClick={handleSignOut} title="Sign out"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="p-3 space-y-2">
+              {/* Profile card */}
+              <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.03] ring-1 ring-white/[0.06]">
+                {/* Avatar */}
+                <div className="relative shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center font-bold text-sm text-slate-200 overflow-hidden ring-1 ring-white/10">
+                    {businessLogo ? <img src={businessLogo} alt="Logo" className="w-full h-full object-cover" /> : initials}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-950" />
+                </div>
+                {/* Name + role + tier */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-[13px] text-slate-100 truncate leading-tight">{userName}</div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[10px] text-slate-500 capitalize truncate">{userRole}</span>
+                    <span className="text-slate-700">·</span>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${
+                      planTier === 'agency' ? 'text-violet-400' :
+                      planTier === 'pro'    ? 'text-blue-400' :
+                                             'text-slate-500'
+                    }`}>{planTier}</span>
+                  </div>
+                </div>
+              </div>
 
-          <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
-            <Button
-              variant="secondary"
-              size={isSidebarCollapsed ? 'icon' : 'default'}
-              onClick={toggleTheme}
-              className={`${isSidebarCollapsed ? 'w-10 h-10' : 'flex-1'} justify-center`}
-              title="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              {!isSidebarCollapsed && <span className="ml-2">Theme</span>}
-            </Button>
+              {/* Action row */}
+              <div className="flex items-center gap-1 px-1">
+                {/* Theme toggle */}
+                <button onClick={toggleTheme}
+                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                  className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all text-[11px] font-medium group">
+                  {theme === 'dark'
+                    ? <><Sun className="w-3.5 h-3.5 group-hover:text-amber-400 transition-colors" /><span className="hidden lg:inline">Light</span></>
+                    : <><Moon className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" /><span className="hidden lg:inline">Dark</span></>
+                  }
+                </button>
 
-            <Button
-              variant="secondary"
-              size={isSidebarCollapsed ? 'icon' : 'default'}
-              onClick={toggleFullscreen}
-              className={`${isSidebarCollapsed ? 'w-10 h-10' : 'flex-1'} justify-center`}
-              title="Fullscreen"
-            >
-              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              {!isSidebarCollapsed && <span className="ml-2">Fullscreen</span>}
-            </Button>
+                {/* Divider */}
+                <div className="w-px h-4 bg-white/[0.06]" />
 
-            <Button
-              variant="ghost"
-              size={isSidebarCollapsed ? 'icon' : 'default'}
-              onClick={handleSignOut}
-              className={`${isSidebarCollapsed ? 'w-10 h-10' : 'flex-1'} justify-center text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20`}
-              title="Sign out"
-            >
-              <LogOut className="w-4 h-4" />
-              {!isSidebarCollapsed && <span className="ml-2">Sign out</span>}
-            </Button>
-          </div>
+                {/* Fullscreen */}
+                <button onClick={toggleFullscreen}
+                  title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all text-[11px] font-medium group">
+                  {isFullscreen
+                    ? <><Minimize2 className="w-3.5 h-3.5" /><span className="hidden lg:inline">Exit</span></>
+                    : <><Maximize2 className="w-3.5 h-3.5" /><span className="hidden lg:inline">Full</span></>
+                  }
+                </button>
+
+                {/* Divider */}
+                <div className="w-px h-4 bg-white/[0.06]" />
+
+                {/* Sign out */}
+                <button onClick={handleSignOut} title="Sign out"
+                  className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all text-[11px] font-medium group">
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden lg:inline">Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -493,34 +534,47 @@ const LayoutInner = ({ children }) => {
               </nav>
 
               {/* Drawer footer utilities */}
-              <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={toggleTheme}
-                  title="Toggle theme"
-                  className="flex-1 justify-center"
-                >
-                  {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={() => { setIsCommandPaletteOpen(true); setIsMobileMenuOpen(false); }}
-                  title="Search"
-                  className="flex-1 justify-center"
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSignOut}
-                  className="flex-1 justify-center text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  title="Sign out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
+              <div className="mt-6 pt-4 border-t border-slate-800/60 space-y-3">
+                {/* Profile card */}
+                <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl bg-white/[0.03] ring-1 ring-white/[0.06]">
+                  <div className="relative shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center font-bold text-sm text-slate-200 overflow-hidden ring-1 ring-white/10">
+                      {businessLogo ? <img src={businessLogo} alt="Logo" className="w-full h-full object-cover" /> : initials}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-950" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-[13px] text-slate-100 truncate leading-tight">{userName}</div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] text-slate-500 capitalize">{userRole}</span>
+                      <span className="text-slate-700">·</span>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${
+                        planTier === 'agency' ? 'text-violet-400' :
+                        planTier === 'pro'    ? 'text-blue-400'   :
+                                               'text-slate-500'
+                      }`}>{planTier}</span>
+                    </div>
+                  </div>
+                </div>
+                {/* Action row */}
+                <div className="flex items-center gap-1">
+                  <button onClick={toggleTheme}
+                    title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                    className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 text-xs font-medium transition-all ring-1 ring-white/[0.06]">
+                    {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                    {theme === 'dark' ? 'Light' : 'Dark'}
+                  </button>
+                  <button onClick={() => { setIsCommandPaletteOpen(true); setIsMobileMenuOpen(false); }}
+                    title="Search"
+                    className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 text-xs font-medium transition-all ring-1 ring-white/[0.06]">
+                    <Search className="w-3.5 h-3.5" /> Search
+                  </button>
+                  <button onClick={handleSignOut}
+                    title="Sign out"
+                    className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-red-500/5 hover:bg-red-500/15 text-slate-600 hover:text-red-400 text-xs font-medium transition-all ring-1 ring-red-500/10">
+                    <LogOut className="w-3.5 h-3.5" /> Sign out
+                  </button>
+                </div>
               </div>
             </div>
           </div>
