@@ -445,7 +445,12 @@ const Schedule = () => {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
                 {label === 'Today' ? <button onClick={() => openNewModal()} className="text-xs text-blue-600 font-medium">+ Add</button> : null}
               </div>
-              {items.length === 0 ? <p className="text-xs text-slate-400">No appointments</p> : null}
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center py-5 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">No {label.toLowerCase()} appointments</p>
+                  {label === 'Today' && <button onClick={() => openNewModal()} className="mt-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">+ Schedule one now</button>}
+                </div>
+              ) : null}
               <div className="space-y-2">
                 {items.map((apt) => (
                   <div key={apt.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3 flex items-start gap-2">
