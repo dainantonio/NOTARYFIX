@@ -297,7 +297,20 @@ export function createAgentOps(setData, getData) {
       const missingFields = complianceResult.missingRequired.map((m) => m.field);
       const complianceWarnings = complianceResult.allIssues.map((i) => i.message);
       const aiBoost = aiDraft?.aiConfidenceBoost || 0;
-      const confidenceScore = Math.min(100, complianceResult.score + aiBoost);
+
+      // Issue 15 — Flag if the on-site checklist was never completed.
+      // signing_started_at is stamped by ArriveMode's "Begin Signing" gate,
+      // which requires all critical checklist items to be checked first.
+      // Its absence means the notary either skipped ArriveMode or left before
+      // beginning — the agent draft may be based on incomplete information.
+      const checklistWarnings = apt.signing_started_at
+        ? []
+        : ['On-site checklist was not completed — please review this draft carefully before approving.'];
+
+      // Penalise confidence by 20 points when the checklist was skipped so
+      // supervised mode won't auto-approve without manual review.
+      const checklistPenalty = checklistWarnings.length > 0 ? 20 : 0;
+      const confidenceScore = Math.max(0, Math.min(100, complianceResult.score + aiBoost - checklistPenalty));
 
       const runRecord = {
         id: runId,
@@ -310,7 +323,8 @@ export function createAgentOps(setData, getData) {
           { type: 'journal_drafted', refId: journalId },
           { type: 'invoice_drafted', refId: invoiceId },
         ],
-        warnings: complianceWarnings.slice(0, 5),
+        // Checklist warning always leads; compliance warnings follow
+        warnings: [...checklistWarnings, ...complianceWarnings].slice(0, 6),
       };
 
       const nextAppointments = (p.appointments || []).map((a) =>

@@ -54,9 +54,12 @@ export const useLinker = () => {
     const autonomyMode = data.settings?.autonomyMode || 'assistive';
 
     if (!alreadyRan && autoCloseoutEnabled) {
+      // Immediately let the user know the agent is running — don't make them wonder
+      toast.info('⚡ Auto-Closeout triggered — check Command Center in ~30 seconds.', undefined, 7000);
+
       // Phase 2: Use AI-enhanced async closeout agent
       runCloseoutAgentWithAI(apt.id, 'Closeout Agent')
-        .then(() => toast.info('✦ AI drafted journal + invoice — review in Command Center.'))
+        .then(() => toast.success('✦ Closeout ready — journal + invoice drafted in Command Center.'))
         .catch(() => {
           // Fallback to sync agent if AI call fails
           runCloseoutAgent(apt.id, 'Closeout Agent');
