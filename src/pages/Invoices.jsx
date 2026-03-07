@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare, Eye, TriangleAlert } from 'lucide-react';
+import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare, Eye, TriangleAlert, CreditCard, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { toast } from '../hooks/useLinker';
 import { exportInvoicePDF, generateInvoiceEmailTemplate } from '../services/invoiceService';
+import { createStripeCheckoutSession, isStripeConfigured } from '../services/stripeService';
 import { generatePaymentReminderMessage } from '../services/emailService';
 
 const InvoiceModal = ({ isOpen, onClose, onSave, initialInvoice, prefillClientName }) => {
@@ -434,6 +435,23 @@ const Invoices = () => {
     toast.success('SMS message copied to clipboard');
   };
 
+  // Issue 17: Generate a Stripe Checkout Session link for this invoice
+  const generateStripeLink = async (invoice) => {
+    if (!isStripeConfigured(data.settings)) {
+      toast.error('Configure Stripe in Settings → Payments first.');
+      return;
+    }
+    try {
+      toast.info('Creating Stripe checkout link…');
+      const url = await createStripeCheckoutSession(invoice, data.settings);
+      await navigator.clipboard?.writeText(url);
+      updateInvoice(invoice.id, { stripeCheckoutUrl: url, paymentLink: url });
+      toast.success('Stripe link created and copied to clipboard!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to create Stripe checkout link');
+    }
+  };
+
   const exportInvoicePdfStub = (invoice) => {
     try {
       exportInvoicePDF(invoice, data.settings);
@@ -528,6 +546,9 @@ const Invoices = () => {
                   <div className="flex gap-1 mt-1 justify-end">
                     <button onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
                     <button onClick={() => copyInvoiceLink(invoice)} className="p-1.5 rounded-lg text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Copy payment link"><Link2 className="h-3.5 w-3.5" /></button>
+                    {isStripeConfigured(data.settings) && (
+                      <button onClick={() => generateStripeLink(invoice)} className={`p-1.5 rounded-lg transition-colors ${invoice.stripeCheckoutUrl ? 'text-violet-500 bg-violet-50 dark:bg-violet-900/20' : 'text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'}`} title={invoice.stripeCheckoutUrl ? 'Stripe link ready — click to refresh' : 'Generate Stripe checkout link'}><CreditCard className="h-3.5 w-3.5" /></button>
+                    )}
                     <button onClick={() => exportInvoicePdfStub(invoice)} className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Export PDF"><FileText className="h-3.5 w-3.5" /></button>
                     <button onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
@@ -651,6 +672,9 @@ const Invoices = () => {
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => { setEditingInvoice(invoice); setIsModalOpen(true); }} title="Edit"><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => copyInvoiceLink(invoice)} title="Copy link"><Link2 className="h-4 w-4" /></Button>
+                      {isStripeConfigured(data.settings) && (
+                        <Button size="sm" variant="ghost" onClick={() => generateStripeLink(invoice)} title={invoice.stripeCheckoutUrl ? 'Stripe link ready — regenerate' : 'Generate Stripe link'} className={invoice.stripeCheckoutUrl ? 'text-violet-500' : ''}><CreditCard className="h-4 w-4" /></Button>
+                      )}
                       <Button size="sm" variant="ghost" onClick={() => exportInvoicePdfStub(invoice)} title="PDF"><FileText className="h-4 w-4" /></Button>
                       <Button size="sm" variant="danger" onClick={() => { deleteInvoice(invoice.id); toast.success('Invoice deleted'); }} title="Delete"><Trash2 className="h-4 w-4" /></Button>
                     </div>

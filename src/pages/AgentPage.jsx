@@ -540,7 +540,13 @@ const AgentPage = () => {
   const handleApprove = (suggestion) => {
     approveAgentSuggestion?.(suggestion.id);
     const group = typeGroup(suggestion);
-    toast.success(APPROVE_TOAST[group]);
+    // Issue 16: copy the pre-written follow-up message to clipboard for AR suggestions
+    if (suggestion.type === 'aging_ar' && suggestion.followUpMessage) {
+      navigator.clipboard?.writeText(suggestion.followUpMessage);
+      toast.success('Follow-up message copied to clipboard — invoice marked overdue ✓');
+    } else {
+      toast.success(APPROVE_TOAST[group]);
+    }
     navigate(APPROVE_ROUTE[group]);
   };
 
@@ -816,14 +822,32 @@ const AgentPage = () => {
         {suggestions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {suggestions.map((s) => (
-              <AgentSuggestionCard
-                key={s.id}
-                suggestion={s}
-                onApprove={() => handleApprove(s)}
-                onReject={() => handleReject(s)}
-                onOpenEdit={() => handleEdit(s)}
-                onPatchDraft={(id, patch) => editAgentSuggestion?.(id, patch)}
-              />
+              <div key={s.id} className="space-y-2">
+                <AgentSuggestionCard
+                  suggestion={s}
+                  onApprove={() => handleApprove(s)}
+                  onReject={() => handleReject(s)}
+                  onOpenEdit={() => handleEdit(s)}
+                  onPatchDraft={(id, patch) => editAgentSuggestion?.(id, patch)}
+                />
+                {/* Issue 16: pre-written follow-up message for overdue AR suggestions */}
+                {s.type === 'aging_ar' && s.followUpMessage && (
+                  <div className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/10 px-4 py-3 space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500 flex items-center gap-1.5">
+                      <MessageSquare className="h-3 w-3" /> Pre-written Follow-up Message
+                    </p>
+                    <pre className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-sans leading-relaxed bg-white dark:bg-slate-900 rounded-lg border border-rose-100 dark:border-rose-900 p-3">
+                      {s.followUpMessage}
+                    </pre>
+                    <button
+                      onClick={() => { navigator.clipboard?.writeText(s.followUpMessage); toast.success('Follow-up message copied!'); }}
+                      className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
+                    >
+                      <MessageSquare className="h-3 w-3" /> Copy Message
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         ) : (

@@ -5,7 +5,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { CheckCircle2, DollarSign, Calendar, ArrowLeft, Sparkles } from 'lucide-react';
+import { CheckCircle2, DollarSign, Calendar, ArrowLeft, Sparkles, CreditCard, ExternalLink } from 'lucide-react';
 
 export default function PayInvoicePage() {
   const { invoiceId } = useParams();
@@ -110,8 +110,22 @@ export default function PayInvoicePage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    {/* Issue 17: Stripe "Pay Now" button when checkout link is present */}
+                    {invoice.stripeCheckoutUrl && (
+                      <a
+                        href={invoice.stripeCheckoutUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors shadow-lg shadow-violet-500/30"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        Pay Now with Card — ${Number(invoice.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                      </a>
+                    )}
+
                     <p className="text-sm text-center text-slate-600 dark:text-slate-400">
-                      To complete payment, please contact:
+                      {invoice.stripeCheckoutUrl ? 'Or contact your notary directly:' : 'To complete payment, please contact:'}
                     </p>
                     <div className="space-y-2">
                       {businessPhone && (
@@ -130,7 +144,7 @@ export default function PayInvoicePage() {
                           Email {businessEmail}
                         </a>
                       )}
-                      {!businessPhone && !businessEmail && (
+                      {!businessPhone && !businessEmail && !invoice.stripeCheckoutUrl && (
                         <p className="text-center text-sm text-slate-500 italic">
                           Contact your notary directly to arrange payment.
                         </p>

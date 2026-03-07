@@ -50,6 +50,32 @@ const parseMoneyLike = (value) => {
   return match ? parseFloat(match[0]) : null;
 };
 
+// -- Issue 16: Pre-written AR follow-up message builder -----------------------
+// Generates a professional follow-up message the notary can copy and send
+// when a client hasn't paid within 7 days of the invoice being sent.
+const _buildARFollowUpMessage = (inv, settings) => {
+  const bizName = settings?.businessName || settings?.name || 'Your Notary';
+  const bizPhone = settings?.phone || '';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://notaryfix.com';
+  const payLink = inv.paymentLink || `${origin}/pay/${encodeURIComponent(inv.id)}`;
+  const dueStr = inv.due ? ` (due ${inv.due})` : '';
+  const amtStr = `$${Number(inv.amount || 0).toFixed(2)}`;
+  return [
+    `Hi ${inv.client || 'there'},`,
+    '',
+    `I wanted to follow up on Invoice #${inv.id} for ${amtStr}${dueStr} — we haven't received payment yet.`,
+    '',
+    'You can pay securely at the link below:',
+    payLink,
+    '',
+    'If you have already sent payment, please disregard this message. Thank you!',
+    '',
+    `Best,`,
+    bizName,
+    ...(bizPhone ? [bizPhone] : []),
+  ].join('\n');
+};
+
 const _appendAuditLog = (p, entry) => ({
   ...p,
   adminAuditLog: [
@@ -535,6 +561,8 @@ export function createAgentOps(setData, getData) {
   const runAgingARAgent = () => setData((p) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    // Issue 16: also flag invoices sent 7+ days ago even if not yet technically past due date
+    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const existingARSuggestions = new Set(
       (p.agentSuggestions || [])
         .filter((s) => s.type === 'aging_ar' && s.status === 'pending')
@@ -543,9 +571,13 @@ export function createAgentOps(setData, getData) {
 
     const overdueInvoices = (p.invoices || []).filter((inv) => {
       if (existingARSuggestions.has(inv.id)) return false;
+      if (inv.status === 'Paid') return false;
       if (!['Sent', 'Overdue'].includes(inv.status)) return false;
       const dueDate = new Date(inv.due);
-      return !isNaN(dueDate.getTime()) && dueDate < today;
+      const isPastDue = !isNaN(dueDate.getTime()) && dueDate < today;
+      // Also flag if invoice was sent 7+ days ago with no payment (even if due date is still future)
+      const sentLongAgo = inv.sentAt && new Date(inv.sentAt) < sevenDaysAgo;
+      return isPastDue || sentLongAgo;
     });
 
     if (overdueInvoices.length === 0) return p;
@@ -553,7 +585,9 @@ export function createAgentOps(setData, getData) {
     const nowIso = new Date().toISOString();
     const newSuggestions = overdueInvoices.map((inv) => {
       const dueDate = new Date(inv.due);
-      const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+      const daysOverdue = !isNaN(dueDate.getTime())
+        ? Math.max(0, Math.floor((today - dueDate) / (1000 * 60 * 60 * 24)))
+        : 0;
       return {
         id: `AR-${inv.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: 'aging_ar',
@@ -566,6 +600,8 @@ export function createAgentOps(setData, getData) {
         invoiceId: inv.id,
         invoiceAmount: inv.amount,
         daysOverdue,
+        // Issue 16: pre-written follow-up message ready to copy and send
+        followUpMessage: _buildARFollowUpMessage(inv, p.settings),
         diffData: {
           invoiceId: inv.id,
           signerName: inv.client,
@@ -672,11 +708,16 @@ export function createAgentOps(setData, getData) {
           .filter((s) => s.type === 'aging_ar' && s.status === 'pending')
           .map((s) => s.invoiceId)
       );
+      // Issue 16: also flag invoices sent 7+ days ago even if not yet past due
+      const sevenDaysAgoAuto = new Date(todayDate.getTime() - 7 * 24 * 60 * 60 * 1000);
       const overdueInvoices = (updated.invoices || []).filter((inv) => {
         if (existingARSuggestions.has(inv.id)) return false;
+        if (inv.status === 'Paid') return false;
         if (!['Sent', 'Overdue'].includes(inv.status)) return false;
         const dueDate = new Date(inv.due);
-        return !isNaN(dueDate.getTime()) && dueDate < todayDate;
+        const isPastDue = !isNaN(dueDate.getTime()) && dueDate < todayDate;
+        const sentLongAgo = inv.sentAt && new Date(inv.sentAt) < sevenDaysAgoAuto;
+        return isPastDue || sentLongAgo;
       });
       if (overdueInvoices.length === 0) return updated;
       const nowIso = new Date().toISOString();
@@ -690,6 +731,8 @@ export function createAgentOps(setData, getData) {
           appointmentClient: inv.client, ranAt: nowIso, createdAt: nowIso,
           actor: 'Collections (Auto)', invoiceId: inv.id, invoiceAmount: inv.amount,
           daysOverdue,
+          // Issue 16: pre-written follow-up message
+          followUpMessage: _buildARFollowUpMessage(inv, updated.settings),
           diffData: {
             invoiceId: inv.id,
             signerName: inv.client,

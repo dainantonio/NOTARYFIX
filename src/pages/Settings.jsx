@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck, Bot, Palette, Mail } from 'lucide-react';
+import { User, Building, Bell, Save, LogOut, Moon, Sun, Wand2, ScanLine, RotateCcw, ShieldCheck, Bot, Palette, Mail, CreditCard, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
@@ -38,6 +38,7 @@ const Settings = () => {
     { id: 'compliance', label: 'Compliance', icon: ShieldCheck },
     { id: 'preferences', label: 'Preferences', icon: Bell },
     { id: 'agent', label: 'Agent', icon: Bot },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
   ];
 
   const settingsHealth = useMemo(() => {
@@ -454,6 +455,130 @@ const Settings = () => {
 
               <div className="flex justify-end">
                 <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Agent Settings'}</Button>
+              </div>
+            </div>
+          )}
+
+          {/* ─── Issue 17: Stripe / Payments ──────────────────────────────────── */}
+          {activeTab === 'payments' && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-blue-500" /> Stripe Integration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  {/* Info banner */}
+                  <div className="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4">
+                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1">
+                      Accept card payments directly from your invoice link
+                    </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-300">
+                      Connect your Stripe account so signers can pay by card on the spot.
+                      Your keys are stored only in this browser's local storage — never sent anywhere except Stripe.
+                    </p>
+                  </div>
+
+                  {/* Enable toggle */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm text-slate-900 dark:text-white">Enable Stripe Payments</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Show a Stripe "Pay Now" button on invoice payment pages
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, stripeEnabled: !(prev.stripeEnabled ?? false) }))}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                        (formData.stripeEnabled ?? false) ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
+                      }`}
+                    >
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                        (formData.stripeEnabled ?? false) ? 'translate-x-5' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+
+                  {/* Publishable key */}
+                  <div>
+                    <Label>Stripe Publishable Key</Label>
+                    <Input
+                      type="text"
+                      value={formData.stripePublishableKey || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, stripePublishableKey: e.target.value }))}
+                      placeholder="pk_live_… or pk_test_…"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Safe to expose. Used for future Stripe.js embed features.</p>
+                  </div>
+
+                  {/* Secret key */}
+                  <div>
+                    <Label>Stripe Secret Key</Label>
+                    <Input
+                      type="password"
+                      value={formData.stripeSecretKey || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, stripeSecretKey: e.target.value }))}
+                      placeholder="sk_live_… or sk_test_…"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                      Used to create Checkout Sessions. Stored only in this browser's local storage.
+                    </p>
+                  </div>
+
+                  {/* Security note */}
+                  <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 p-3 space-y-1">
+                    <p className="text-xs font-bold text-amber-700 dark:text-amber-300">⚠ Security Note</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      Your secret key is stored in your browser's local storage and sent only to Stripe's API directly.
+                      NotaryFix has no access to it. Only configure this on devices you own and control.
+                    </p>
+                  </div>
+
+                  {/* Setup instructions */}
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4 space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Setup Instructions</p>
+                    <ol className="list-decimal list-inside space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                      <li>Go to{' '}
+                        <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline inline-flex items-center gap-0.5">
+                          dashboard.stripe.com/apikeys <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </li>
+                      <li>Copy your <strong>Publishable Key</strong> (pk_…) and <strong>Secret Key</strong> (sk_…)</li>
+                      <li>Paste both above, enable the toggle, then click Save</li>
+                      <li>On any invoice, click the <strong>Stripe</strong> button to generate a live checkout link</li>
+                      <li>Send the link to the signer — they pay by card, funds go directly to your Stripe account</li>
+                    </ol>
+                  </div>
+
+                  {/* Connection status indicator */}
+                  <div className={`flex items-center gap-2 rounded-xl p-3 border ${
+                    formData.stripeEnabled && formData.stripeSecretKey?.startsWith('sk_')
+                      ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/10'
+                      : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40'
+                  }`}>
+                    <span className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${
+                      formData.stripeEnabled && formData.stripeSecretKey?.startsWith('sk_')
+                        ? 'bg-emerald-500 animate-pulse'
+                        : 'bg-slate-300 dark:bg-slate-600'
+                    }`} />
+                    <p className={`text-xs font-medium ${
+                      formData.stripeEnabled && formData.stripeSecretKey?.startsWith('sk_')
+                        ? 'text-emerald-700 dark:text-emerald-300'
+                        : 'text-slate-500'
+                    }`}>
+                      {formData.stripeEnabled && formData.stripeSecretKey?.startsWith('sk_')
+                        ? 'Stripe configured — payment buttons will appear on invoice pages'
+                        : 'Stripe not configured — add your keys above to enable card payments'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> {savedFlash ? 'Saved ✓' : 'Save Payment Settings'}</Button>
               </div>
             </div>
           )}
