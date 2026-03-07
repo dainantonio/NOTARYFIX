@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare, Eye, TriangleAlert, CreditCard, Zap } from 'lucide-react';
+import { Plus, X, DollarSign, CheckCircle2, Clock, AlertCircle, Wand2, ScanLine, Pencil, Trash2, Send, Link2, FileText, MessageSquare, Eye, AlertTriangle, CreditCard, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input, Label, Select } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { toast } from '../hooks/useLinker';
@@ -179,7 +179,7 @@ const InvoiceReviewModal = ({ invoice, onClose, onConfirmSend, onEditFirst, know
                     ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
                     : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                 }`}>
-                  <TriangleAlert className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                   <span>{w.text}</span>
                 </div>
               ))}
