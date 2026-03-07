@@ -99,6 +99,21 @@ const DepartureChecklistModal = ({ appointment, isOpen, onClose, onDepart }) => 
       setConfirmingSkip(true);
       return;
     }
+
+    // Queue a mileage trip to auto-start when the Mileage Tracker next mounts
+    try {
+      const label = [appointment.type, appointment.client].filter(Boolean).join(' — ');
+      const dest  = appointment.address || appointment.location || '';
+      localStorage.setItem('notaryfix_pending_trip', JSON.stringify({
+        origin:         'Home',
+        destination:    dest,
+        linkedJobId:    appointment.id   || null,
+        linkedJobLabel: label            || '',
+        purpose:        'Business',
+        startedAt:      new Date().toISOString(),
+      }));
+    } catch (e) { /* storage unavailable — silently skip */ }
+
     onDepart(appointment.id);
   };
 

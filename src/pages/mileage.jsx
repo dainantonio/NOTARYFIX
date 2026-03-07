@@ -1036,6 +1036,28 @@ export default function Mileage() {
     seededRef.current = true;
   }, [data?.mileageLogs, setMileageLogs]);
 
+  // Auto-start a trip queued by the Pre-Departure Checklist
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    try {
+      const raw = localStorage.getItem('notaryfix_pending_trip');
+      if (!raw) return;
+      const pending = JSON.parse(raw);
+      localStorage.removeItem('notaryfix_pending_trip');
+      // Restore startedAt so the label is accurate; timer counts from now
+      startTrip({
+        origin:         pending.origin         || 'Home',
+        destination:    pending.destination    || '',
+        linkedJobId:    pending.linkedJobId    || null,
+        linkedJobLabel: pending.linkedJobLabel || '',
+        purpose:        pending.purpose        || 'Business',
+      });
+      toast.success('🚗 Mileage tracking started — drive safe!');
+    } catch (e) { /* storage unavailable or bad JSON — silently skip */ }
+  }, [startTrip]);
+
   const trips = useMemo(
     () => normalizeTrips(Array.isArray(data?.mileageLogs) && data.mileageLogs.length ? data.mileageLogs : SEED_TRIPS),
     [data?.mileageLogs]
