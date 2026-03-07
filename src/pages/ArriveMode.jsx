@@ -525,7 +525,7 @@ function ActionBtn({ icon: Icon, label, sublabel, color, done, onClick }) {
 export default function ArriveMode() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data, setData } = useData();
+  const { data, updateAppointment } = useData();
   const { completeAppointment } = useLinker();
   const { liveTrip, gpsStatus, liveMiles, stopAndGetMiles } = useActiveTrip();
 
@@ -1052,14 +1052,7 @@ export default function ArriveMode() {
               onClick={() => {
                 // Stamp signing_started_at
                 const now = new Date().toISOString();
-                setData(prev => ({
-                  ...prev,
-                  appointments: (prev.appointments || []).map(a =>
-                    String(a.id) === String(appt.id)
-                      ? { ...a, signing_started_at: now, status: 'in_progress' }
-                      : a
-                  ),
-                }));
+                updateAppointment(appt.id, { signing_started_at: now, status: 'in_progress' });
                 setSigningStarted(true);
                 setShowBeginFlash(true);
                 setTimeout(() => {
