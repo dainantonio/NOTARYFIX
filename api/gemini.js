@@ -4,7 +4,7 @@
 // Rate limited: 20 requests/minute per IP, plus origin check.
 
 const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
 // In-memory rate limit store: IP → { count, resetAt }
 // Vercel functions are warm for ~5 min, so this provides meaningful protection
