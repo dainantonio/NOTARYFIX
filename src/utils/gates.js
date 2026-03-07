@@ -63,6 +63,12 @@ const FEATURE_RULES = {
     title: 'Unlimited Journal Entries',
     description: 'Free accounts are limited to 10 journal entries per month. Upgrade to Pro for unlimited entries.',
   },
+  appointmentFull: {
+    requiredPlan: 'pro', // Free tier is capped at 14 signings per week in business logic
+    badge: 'PRO FEATURE',
+    title: 'Unlimited Appointments',
+    description: 'Free accounts are limited to 14 signings per week. Upgrade to Pro for unlimited appointments.',
+  },
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -119,4 +125,24 @@ export const isJournalAtLimit = (entries, planTier) => {
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
   return thisMonth.length >= 10;
+};
+
+// ─── APPOINTMENT WEEKLY SOFT LIMIT ────────────────────────────────────────────
+// Returns true if adding another appointment would exceed the free tier weekly limit (14/week)
+export const isAppointmentAtWeeklyLimit = (appointments, planTier) => {
+  if (normalizePlanTier(planTier) !== 'free') return false;
+  const now = new Date();
+  // ISO week: Monday = start of week
+  const dayOfWeek = (now.getDay() + 6) % 7; // 0=Mon … 6=Sun
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - dayOfWeek);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  const thisWeek = (appointments || []).filter((a) => {
+    const d = new Date(a.createdAt || a.date);
+    return d >= weekStart && d < weekEnd;
+  });
+  return thisWeek.length >= 14;
 };
