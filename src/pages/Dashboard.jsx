@@ -13,6 +13,7 @@ import {
 } from '../components/UI';
 import AppointmentModal from '../components/AppointmentModal';
 import DepartureChecklistModal from '../components/DepartureChecklistModal';
+import SignerConfirmationModal from '../components/SignerConfirmationModal';
 import { useTheme } from '../context/ThemeContext';
 import { PendingSuggestionsPanel } from '../components/AgentSuggestionCard';
 import { useData } from '../context/DataContext';
@@ -760,6 +761,7 @@ const SetupProgress = ({ checklist, onAction }) => {
 const Dashboard = () => {
   const [loading,     setLoading]     = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [signerConfirmAppt, setSignerConfirmAppt] = useState(null);
   const [chartType,   setChartType]   = useState(() =>
     typeof window !== 'undefined' ? (localStorage.getItem('dashboard_chart_type') || 'area') : 'area'
   );
@@ -834,7 +836,7 @@ const Dashboard = () => {
 
   // ── handlers ──────────────────────────────────────────────────────────────
   const handleSave = fd => {
-    addAppointment({
+    const newAppt = {
       id: Date.now(),
       client: fd.client, type: fd.type,
       date: fd.date || todayISO(),
@@ -845,8 +847,10 @@ const Dashboard = () => {
       address: fd.address || '',
       location: fd.location || 'TBD',
       notes: fd.notes || '',
-    });
+    };
+    addAppointment(newAppt);
     setIsModalOpen(false);
+    setSignerConfirmAppt(newAppt);
   };
 
   const setupChecklist = useMemo(() => [
@@ -885,6 +889,12 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen pb-24">
       <AppointmentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} />
+      <SignerConfirmationModal
+        isOpen={!!signerConfirmAppt}
+        appointment={signerConfirmAppt}
+        notaryName={data.settings?.name || data.settings?.businessName || 'Your Notary'}
+        onClose={() => setSignerConfirmAppt(null)}
+      />
 
       <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-5 sm:space-y-5 sm:px-6 sm:py-7 md:px-8 md:py-8">
 

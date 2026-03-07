@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil, CheckCircle2, Clock, M
 import { Card, CardContent, Button } from '../components/UI';
 import AppointmentModal, { appointmentTypeToActType } from '../components/AppointmentModal';
 import DepartureChecklistModal from '../components/DepartureChecklistModal';
+import SignerConfirmationModal from '../components/SignerConfirmationModal';
 import { useData } from '../context/DataContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, useLinker } from '../hooks/useLinker';
@@ -66,6 +67,7 @@ const Schedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
+  const [signerConfirmAppt, setSignerConfirmAppt] = useState(null);
   const [prefillDate, setPrefillDate] = useState('');
   const [quickClientName, setQuickClientName] = useState('');
   const [smartCalendarInput, setSmartCalendarInput] = useState('');
@@ -140,7 +142,7 @@ const Schedule = () => {
     }
 
     setQuickClientName('');
-    addAppointment({
+    const newAppt = {
       id: Date.now(),
       client: formData.client,
       type: formData.type,
@@ -153,8 +155,11 @@ const Schedule = () => {
       address: formData.address || '',
       location: formData.location || 'TBD',
       notes: `${formData.notes || ''}${formData.notes ? ' | ' : ''}Reminders: ${reminderSummary}`,
-    });
+    };
+    addAppointment(newAppt);
     toast.success('Appointment created');
+    // Surface signer confirmation prompt
+    setSignerConfirmAppt(newAppt);
   };
 
   const inCurrentMonth = (dateString) => {
@@ -703,6 +708,13 @@ const Schedule = () => {
           setDepartingApt(null);
           navigate(`/arrive/${aptId}`);
         }}
+      />
+
+      <SignerConfirmationModal
+        isOpen={!!signerConfirmAppt}
+        appointment={signerConfirmAppt}
+        notaryName={data.settings?.name || data.settings?.businessName || 'Your Notary'}
+        onClose={() => setSignerConfirmAppt(null)}
       />
     </div>
   );
