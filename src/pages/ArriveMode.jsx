@@ -13,13 +13,13 @@
  * Works for:  Loan Signing | General Notary Work | I-9 | Apostille | RON
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowLeft, BadgeCheck, BookOpen, Car,
+  AlertTriangle, ArrowLeft, BadgeCheck, BookOpen, Camera, Car,
   CheckCircle2, ChevronDown, ChevronUp, Circle, Clock,
   DollarSign, FileText, Fingerprint, Info, MapPin, Navigation,
-  Receipt, ShieldAlert, ShieldCheck, Star, User, Users,
+  PlayCircle, Receipt, ShieldAlert, ShieldCheck, Star, User, Users,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLinker } from '../hooks/useLinker';
@@ -30,58 +30,55 @@ import { useActiveTrip } from '../context/ActiveTripContext';
 
 const cls = (...args) => args.filter(Boolean).join(' ');
 
-// ─── Per-type pre-arrival checklists ─────────────────────────────────────────
+// ─── On-site signer verification checklist (Phase 2 — you're AT the location) ─
+// Note: Phase 1 packing/departure checklist lives in DepartureChecklistModal.jsx
 
-const CHECKLIST = {
+const ON_SITE_CHECKLIST = {
   'Loan Signing': [
-    { id: 'ls-1',  critical: true,  label: 'Confirm signer name matches lender package' },
-    { id: 'ls-2',  critical: true,  label: 'All borrowers present and have valid photo ID' },
-    { id: 'ls-3',  critical: true,  label: 'Entire package printed and page-counted' },
-    { id: 'ls-4',  critical: true,  label: 'Notary seal, commission card, journal in bag' },
-    { id: 'ls-5',  critical: false, label: 'Two or more blue-ink pens' },
-    { id: 'ls-6',  critical: false, label: 'Signing surface cleared and well-lit' },
-    { id: 'ls-7',  critical: false, label: 'Phone on silent / do-not-disturb' },
-    { id: 'ls-8',  critical: false, label: 'Lender contact saved in case of questions' },
-    { id: 'ls-9',  critical: false, label: 'Return shipping label ready (FedEx / UPS)' },
+    { id: 'os-ls-1', critical: true,  label: "Signer's photo ID is present and unexpired" },
+    { id: 'os-ls-2', critical: true,  label: 'Name on ID matches document exactly (incl. middle name/initial)' },
+    { id: 'os-ls-3', critical: true,  label: 'All borrowers listed in the package are present' },
+    { id: 'os-ls-4', critical: true,  label: 'No blank fields remain in any notarizable document' },
+    { id: 'os-ls-5', critical: true,  label: 'Notarial act type confirmed with each signer (Acknowledgment)' },
+    { id: 'os-ls-6', critical: false, label: 'Thumbprint obtained if required by state or lender' },
+    { id: 'os-ls-7', critical: false, label: 'Witnesses present and identified (if deed or lender requires)' },
+    { id: 'os-ls-8', critical: false, label: 'Signing surface clear — documents stacked in signing order' },
   ],
   'General Notary Work (GNW)': [
-    { id: 'gnw-1', critical: true,  label: 'Signer has unexpired, government-issued photo ID' },
-    { id: 'gnw-2', critical: true,  label: 'Document reviewed — no blank fields left' },
-    { id: 'gnw-3', critical: true,  label: 'Correct act confirmed (Acknowledgment vs. Jurat)' },
-    { id: 'gnw-4', critical: true,  label: 'Notary seal, journal, and commission card ready' },
-    { id: 'gnw-5', critical: false, label: 'Fee amount agreed upon before starting' },
-    { id: 'gnw-6', critical: false, label: 'Payment method confirmed (cash / Venmo / Zelle)' },
-    { id: 'gnw-7', critical: false, label: 'Phone on silent' },
+    { id: 'os-gnw-1', critical: true,  label: "Signer's ID is present, unexpired, and government-issued" },
+    { id: 'os-gnw-2', critical: true,  label: 'Name on ID matches name on document to be notarized' },
+    { id: 'os-gnw-3', critical: true,  label: 'Document has no blank spaces (except intentional blanks)' },
+    { id: 'os-gnw-4', critical: true,  label: 'Correct notarial act confirmed — Acknowledgment vs. Jurat' },
+    { id: 'os-gnw-5', critical: true,  label: 'Signer appears willing, aware, and competent' },
+    { id: 'os-gnw-6', critical: false, label: 'Witnesses present if this document requires them' },
+    { id: 'os-gnw-7', critical: false, label: 'Thumbprint obtained if state or document requires it' },
   ],
   'I-9 Verification': [
-    { id: 'i9-1',  critical: true,  label: 'Employee has completed Section 1 before arrival' },
-    { id: 'i9-2',  critical: true,  label: 'Acceptable List A or (List B + List C) docs are present' },
-    { id: 'i9-3',  critical: true,  label: 'All documents are original — no photocopies' },
-    { id: 'i9-4',  critical: true,  label: 'Documents are unexpired' },
-    { id: 'i9-5',  critical: true,  label: 'Section 2 must be completed same day as document inspection' },
-    { id: 'i9-6',  critical: false, label: 'Employer contact on hand if questions arise' },
-    { id: 'i9-7',  critical: false, label: 'Completed form returned to employer — not retained by you' },
+    { id: 'os-i9-1', critical: true,  label: "Section 1 of Form I-9 completed and signed by employee" },
+    { id: 'os-i9-2', critical: true,  label: 'Original, unexpired List A or (List B + List C) docs presented' },
+    { id: 'os-i9-3', critical: true,  label: 'All documents are originals — no photocopies accepted' },
+    { id: 'os-i9-4', critical: true,  label: 'Names on documents match Section 1 of Form I-9' },
+    { id: 'os-i9-5', critical: false, label: 'Documents physically examined (not just glanced at)' },
+    { id: 'os-i9-6', critical: false, label: 'Section 2 ready to complete — must be same day as inspection' },
   ],
   'Apostille': [
-    { id: 'ap-1',  critical: true,  label: 'Document is an original or certified copy — no photocopies' },
-    { id: 'ap-2',  critical: true,  label: 'Issuing state confirmed and matches submission state' },
-    { id: 'ap-3',  critical: true,  label: 'Secretary of State requirements reviewed for that state' },
-    { id: 'ap-4',  critical: true,  label: 'Notary acknowledgment attached if required' },
-    { id: 'ap-5',  critical: false, label: 'Correct fee confirmed with SOS office' },
-    { id: 'ap-6',  critical: false, label: 'Turnaround time communicated to client' },
+    { id: 'os-ap-1', critical: true,  label: 'Document is original or certified copy — no photocopies' },
+    { id: 'os-ap-2', critical: true,  label: 'Issuing state confirmed and matches submission state' },
+    { id: 'os-ap-3', critical: true,  label: 'Notary certificate language is correct for this state' },
+    { id: 'os-ap-4', critical: false, label: 'SOS cover sheet prepared if required' },
+    { id: 'os-ap-5', critical: false, label: 'Fee and turnaround confirmed with client' },
   ],
   'Remote Online Notary (RON)': [
-    { id: 'ron-1', critical: true,  label: 'RON platform open and session link sent to signer' },
-    { id: 'ron-2', critical: true,  label: 'Signer has completed identity proofing (KBA/biometric)' },
-    { id: 'ron-3', critical: true,  label: 'Your state RON commission active and on file' },
-    { id: 'ron-4', critical: true,  label: 'Audio/video recording will be enabled for the session' },
-    { id: 'ron-5', critical: false, label: 'Documents uploaded to platform' },
-    { id: 'ron-6', critical: false, label: 'Back-up phone/internet connection available' },
-    { id: 'ron-7', critical: false, label: 'Quiet, professional background confirmed' },
+    { id: 'os-ron-1', critical: true,  label: 'Signer identity proofing complete — KBA/biometric passed' },
+    { id: 'os-ron-2', critical: true,  label: "Signer's ID verified on screen — unexpired and matches document" },
+    { id: 'os-ron-3', critical: true,  label: 'Audio/video recording confirmed active for this session' },
+    { id: 'os-ron-4', critical: true,  label: 'No blank fields in uploaded document' },
+    { id: 'os-ron-5', critical: false, label: 'Electronic witness connected if state or doc requires it' },
+    { id: 'os-ron-6', critical: false, label: 'Signer has confirmed they understand what they are signing' },
   ],
 };
 
-const DEFAULT_CHECKLIST = CHECKLIST['General Notary Work (GNW)'];
+const DEFAULT_ON_SITE_CHECKLIST = ON_SITE_CHECKLIST['General Notary Work (GNW)'];
 
 // ─── Document checklists per type ─────────────────────────────────────────────
 
@@ -304,6 +301,133 @@ const THUMBPRINT_STATES = {
   CO: ['Deed of Trust', 'Mortgage'],
 };
 
+// ─── ID types for capture form ───────────────────────────────────────────────
+
+const ID_TYPES = [
+  "Driver's License",
+  'State ID Card',
+  'U.S. Passport',
+  'U.S. Passport Card',
+  'Military ID',
+  'Permanent Resident Card',
+  'Foreign Passport',
+  'Tribal ID',
+  'Other Government-Issued ID',
+];
+
+// ─── ID Capture form ─────────────────────────────────────────────────────────
+
+function IDCaptureForm({ record, onChange }) {
+  const cameraRef = useRef(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+
+  const handlePhoto = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPhotoPreview(url);
+  };
+
+  return (
+    <div className="space-y-3 pt-1">
+      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+        Record ID details for your journal entry. Photo stays on this device only.
+      </p>
+
+      {/* Camera capture */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => cameraRef.current?.click()}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
+          <Camera className="w-4 h-4" />
+          {photoPreview ? 'Retake Photo' : 'Photograph ID'}
+        </button>
+        {photoPreview && (
+          <img
+            src={photoPreview}
+            alt="ID capture"
+            className="h-12 rounded-lg object-cover border border-slate-200 dark:border-slate-600"
+          />
+        )}
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handlePhoto}
+        />
+      </div>
+
+      {/* Structured fields */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="col-span-2">
+          <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">ID Type</label>
+          <select
+            value={record.idType || ''}
+            onChange={e => onChange({ ...record, idType: e.target.value })}
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="">Select type…</option>
+            {ID_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Name on ID</label>
+          <input
+            type="text"
+            placeholder="Full name"
+            value={record.nameOnId || ''}
+            onChange={e => onChange({ ...record, nameOnId: e.target.value })}
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">ID # (last 4)</label>
+          <input
+            type="text"
+            placeholder="xxxx"
+            maxLength={4}
+            value={record.idLast4 || ''}
+            onChange={e => onChange({ ...record, idLast4: e.target.value.replace(/\D/g, '') })}
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Expiry Date</label>
+          <input
+            type="date"
+            value={record.idExpiry || ''}
+            onChange={e => onChange({ ...record, idExpiry: e.target.value })}
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Issuing State</label>
+          <input
+            type="text"
+            placeholder="e.g. WA"
+            maxLength={3}
+            value={record.idState || ''}
+            onChange={e => onChange({ ...record, idState: e.target.value.toUpperCase() })}
+            className="w-full text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      </div>
+
+      {/* Expiry warning */}
+      {record.idExpiry && new Date(record.idExpiry) < new Date() && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <p className="text-xs font-semibold text-red-700 dark:text-red-300">⚠ This ID is expired — you cannot proceed.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Section accordion component ─────────────────────────────────────────────
 
 function Section({ id, title, icon: Icon, badge, badgeColor = 'bg-blue-100 text-blue-700', children, defaultOpen = false }) {
@@ -401,9 +525,16 @@ function ActionBtn({ icon: Icon, label, sublabel, color, done, onClick }) {
 export default function ArriveMode() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data } = useData();
+  const { data, setData } = useData();
   const { completeAppointment } = useLinker();
   const { liveTrip, gpsStatus, liveMiles, stopAndGetMiles } = useActiveTrip();
+
+  // Begin Signing flow
+  const [signingStarted, setSigningStarted] = useState(false);
+  const [showBeginFlash, setShowBeginFlash] = useState(false);
+
+  // ID capture form state
+  const [idRecord, setIdRecord] = useState({});
 
   // Resolve appointment
   const appt = useMemo(
@@ -414,9 +545,9 @@ export default function ArriveMode() {
   // Notary state code
   const stateCode = data.settings?.currentStateCode || 'WA';
 
-  // Checklist state — keyed by item id
+  // On-site checklist state — keyed by item id
   const checklistItems = useMemo(
-    () => CHECKLIST[appt?.type] || DEFAULT_CHECKLIST,
+    () => ON_SITE_CHECKLIST[appt?.type] || DEFAULT_ON_SITE_CHECKLIST,
     [appt?.type],
   );
   const [checks, setChecks] = useState({});
@@ -628,10 +759,21 @@ export default function ArriveMode() {
       {/* ── Main content ─────────────────────────────────────────────────────── */}
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
 
-        {/* 1. Pre-arrival checklist */}
+        {/* Phase label */}
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Phase 1 — Pre-Departure</span>
+          <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">✓ Done</span>
+        </div>
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">Phase 2 — On-Site Now</span>
+          <span className="flex-1 h-px bg-blue-200 dark:bg-blue-800" />
+        </div>
+
+        {/* 1. On-site signer check */}
         <Section
           id="checklist"
-          title="Pre-Arrival Checklist"
+          title="On-Site Signer Check"
           icon={BadgeCheck}
           badge={`${allDone}/${checklistItems.length}`}
           badgeColor={criticalAllDone ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}
@@ -650,13 +792,19 @@ export default function ArriveMode() {
           {!criticalAllDone && (
             <p className="mt-3 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-              {criticalItems.length - criticalDone} required item{criticalItems.length - criticalDone !== 1 ? 's' : ''} remaining before you're fully ready.
+              {criticalItems.length - criticalDone} required item{criticalItems.length - criticalDone !== 1 ? 's' : ''} must be confirmed before signing.
             </p>
           )}
-          {criticalAllDone && (
+          {criticalAllDone && !signingStarted && (
             <p className="mt-3 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-              All required items checked — you're cleared to proceed.
+              All required items confirmed — tap <strong className="mx-0.5">Begin Signing</strong> below.
+            </p>
+          )}
+          {signingStarted && (
+            <p className="mt-3 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+              Signing session started and timestamped.
             </p>
           )}
         </Section>
@@ -697,6 +845,17 @@ export default function ArriveMode() {
               </div>
             </div>
           </div>
+        </Section>
+
+        {/* 2b. Record Signer ID */}
+        <Section
+          id="id-capture"
+          title="Record Signer ID"
+          icon={Camera}
+          badge={idRecord.idType ? '✓ Recorded' : 'Optional'}
+          badgeColor={idRecord.idType ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}
+        >
+          <IDCaptureForm record={idRecord} onChange={setIdRecord} />
         </Section>
 
         {/* 3. Document checklist */}
@@ -861,6 +1020,17 @@ export default function ArriveMode() {
         )}
       </div>
 
+      {/* ── Begin Signing flash overlay ──────────────────────────────────────── */}
+      {showBeginFlash && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-600/90 backdrop-blur-sm pointer-events-none">
+          <div className="flex flex-col items-center gap-4">
+            <CheckCircle2 className="w-20 h-20 text-white animate-bounce" />
+            <p className="text-2xl font-black text-white tracking-tight">You're cleared to begin.</p>
+            <p className="text-sm text-emerald-100">Signing session timestamped.</p>
+          </div>
+        </div>
+      )}
+
       {/* ── Bottom CTA ───────────────────────────────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-30 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-4 py-3 safe-area-inset-bottom">
         <div className="max-w-lg mx-auto flex gap-3">
@@ -870,23 +1040,61 @@ export default function ArriveMode() {
           >
             ← Schedule
           </button>
-          <button
-            disabled={!criticalAllDone}
-            className={cls(
-              'flex-[2] py-3 rounded-2xl text-white text-sm font-bold transition-all',
-              criticalAllDone
-                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-emerald-900'
-                : 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed',
-            )}
-            onClick={() => {
-              completeAppointment(appt);
-              navigate('/journal', {
-                state: { prefillAppointmentId: appt.id, prefillClient: appt.client },
-              });
-            }}
-          >
-            {criticalAllDone ? "✓ I'm Ready — Open Journal" : `Complete ${criticalItems.length - criticalDone} required item${criticalItems.length - criticalDone !== 1 ? 's' : ''} first`}
-          </button>
+          {!signingStarted ? (
+            <button
+              disabled={!criticalAllDone}
+              className={cls(
+                'flex-[2] py-3 rounded-2xl text-white text-sm font-bold transition-all flex items-center justify-center gap-2',
+                criticalAllDone
+                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-emerald-900'
+                  : 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed',
+              )}
+              onClick={() => {
+                // Stamp signing_started_at
+                const now = new Date().toISOString();
+                setData(prev => ({
+                  ...prev,
+                  appointments: (prev.appointments || []).map(a =>
+                    String(a.id) === String(appt.id)
+                      ? { ...a, signing_started_at: now, status: 'in_progress' }
+                      : a
+                  ),
+                }));
+                setSigningStarted(true);
+                setShowBeginFlash(true);
+                setTimeout(() => {
+                  setShowBeginFlash(false);
+                  completeAppointment(appt);
+                  navigate('/journal', {
+                    state: {
+                      prefillAppointmentId: appt.id,
+                      prefillClient: appt.client,
+                      prefillActType: appt.type,
+                      prefillIdRecord: idRecord,
+                    },
+                  });
+                }, 1800);
+              }}
+            >
+              {criticalAllDone
+                ? <><PlayCircle className="w-4 h-4" /> Begin Signing</>
+                : `Verify ${criticalItems.length - criticalDone} item${criticalItems.length - criticalDone !== 1 ? 's' : ''} first`}
+            </button>
+          ) : (
+            <button
+              className="flex-[2] py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+              onClick={() => navigate('/journal', {
+                state: {
+                  prefillAppointmentId: appt.id,
+                  prefillClient: appt.client,
+                  prefillActType: appt.type,
+                  prefillIdRecord: idRecord,
+                },
+              })}
+            >
+              <BookOpen className="w-4 h-4" /> Open Journal
+            </button>
+          )}
         </div>
       </div>
     </div>
