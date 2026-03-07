@@ -1,6 +1,6 @@
 // File: src/pages/Mileage.jsx
 // NotaryOS — Mileage Tracker  (the moat feature)
-// v2: GPS auto-distance + appointment location transfer
+// v3: GPS state lifted to ActiveTripContext — persists across page navigations
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Car, Play, Square, MapPin, Navigation, ChevronDown, ChevronRight,
@@ -13,6 +13,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '../components/UI';
 import { useData } from '../context/DataContext';
 import { toast } from '../hooks/useLinker';
+import { useActiveTrip } from '../context/ActiveTripContext';
+import { useLocation } from 'react-router-dom';
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 const IRS_RATE_2025   = 0.67; // per mile
@@ -161,18 +163,16 @@ function useGPSTracker() {
 }
 
 // ─── LIVE TRIP TIMER ────────────────────────────────────────────────────────────
-function useTripTimer(active) {
+// Accepts a startedAt epoch timestamp so elapsed time persists across page navigations.
+function useTripTimer(startedAt) {
   const [elapsed, setElapsed] = useState(0);
-  const ref = useRef(null);
   useEffect(() => {
-    if (active) {
-      ref.current = setInterval(() => setElapsed(e => e + 1), 1000);
-    } else {
-      clearInterval(ref.current);
-      setElapsed(0);
-    }
-    return () => clearInterval(ref.current);
-  }, [active]);
+    if (!startedAt) { setElapsed(0); return; }
+    const tick = () => setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
   const m = Math.floor(elapsed / 60);
   const s = elapsed % 60;
   return { display: `${m}:${String(s).padStart(2, '0')}`, minutes: m };
@@ -1023,7 +1023,11 @@ function MonthlyChart({ trips }) {
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────────
 export default function Mileage() {
   const { data, addMileageLog, updateMileageLog, deleteMileageLog, setMileageLogs } = useData();
-  const gps = useGPSTracker();
+  const {
+    liveTrip, gpsStatus, liveMiles,
+    startTrip: ctxStartTrip, stopAndGetMiles, clearTrip,
+  } = useActiveTrip();
+  const location = useLocation();
 
   // Seed demo data once on mount if empty
   const seededRef = useRef(false);
@@ -1044,7 +1048,6 @@ export default function Mileage() {
   );
 
   // ── State ──────────────────────────────────────────────────────────────────────
-  const [liveTrip,          setLiveTrip]          = useState(null);
   const [stopModalOpen,     setStopModalOpen]      = useState(false);
   const [stopGPSMiles,      setStopGPSMiles]       = useState(0);
   const [reminderDismissed, setReminderDismissed]  = useState(false);
@@ -1060,7 +1063,7 @@ export default function Mileage() {
   const [linkModal,         setLinkModal]          = useState(null);
   const [selectedAppt,      setSelectedAppt]       = useState('');
 
-  const { display: elapsedDisplay, minutes: elapsedMinutes } = useTripTimer(!!liveTrip);
+  const { display: elapsedDisplay, minutes: elapsedMinutes } = useTripTimer(liveTrip?.startedAt);
 
   // Auto-end reminder: fires after REMINDER_MIN minutes, can be dismissed once
   const reminderActive = !!liveTrip && elapsedMinutes >= REMINDER_MIN && !reminderDismissed;
@@ -1192,23 +1195,20 @@ export default function Mileage() {
   }, [appointmentOptions, updateMileageLog]);
 
   // ── Live trip ──────────────────────────────────────────────────────────────────
+  // Local startTrip wrapper — delegates to context, resets reminder state
   const startTrip = useCallback((info) => {
     setReminderDismissed(false);
-    setLiveTrip({
-      ...info,
-      startTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-    });
-    gps.start(); // kick off GPS tracking
-  }, [gps]);
+    ctxStartTrip(info);
+  }, [ctxStartTrip]);
 
-  // Tapping "Stop" → snapshot GPS miles, open confirmation modal
+  // Tapping "Stop" → snapshot GPS miles from context, open confirmation modal
   const requestStopTrip = useCallback(() => {
-    const miles = gps.stop(); // stops GPS and returns total miles
+    const miles = stopAndGetMiles();
     setStopGPSMiles(miles);
     setStopModalOpen(true);
-  }, [gps]);
+  }, [stopAndGetMiles]);
 
-  // Confirm stop: save the trip
+  // Confirm stop: save the trip to the mileage log, then clear context trip
   const confirmStopTrip = useCallback((details) => {
     if (!liveTrip) return;
     addMileageLog({
@@ -1224,36 +1224,32 @@ export default function Mileage() {
       linkedJobLabel: details.linkedJobLabel,
       notes:          details.notes,
       gpsTracked:     details.gpsTracked ?? false,
-      verified:       false, // starts unverified — user marks after review
+      verified:       false,
     });
-    setLiveTrip(null);
+    clearTrip(); // clear context trip state
     setStopModalOpen(false);
     setStopGPSMiles(0);
     setReminderDismissed(false);
     toast.success('Live trip saved');
-  }, [addMileageLog, liveTrip]);
+  }, [addMileageLog, liveTrip, clearTrip]);
 
-  // Auto-start a trip queued by the Pre-Departure Checklist
-  // Must live AFTER startTrip useCallback to avoid TDZ error
-  const autoStartedRef = useRef(false);
+  // Reset reminder when a new trip starts (catches trips started from DepartureChecklist)
   useEffect(() => {
-    if (autoStartedRef.current) return;
-    autoStartedRef.current = true;
-    try {
-      const raw = localStorage.getItem('notaryfix_pending_trip');
-      if (!raw) return;
-      const pending = JSON.parse(raw);
-      localStorage.removeItem('notaryfix_pending_trip');
-      startTrip({
-        origin:         pending.origin         || 'Home',
-        destination:    pending.destination    || '',
-        linkedJobId:    pending.linkedJobId    || null,
-        linkedJobLabel: pending.linkedJobLabel || '',
-        purpose:        pending.purpose        || 'Business',
-      });
-      toast.success('🚗 Mileage tracking started — drive safe!');
-    } catch (e) { /* storage unavailable or bad JSON — silently skip */ }
-  }, [startTrip]);
+    if (liveTrip) setReminderDismissed(false);
+  }, [liveTrip?.startedAt]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-trigger stop flow when navigated here with triggerStop state
+  // (e.g., from the Layout GPS banner Stop button or ArriveMode)
+  useEffect(() => {
+    if (location.state?.triggerStop && liveTrip) {
+      const miles = stopAndGetMiles();
+      setStopGPSMiles(miles);
+      setStopModalOpen(true);
+      // Clear nav state so it doesn't re-trigger on re-render
+      window.history.replaceState({}, '');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // only on mount — liveTrip is available synchronously from context
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
@@ -1284,8 +1280,8 @@ export default function Mileage() {
         active={!!liveTrip}
         trip={liveTrip}
         elapsed={elapsedDisplay}
-        liveMiles={gps.liveMiles}
-        gpsStatus={gps.status}
+        liveMiles={liveMiles}
+        gpsStatus={gpsStatus}
         reminderActive={reminderActive}
         onReminderDismiss={() => setReminderDismissed(true)}
         onStart={startTrip}

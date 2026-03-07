@@ -18,12 +18,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertTriangle, ArrowLeft, BadgeCheck, BookOpen, Car,
   CheckCircle2, ChevronDown, ChevronUp, Circle, Clock,
-  DollarSign, FileText, Fingerprint, Info, MapPin,
+  DollarSign, FileText, Fingerprint, Info, MapPin, Navigation,
   Receipt, ShieldAlert, ShieldCheck, Star, User, Users,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLinker } from '../hooks/useLinker';
 import { serviceTypeToActType } from '../utils/notaryTypes';
+import { useActiveTrip } from '../context/ActiveTripContext';
 
 // ─── Colour palette helpers ──────────────────────────────────────────────────
 
@@ -402,6 +403,7 @@ export default function ArriveMode() {
   const navigate = useNavigate();
   const { data } = useData();
   const { completeAppointment } = useLinker();
+  const { liveTrip, gpsStatus, liveMiles, stopAndGetMiles } = useActiveTrip();
 
   // Resolve appointment
   const appt = useMemo(
@@ -560,6 +562,33 @@ export default function ArriveMode() {
           </div>
         </div>
       </div>
+
+      {/* ── GPS active trip banner ───────────────────────────────────────────── */}
+      {liveTrip && (
+        <div className="max-w-lg mx-auto px-4 pt-3">
+          <div className="flex items-center gap-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 px-4 py-3">
+            <span className="relative flex h-3 w-3 shrink-0">
+              {gpsStatus === 'active' && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              )}
+              <span className={`relative inline-flex rounded-full h-3 w-3 ${gpsStatus === 'active' ? 'bg-cyan-400' : 'bg-slate-400'}`} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-cyan-500 dark:text-cyan-400">GPS tracking active</p>
+              <p className="text-xs text-slate-500 truncate">
+                {gpsStatus === 'active' ? `${liveMiles.toFixed(1)} mi tracked` : gpsStatus === 'acquiring' ? 'Acquiring GPS…' : 'Tracking'}
+                {liveTrip.destination ? ` · ${liveTrip.destination}` : ''}
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/mileage', { state: { triggerStop: true } })}
+              className="shrink-0 rounded-xl bg-cyan-500/20 border border-cyan-500/30 px-3 py-1.5 text-xs font-bold text-cyan-500 dark:text-cyan-400 hover:bg-cyan-500/30 transition-colors whitespace-nowrap"
+            >
+              Stop &amp; Log
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Alert banners ────────────────────────────────────────────────────── */}
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-2">

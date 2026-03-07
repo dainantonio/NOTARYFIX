@@ -1,12 +1,14 @@
 // src/components/DepartureChecklistModal.jsx
-// Pre-departure blocking checklist before navigating to ArriveMode
+// Pre-departure blocking checklist before navigating to ArriveMode.
 // Critical items MUST all be checked. Non-critical can be skipped with confirmation.
+// On confirm: starts GPS tracking immediately via ActiveTripContext (no page visit needed).
 
 import React, { useState, useEffect } from 'react';
 import {
   X, Car, AlertTriangle, CheckCircle2, Circle,
   ShieldAlert, ChevronRight,
 } from 'lucide-react';
+import { useActiveTrip } from '../context/ActiveTripContext';
 
 // ─── Per-type pre-departure checklists (mirrored from ArriveMode) ─────────────
 const CHECKLIST = {
@@ -65,6 +67,7 @@ const getChecklist = (appointmentType = '') => {
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 const DepartureChecklistModal = ({ appointment, isOpen, onClose, onDepart }) => {
+  const { startTrip } = useActiveTrip();
   const [checked, setChecked] = useState(new Set());
   const [confirmingSkip, setConfirmingSkip] = useState(false);
 
@@ -100,19 +103,27 @@ const DepartureChecklistModal = ({ appointment, isOpen, onClose, onDepart }) => 
       return;
     }
 
-    // Queue a mileage trip to auto-start when the Mileage Tracker next mounts
-    try {
-      const label = [appointment.type, appointment.client].filter(Boolean).join(' — ');
-      const dest  = appointment.address || appointment.location || '';
-      localStorage.setItem('notaryfix_pending_trip', JSON.stringify({
+    // Start GPS trip tracking immediately via context — no page visit needed
+    const label = [appointment.type, appointment.client].filter(Boolean).join(' — ');
+    const dest  = appointment.address || appointment.location || '';
+    if (startTrip) {
+      startTrip({
         origin:         'Home',
         destination:    dest,
         linkedJobId:    appointment.id   || null,
         linkedJobLabel: label            || '',
         purpose:        'Business',
-        startedAt:      new Date().toISOString(),
-      }));
-    } catch (e) { /* storage unavailable — silently skip */ }
+      });
+    } else {
+      // Fallback: queue via localStorage if context is unavailable
+      try {
+        localStorage.setItem('notaryfix_pending_trip', JSON.stringify({
+          origin: 'Home', destination: dest,
+          linkedJobId: appointment.id || null,
+          linkedJobLabel: label || '', purpose: 'Business',
+        }));
+      } catch (e) { /* storage unavailable */ }
+    }
 
     onDepart(appointment.id);
   };
