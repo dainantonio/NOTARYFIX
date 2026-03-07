@@ -26,6 +26,7 @@ const ArriveMode     = lazy(() => import('./pages/ArriveMode'));
 const Settings       = lazy(() => import('./pages/Settings'));
 const Mileage        = lazy(() => import('./pages/mileage'));
 const FormGuide      = lazy(() => import('./pages/FormGuide'));
+const NotaryOSGuide  = lazy(() => import('./pages/NotaryOSGuide'));
 
 const PayInvoicePage = lazy(() => import('./pages/PayInvoicePage'));
 
@@ -133,6 +134,7 @@ function App() {
                     <Route path="/market-insights" element={<NetworkInsightsPage />} />
 
                     <Route path="/form-guide"      element={<GatedRoute featureKey="formGuide"><FormGuide /></GatedRoute>} />
+                    <Route path="/guide"           element={<NotaryOSGuide />} />
 
                     {/* Gated */}
                     <Route path="/signer-portal"   element={<GatedRoute featureKey="signerPortal"><SignerPortal /></GatedRoute>} />
