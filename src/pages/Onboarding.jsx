@@ -28,29 +28,29 @@ const PLANS = [
     tagline: 'Test the waters',
     accent: 'border-slate-600 bg-slate-800/60',
     badge: null,
-    features: ['Appointments', 'Basic Journal (10/mo)', 'Clients & Invoices', 'Mileage tracking'],
-    locked: ['Signer Portal', 'AI Trainer', 'Team Dispatch'],
+    features: ['14 Signings/week', 'Pre-Departure Checklist', 'Signer Confirmation', 'Job Inbox (paste + image)', 'GPS Mileage Tracking', 'Invoice Preview & Send', 'Journal (10 entries/mo)', 'Clients & Management'],
+    locked: ['Auto-Closeout Agent', 'AI Compliance Coach', 'Command Center', 'Signer Portal', 'Team Dispatch'],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: '$29',
+    price: '$19',
     period: 'per month',
     tagline: 'For full-time professionals',
     accent: 'border-blue-500 bg-blue-600/10',
     badge: 'Most Popular',
-    features: ['Everything in Starter', 'Unlimited Journal', 'Signer Portal', 'AI Compliance Trainer', 'Invoice Automation', 'Priority Support', 'Unified Dark Interface'],
-    locked: ['Team Dispatch', 'Multi-notary'],
+    features: ['Everything in Starter', 'Unlimited Appointments & Journal', 'Auto-Closeout Agent (3 modes)', 'AI Compliance Coach', 'Command Center', 'Act Library', 'Signer Portal', 'Market Insights', 'Tax Center', 'Priority Support'],
+    locked: ['Team Dispatch', 'White-Label Portal', 'Admin Panel'],
   },
   {
     id: 'agency',
     name: 'Agency',
-    price: '$79',
+    price: '$49',
     period: 'per month',
     tagline: 'Run a full operation',
     accent: 'border-violet-500 bg-violet-600/10',
     badge: 'Full Power',
-    features: ['Everything in Pro', 'Team Dispatch', 'Multi-notary', 'SLA Tracking', 'Admin Control Center', 'State Policy Database', 'Dedicated Manager', 'Standardized Team UI'],
+    features: ['Everything in Pro', 'Team Dispatch', 'Multi-Notary Routing', 'White-Label Signer Portal', 'Admin Control Center', 'Role-Based Permissions', 'SLA Tracking', 'State Policy Database'],
     locked: [],
   },
 ];
@@ -604,10 +604,11 @@ export default function Onboarding() {
                 </div>
                 <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/6 p-4 space-y-2.5">
                   {[
-                    { icon: '🗺️', text: 'Planner maps your task into steps — journal, invoice, compliance — before anything runs' },
-                    { icon: '📋', text: 'Drafts the journal entry with compliant per-act fields for your state' },
-                    { icon: '🧾', text: 'Generates the invoice from your fee schedule, linked to the appointment' },
-                    { icon: '🔬', text: 'Verifier checks compliance and attaches grounded citations' },
+                    { icon: '🚗', text: 'Pre-Departure Checklist blocks departure until all critical items are confirmed — GPS starts automatically' },
+                    { icon: '💬', text: 'Signer Confirmation fires after every appointment save — pre-written what-to-bring message ready to send' },
+                    { icon: '📋', text: 'Drafts the journal entry with compliant per-act fields for your state after every signing' },
+                    { icon: '🧾', text: 'Generates the invoice from your fee schedule, linked to the appointment automatically' },
+                    { icon: '🔬', text: 'Verifier checks compliance and attaches grounded citations from real state statutes' },
                     { icon: '✅', text: 'All drafts queue in Command Center for your one-tap approval, edit, or reject' },
                   ].map(({ icon, text }) => (
                     <div key={text} className="flex items-start gap-3">
