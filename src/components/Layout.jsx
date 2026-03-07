@@ -7,7 +7,7 @@ import {
   Sun, Moon, Search, Command, MapPin, X, Lock,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
   Sparkles, Maximize2, Minimize2, MoreHorizontal, Inbox,
-  DollarSign, TrendingUp, Satellite, Navigation, Square} from 'lucide-react';
+  DollarSign, TrendingUp, Satellite, Navigation, Square, HelpCircle} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
@@ -250,6 +250,7 @@ const LayoutInner = ({ children }) => {
       title: 'BUSINESS',
       items: [
         { icon: Settings, label: 'Settings', path: '/settings' },
+        { icon: HelpCircle, label: 'Guide', path: '/guide' },
         { icon: ScrollText, label: 'Audit Log', path: '/audit' },
         { icon: Truck, label: 'Team Dispatch', path: '/team-dispatch', badge: 'AGENCY', agencyOnly: true },
         { icon: Wrench, label: 'Admin', path: '/admin', agencyOnly: true },
@@ -273,6 +274,7 @@ const LayoutInner = ({ children }) => {
     { Icon: DollarSign, label: 'Tax Center',      path: '/tax-center' },
     { Icon: TrendingUp, label: 'Market Insights', path: '/market-insights' },
     { Icon: Settings, label: 'Settings', path: '/settings' },
+    { Icon: HelpCircle, label: 'Guide', path: '/guide' },
   ];
 
   const isActivePath = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
