@@ -4,7 +4,7 @@ import PWAInstallBanner from './PWAInstallBanner';
 import { Link, useLocation, BrowserRouter, useInRouterContext, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Calendar, Settings, LogOut, FileText, Menu,
-  Sun, Moon, Search, Command, MapPin, X, Lock,
+  Sun, Moon, Search, Command, MapPin, X, Lock, Bell,
   UserCheck, ScrollText, Wallet, BadgeCheck, Truck, Brain, Wrench, Scale,
   Sparkles, Maximize2, Minimize2, MoreHorizontal, Inbox,
   DollarSign, TrendingUp, Satellite, Navigation, Square, HelpCircle} from 'lucide-react';
@@ -13,6 +13,7 @@ import { getGateState } from '../utils/gates';
 import { ToastStack, PromptModal } from './GlobalOverlays';
 import { useTheme } from '../context/ThemeContext';
 import { ActiveTripProvider, useActiveTrip } from '../context/ActiveTripContext';
+import { useAutonomousNotify } from '../hooks/useAutonomousNotify';
 
 // --- INLINED COMPONENTS FOR STABILITY ---
 const Button = ({ children, variant = 'primary', size = 'default', className = '', ...props }) => {
@@ -183,6 +184,10 @@ const LayoutInner = ({ children }) => {
 
   // FIX 12: live badge count for Command Center nav item
   const pendingAgentCount = (data.agentSuggestions || []).filter(s => s.status === 'pending').length;
+
+  // Autonomous agent notifications — fires when agent auto-commits in Autonomous mode
+  const { notifications: agentNotifs, unseenCount, markSeen, dismiss: dismissNotif, clearAll: clearNotifs } = useAutonomousNotify();
+  const [notifOpen, setNotifOpen] = React.useState(false);
 
   // Fullscreen state sync
   useEffect(() => {
@@ -448,6 +453,19 @@ const LayoutInner = ({ children }) => {
                 {/* Divider */}
                 <div className="w-px h-4 bg-white/[0.06]" />
 
+                {/* Notifications */}
+                <button onClick={() => setNotifOpen(v => !v)} title="Agent notifications"
+                  className="relative flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all text-[11px] font-medium group">
+                  <Bell className="w-3.5 h-3.5" />
+                  {unseenCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-violet-500 text-[8px] font-bold text-white flex items-center justify-center">{unseenCount > 9 ? '9+' : unseenCount}</span>
+                  )}
+                  <span className="hidden lg:inline">Notifs</span>
+                </button>
+
+                {/* Divider */}
+                <div className="w-px h-4 bg-white/[0.06]" />
+
                 {/* Sign out */}
                 <button onClick={handleSignOut} title="Sign out"
                   className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all text-[11px] font-medium group">
@@ -476,6 +494,12 @@ const LayoutInner = ({ children }) => {
             <Button variant="ghost" size="icon" onClick={() => setIsCommandPaletteOpen(true)}>
               <Search className="w-5 h-5 dark:text-white" />
             </Button>
+            <button onClick={() => setNotifOpen(v => !v)} className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+              <Bell className="w-5 h-5 text-slate-600 dark:text-white" />
+              {unseenCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-violet-500 text-[9px] font-bold text-white flex items-center justify-center">{unseenCount > 9 ? '9+' : unseenCount}</span>
+              )}
+            </button>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <Menu className="w-6 h-6 dark:text-white" />
             </Button>
@@ -661,6 +685,49 @@ const LayoutInner = ({ children }) => {
         <LiveTripBanner />
 
         {/* Global cross-module overlays */}
+        {/* ── Agent Notification Drawer ────────────────────────────────────── */}
+        {notifOpen && (
+          <div className="fixed bottom-20 right-4 z-50 w-80 rounded-2xl bg-slate-950 border border-white/10 shadow-2xl shadow-black/50 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-violet-400" />
+                <span className="text-sm font-semibold text-slate-100">Agent Activity</span>
+                {unseenCount > 0 && (
+                  <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-bold text-violet-300">{unseenCount} new</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {agentNotifs.length > 0 && (
+                  <button onClick={clearNotifs} className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors">Clear all</button>
+                )}
+                <button onClick={() => setNotifOpen(false)} className="p-1 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-200 transition-colors">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+            <div className="max-h-72 overflow-y-auto">
+              {agentNotifs.length === 0 ? (
+                <div className="py-8 text-center text-slate-500 text-xs">No autonomous agent runs yet.<br/>Set Command Center to Autonomous mode.</div>
+              ) : (
+                agentNotifs.map((n) => (
+                  <div key={n.id} onClick={() => { markSeen(n.id); }}
+                    className={`flex items-start gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0 cursor-pointer hover:bg-white/[0.02] transition-colors ${!n.seenAt ? 'bg-violet-500/5' : ''}`}>
+                    <div className="shrink-0 mt-0.5 w-6 h-6 rounded-lg bg-violet-500/15 flex items-center justify-center">
+                      <Bell className="h-3 w-3 text-violet-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-slate-200 leading-snug">{n.label || 'Agent auto-committed a closeout'}</p>
+                      {n.appointmentClient && <p className="text-[10px] text-slate-500 mt-0.5">{n.appointmentClient}</p>}
+                      <p className="text-[10px] text-slate-600 mt-0.5">{n.receivedAt ? new Date(n.receivedAt).toLocaleTimeString() : ''}</p>
+                    </div>
+                    {!n.seenAt && <div className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-400" />}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
         <ToastStack />
         <PromptModal />
         <PWAInstallBanner />
