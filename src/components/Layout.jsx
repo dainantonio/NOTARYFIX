@@ -217,7 +217,10 @@ const LayoutInner = ({ children }) => {
   }, []);
 
   const handleSignOut = () => {
-    updateSettings({ planTier: 'free', userRole: 'owner' });
+    // Clear localStorage first so a hard refresh doesn't re-hydrate the session
+    try { localStorage.removeItem('notaryfix_data'); } catch (_) {}
+    // Reset auth flag in state so RouteGuard redirects to /auth
+    updateSettings({ onboardingComplete: false, planTier: 'free', userRole: 'owner' });
     navigate('/auth');
   };
 
