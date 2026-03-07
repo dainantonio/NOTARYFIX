@@ -7,8 +7,10 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const stored = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const next = stored === 'light' || stored === 'dark' ? stored : (prefersDark ? 'dark' : 'light');
+    // FIX: default to 'dark' when no stored preference exists (e.g. first load,
+    // incognito, or cache cleared). Previously fell back to system preference
+    // which could show light mode unexpectedly on a dark-first app.
+    const next = stored === 'light' || stored === 'dark' ? stored : 'dark';
     setTheme(next);
   }, []);
 

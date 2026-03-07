@@ -55,9 +55,12 @@ const Settings = () => {
     saveTimerRef.current = setTimeout(() => setSavedFlash(false), 2000);
   };
 
+  // FIX: preserve all user data on sign-out by only clearing the auth gate
+  // (onboardingComplete: false). All appointments, settings, dark mode, etc. are
+  // kept in localStorage so they restore automatically when the user signs back in.
   const handleSignOut = () => {
-    localStorage.removeItem('notaryfix_data');
-    navigate('/');
+    updateSettings({ onboardingComplete: false });
+    navigate('/auth');
   };
 
   const applySmartBusinessFill = (text) => {
@@ -98,7 +101,9 @@ const Settings = () => {
 
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="w-full flex-shrink-0 md:w-56 lg:w-64">
-          <nav className="flex flex-row gap-2 overflow-x-auto scrollbar-hide pb-2 md:flex-col md:overflow-visible md:pb-0">
+          {/* FIX: flex-wrap instead of overflow-x-auto + scrollbar-hide so ALL tabs are
+              always visible on mobile without needing to scroll a hidden scrollbar */}
+          <nav className="flex flex-row flex-wrap gap-2 pb-2 md:flex-col md:flex-nowrap md:pb-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -459,7 +464,7 @@ const Settings = () => {
             </div>
           )}
 
-          {/* ─── Issue 17: Stripe / Payments ──────────────────────────────────── */}
+          {/* ─── Stripe / Payments ──────────────────────────────────── */}
           {activeTab === 'payments' && (
             <div className="space-y-6">
               <Card>
