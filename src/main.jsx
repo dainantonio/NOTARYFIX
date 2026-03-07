@@ -4,12 +4,15 @@ import App from './App.jsx'
 import './index.css'
 import { ThemeProvider } from './context/ThemeContext'
 import { DataProvider } from './context/DataContext'
+import { ActiveTripProvider } from './context/ActiveTripContext'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
       <DataProvider>
-        <App />
+        <ActiveTripProvider>
+          <App />
+        </ActiveTripProvider>
       </DataProvider>
     </ThemeProvider>
   </React.StrictMode>,
