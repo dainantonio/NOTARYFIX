@@ -1012,39 +1012,39 @@ export default function Landing() {
       </section>
 
       {/* ══ HOW IT WORKS ══════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="bg-[#0a1525] py-24">
+      <section id="how-it-works" className="bg-slate-50 py-24 text-slate-900">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
-            <span className="inline-flex rounded-full border border-blue-400/25 bg-blue-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">How It Works</span>
-            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 4 steps.</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">A streamlined workflow designed for mobile-first notaries.</p>
+            <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">How It Works</span>
+            <h2 className="mt-5 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">From booking to payout in 4 steps.</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">A streamlined workflow designed for mobile-first notaries.</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => (
-              <div key={title} className="relative rounded-2xl border border-white/8 bg-white/[0.03] p-7 transition-all hover:-translate-y-1 hover:border-white/15">
-                {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-700" /></div>}
+              <div key={title} className="relative rounded-2xl border border-slate-200 bg-white p-7 shadow-sm transition-all hover:-translate-y-1 hover:border-slate-300 hover:shadow-md">
+                {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-300" /></div>}
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="text-4xl font-black text-white/5">{step}</span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/8">
-                    <Icon className="h-5 w-5 text-cyan-400" />
+                  <span className="text-4xl font-black text-slate-200">{step}</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50">
+                    <Icon className="h-5 w-5 text-cyan-600" />
                   </div>
                 </div>
-                <h3 className="text-xl font-black text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
+                <h3 className="text-xl font-black text-slate-900">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{desc}</p>
               </div>
             ))}
           </div>
           {/* Agent control callout */}
-          <div className="mt-8 rounded-2xl border border-white/8 bg-white/[0.02] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 border border-violet-400/20">
-              <Zap className="h-5 w-5 text-violet-400" />
+          <div className="mt-8 flex flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-200 bg-violet-50">
+              <Zap className="h-5 w-5 text-violet-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-white">You stay in control — always.</p>
-              <p className="text-sm text-slate-400 mt-0.5">The agent runs in Supervised Mode by default. Every draft waits for your tap to approve. Flip to Autonomous Mode when you're ready to go fully hands-free on low-risk actions.</p>
+              <p className="text-sm font-bold text-slate-900">You stay in control — always.</p>
+              <p className="mt-0.5 text-sm text-slate-600">The agent runs in Supervised Mode by default. Every draft waits for your tap to approve. Flip to Autonomous Mode when you're ready to go fully hands-free on low-risk actions.</p>
             </div>
             <button onClick={() => navigate('/onboarding')}
-              className="shrink-0 rounded-xl border border-violet-400/25 bg-violet-400/8 px-4 py-2 text-sm font-bold text-violet-300 transition-all hover:bg-violet-400/15 whitespace-nowrap">
+              className="shrink-0 whitespace-nowrap rounded-xl border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 transition-all hover:bg-violet-100">
               See it live →
             </button>
           </div>
@@ -1183,13 +1183,14 @@ export default function Landing() {
       </section>
 
       {/* ══ AI GUIDE FAQ ══════════════════════════════════════════════════════ */}
-      <section id="faq" className="mx-auto max-w-4xl px-6 py-24">
-        <div className="mb-8 text-center">
-          <h2 className="text-4xl font-black tracking-tight md:text-5xl">AI Guide</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">Ask anything about pricing, workflows, compliance, or onboarding and get an instant guided answer.</p>
-        </div>
+      <section id="faq" className="bg-slate-50 py-24">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="mb-8 text-center">
+            <h2 className="text-4xl font-black tracking-tight text-slate-900 md:text-5xl">AI Guide</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">Ask anything about pricing, workflows, compliance, or onboarding and get an instant guided answer.</p>
+          </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap gap-2">
             {FAQ.map((item) => (
               <button
@@ -1199,7 +1200,7 @@ export default function Landing() {
                   setAiInput(item.q);
                   setTimeout(() => submitAI('faq_guide_starter'), 50);
                 }}
-                className="rounded-lg border border-white/12 bg-white/[0.02] px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700"
               >
                 {item.q}
               </button>
@@ -1212,7 +1213,7 @@ export default function Landing() {
               onChange={(e) => setAiInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitAI('faq_guide')}
               placeholder="Try: What happens after I complete a signing?"
-              className="flex-1 rounded-lg border border-white/10 bg-[#0b1526] px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none"
             />
             <button
               onClick={() => submitAI('faq_guide')}
@@ -1222,10 +1223,11 @@ export default function Landing() {
             </button>
           </div>
 
-          <div className="mt-4 rounded-xl border border-white/8 bg-[#0a1220] p-4">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-900 p-4">
             <p className="text-[11px] uppercase tracking-wider text-cyan-300">AI Guide Response</p>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">{aiTyping ? 'Thinking…' : aiOutput}</p>
           </div>
+        </div>
         </div>
       </section>
 
@@ -1443,4 +1445,3 @@ export default function Landing() {
     </div>
   );
 }
-
