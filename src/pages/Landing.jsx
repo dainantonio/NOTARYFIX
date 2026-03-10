@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import {
   ShieldCheck, Sparkles, BadgeCheck, Bot, Clock3, AlertTriangle,
   XCircle, Wallet, CalendarCheck, FileCheck2, Car, Building2,
   Users, ArrowRight, Check, Zap, TrendingUp,
-  Lock, Menu, X, MapPin, Stamp,
+  Lock, Menu, X, MapPin, Stamp, Sun, Moon,
 } from 'lucide-react';
 
 // ─── DATA ──────────────────────────────────────────────────────────────────────
@@ -196,6 +197,7 @@ const track = (event, props = {}) => {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const [profile,        setProfile]        = useState('mobile');
   const [aiInput,        setAiInput]        = useState("What's the fee for a jurat in California?");
@@ -383,17 +385,17 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060d1b] text-white antialiased" style={{backgroundImage:'linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)',backgroundSize:'44px 44px'}}>
+    <div className="min-h-screen bg-white text-slate-900 antialiased transition-colors duration-300 dark:bg-[#060d1b] dark:text-white" style={{backgroundImage: theme === 'dark' ? 'linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)' : 'linear-gradient(rgba(15,23,42,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,0.08) 1px,transparent 1px)',backgroundSize:'44px 44px'}}>
 
       {/* ══ NAV ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50 bg-[#060d1b]/95 backdrop-blur-xl shadow-[0_1px_0_rgba(255,255,255,0.05)]">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl shadow-[0_1px_0_rgba(15,23,42,0.08)] transition-colors duration-300 dark:bg-[#060d1b]/95 dark:shadow-[0_1px_0_rgba(255,255,255,0.05)]">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
           {/* Logo */}
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-[#060d1b] shadow-lg shadow-cyan-500/30">N</div>
             <div className="leading-none text-left">
-              <p className="text-sm font-bold tracking-tight text-white">NotaryFix</p>
-              <p className="text-[10px] text-slate-400">AI Notary Agent</p>
+              <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">NotaryFix</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">AI Notary Agent</p>
             </div>
           </button>
 
@@ -402,7 +404,7 @@ export default function Landing() {
             {NAV_LINKS.map(link => (
               <button key={link.id}
                 onClick={() => scrollTo(link.id)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${activeNav === link.id ? 'bg-white/8 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}>
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${activeNav === link.id ? 'bg-slate-900/8 text-slate-900 dark:bg-white/8 dark:text-white' : 'text-slate-500 hover:bg-slate-900/5 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'}`}>
                 {link.label}
               </button>
             ))}
@@ -410,9 +412,17 @@ export default function Landing() {
 
           {/* CTAs */}
           <div className="hidden items-center gap-3 md:flex">
-            <Link to="/auth" className="text-sm font-medium text-slate-300 transition-colors hover:text-white">Log in</Link>
+            <button
+              onClick={toggleTheme}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors duration-300 hover:bg-slate-100 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-slate-500" />}
+              {theme === 'dark' ? 'Light' : 'Dark'}
+            </button>
+            <Link to="/auth" className="text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">Log in</Link>
             <button onClick={() => scrollTo('waitlist')}
-              className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-400/20">
+              className="rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-700 transition-all hover:bg-cyan-400/20 dark:text-cyan-300">
               Join Waitlist
             </button>
             <Link to="/onboarding" onClick={() => trackEvent('landing_cta_live_demo', { location: 'nav' })}
@@ -422,18 +432,28 @@ export default function Landing() {
           </div>
 
           {/* Mobile burger */}
-          <button onClick={() => setMobileMenuOpen(p => !p)} className="rounded-lg p-2 text-slate-400 md:hidden">
+          <button onClick={() => setMobileMenuOpen(p => !p)} className="rounded-lg p-2 text-slate-500 transition-colors dark:text-slate-400 md:hidden">
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </nav>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="bg-[#060d1b] px-6 py-4 md:hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+          <div className="bg-white px-6 py-4 shadow-[0_4px_20px_rgba(15,23,42,0.12)] transition-colors duration-300 dark:bg-[#060d1b] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)] md:hidden">
             <div className="flex flex-col gap-3">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors duration-300 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+              >
+                <span>Appearance</span>
+                <span className="inline-flex items-center gap-2">
+                  {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-slate-500 dark:text-slate-300" />}
+                  {theme === 'dark' ? 'Light' : 'Dark'}
+                </span>
+              </button>
               {NAV_LINKS.map(link => (
                 <button key={link.id} onClick={() => scrollTo(link.id)}
-                  className="text-left text-sm font-medium text-slate-300 transition-colors hover:text-white">
+                  className="text-left text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
                   {link.label}
                 </button>
               ))}
@@ -442,7 +462,7 @@ export default function Landing() {
                 See Agent Closeout
               </Link>
               <button onClick={() => { setMobileMenuOpen(false); scrollTo('waitlist'); }}
-                className="rounded-lg border border-cyan-400/30 bg-cyan-400/8 px-4 py-3 text-center text-sm font-bold text-cyan-300">
+                className="rounded-lg border border-cyan-400/30 bg-cyan-400/8 px-4 py-3 text-center text-sm font-bold text-cyan-700 dark:text-cyan-300">
                 Join Waitlist
               </button>
             </div>
@@ -451,7 +471,7 @@ export default function Landing() {
       </header>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#060d1b]">
+      <section className="relative overflow-hidden bg-white transition-colors duration-300 dark:bg-[#060d1b]">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-600/8 blur-[140px]" />
           <div className="absolute right-0 top-0 h-[400px] w-[400px] rounded-full bg-blue-600/8 blur-[120px]" />
@@ -489,7 +509,7 @@ export default function Landing() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
             <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'hero' }); scrollTo('waitlist'); }}
-              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
+              className="rounded-xl border border-slate-300 bg-slate-100 px-8 py-4 text-base font-semibold text-slate-900 transition-colors hover:bg-slate-200 dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
               Open Live Demo
             </button>
           </div>
@@ -625,13 +645,13 @@ export default function Landing() {
       </section>
 
       {/* ══ STATS BAR ═════════════════════════════════════════════════════════ */}
-      <section className="bg-[#0a1525] py-10">
+      <section className="bg-slate-50 py-10 transition-colors duration-300 dark:bg-[#0a1525]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {STATS.map(s => (
               <div key={s.label} className="text-center">
-                <p className="text-3xl font-black text-white md:text-4xl">{s.val}</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">{s.label}</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white md:text-4xl">{s.val}</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">{s.label}</p>
               </div>
             ))}
           </div>
@@ -639,7 +659,7 @@ export default function Landing() {
       </section>
 
       {/* ══ AI COACH ══════════════════════════════════════════════════════════ */}
-      <section className="bg-[#060d1b] py-24">
+      <section className="bg-white py-24 transition-colors duration-300 dark:bg-[#060d1b]">
         <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
@@ -705,7 +725,7 @@ export default function Landing() {
 
 
       {/* ══ JOB INTELLIGENCE ════════════════════════════════════════════════ */}
-      <section className="bg-[#0a1525] py-24">
+      <section className="bg-slate-50 py-24 transition-colors duration-300 dark:bg-[#0a1525]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left: content */}
@@ -792,7 +812,7 @@ export default function Landing() {
       </section>
 
       {/* ══ BEFORE / AFTER + CALCULATOR ═══════════════════════════════════════ */}
-      <section id="features" className="bg-[#0a1525] py-24">
+      <section id="features" className="bg-slate-50 py-24 transition-colors duration-300 dark:bg-[#0a1525]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
@@ -1012,39 +1032,39 @@ export default function Landing() {
       </section>
 
       {/* ══ HOW IT WORKS ══════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className="bg-[#0a1525] py-24">
+      <section id="how-it-works" className="bg-slate-100 py-24 text-slate-900 transition-colors duration-300 dark:bg-[#0a1525] dark:text-white">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-14 text-center">
-            <span className="inline-flex rounded-full border border-blue-400/25 bg-blue-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">How It Works</span>
-            <h2 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">From booking to payout in 4 steps.</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">A streamlined workflow designed for mobile-first notaries.</p>
+            <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/8 dark:text-blue-300">How It Works</span>
+            <h2 className="mt-5 text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">From booking to payout in 4 steps.</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">A streamlined workflow designed for mobile-first notaries.</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {HOW_STEPS.map(({ step, title, desc, icon: Icon }, i) => (
-              <div key={title} className="relative rounded-2xl border border-white/8 bg-white/[0.03] p-7 transition-all hover:-translate-y-1 hover:border-white/15">
-                {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-700" /></div>}
+              <div key={title} className="relative rounded-2xl border border-slate-200 bg-white p-7 shadow-sm transition-all hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-white/8 dark:bg-[#0d1a2e] dark:hover:border-white/15">
+                {i < HOW_STEPS.length - 1 && <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 lg:block"><ArrowRight className="h-5 w-5 text-slate-300 dark:text-slate-700" /></div>}
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="text-4xl font-black text-white/5">{step}</span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/8">
-                    <Icon className="h-5 w-5 text-cyan-400" />
+                  <span className="text-4xl font-black text-slate-200 dark:text-white/5">{step}</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 dark:border-cyan-400/20 dark:bg-cyan-400/8">
+                    <Icon className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
                   </div>
                 </div>
-                <h3 className="text-xl font-black text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{desc}</p>
               </div>
             ))}
           </div>
           {/* Agent control callout */}
-          <div className="mt-8 rounded-2xl border border-white/8 bg-white/[0.02] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 border border-violet-400/20">
-              <Zap className="h-5 w-5 text-violet-400" />
+          <div className="mt-8 flex flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center dark:border-white/8 dark:bg-white/[0.02]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-200 bg-violet-50 dark:border-violet-400/20 dark:bg-violet-400/10">
+              <Zap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-white">You stay in control — always.</p>
-              <p className="text-sm text-slate-400 mt-0.5">The agent runs in Supervised Mode by default. Every draft waits for your tap to approve. Flip to Autonomous Mode when you're ready to go fully hands-free on low-risk actions.</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">You stay in control — always.</p>
+              <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">The agent runs in Supervised Mode by default. Every draft waits for your tap to approve. Flip to Autonomous Mode when you're ready to go fully hands-free on low-risk actions.</p>
             </div>
             <button onClick={() => navigate('/onboarding')}
-              className="shrink-0 rounded-xl border border-violet-400/25 bg-violet-400/8 px-4 py-2 text-sm font-bold text-violet-300 transition-all hover:bg-violet-400/15 whitespace-nowrap">
+              className="shrink-0 whitespace-nowrap rounded-xl border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 transition-all hover:bg-violet-100 dark:border-violet-400/25 dark:bg-violet-400/8 dark:text-violet-300 dark:hover:bg-violet-400/15">
               See it live →
             </button>
           </div>
@@ -1072,7 +1092,7 @@ export default function Landing() {
       </section>
 
       {/* ══ PRICING ═══════════════════════════════════════════════════════════ */}
-      <section id="pricing" className="bg-[#0a1525] py-24">
+      <section id="pricing" className="bg-slate-50 py-24 transition-colors duration-300 dark:bg-[#0a1525]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 text-center">
             <span className="inline-flex rounded-full border border-emerald-400/25 bg-emerald-400/8 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">Pricing</span>
@@ -1183,13 +1203,14 @@ export default function Landing() {
       </section>
 
       {/* ══ AI GUIDE FAQ ══════════════════════════════════════════════════════ */}
-      <section id="faq" className="mx-auto max-w-4xl px-6 py-24">
-        <div className="mb-8 text-center">
-          <h2 className="text-4xl font-black tracking-tight md:text-5xl">AI Guide</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-400">Ask anything about pricing, workflows, compliance, or onboarding and get an instant guided answer.</p>
-        </div>
+      <section id="faq" className="bg-slate-100 py-24 transition-colors duration-300 dark:bg-[#0a1525]">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="mb-8 text-center">
+            <h2 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">AI Guide</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">Ask anything about pricing, workflows, compliance, or onboarding and get an instant guided answer.</p>
+          </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
           <div className="flex flex-wrap gap-2">
             {FAQ.map((item) => (
               <button
@@ -1199,7 +1220,7 @@ export default function Landing() {
                   setAiInput(item.q);
                   setTimeout(() => submitAI('faq_guide_starter'), 50);
                 }}
-                className="rounded-lg border border-white/12 bg-white/[0.02] px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-cyan-300 hover:text-cyan-700 dark:border-white/12 dark:bg-white/[0.02] dark:text-slate-300 dark:hover:border-cyan-400/40 dark:hover:text-cyan-300"
               >
                 {item.q}
               </button>
@@ -1212,7 +1233,7 @@ export default function Landing() {
               onChange={(e) => setAiInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitAI('faq_guide')}
               placeholder="Try: What happens after I complete a signing?"
-              className="flex-1 rounded-lg border border-white/10 bg-[#0b1526] px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none dark:border-white/10 dark:bg-[#0b1526] dark:text-white dark:placeholder:text-slate-500"
             />
             <button
               onClick={() => submitAI('faq_guide')}
@@ -1222,15 +1243,16 @@ export default function Landing() {
             </button>
           </div>
 
-          <div className="mt-4 rounded-xl border border-white/8 bg-[#0a1220] p-4">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-900 p-4 dark:border-white/8 dark:bg-[#0a1220]">
             <p className="text-[11px] uppercase tracking-wider text-cyan-300">AI Guide Response</p>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">{aiTyping ? 'Thinking…' : aiOutput}</p>
           </div>
         </div>
+        </div>
       </section>
 
       {/* ══ WAITLIST / EARLY ACCESS ═══════════════════════════════════════ */}
-      <section id="waitlist" className="bg-[#0a1525] py-24">
+      <section id="waitlist" className="bg-slate-50 py-24 transition-colors duration-300 dark:bg-[#0a1525]">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-cyan-300">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
@@ -1314,12 +1336,12 @@ export default function Landing() {
       </section>
 
       {/* ══ FINAL CTA ═════════════════════════════════════════════════════════ */}
-      <section className="bg-[#060d1b] py-16">
+      <section className="bg-white py-16 transition-colors duration-300 dark:bg-[#060d1b]">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <h2 className="text-3xl font-black tracking-tight md:text-4xl">
             Meet your AI notary agent.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-400">
+          <p className="mx-auto mt-4 max-w-xl text-slate-600 dark:text-slate-400">
             No signup required. Open the live demo and trigger a real agent closeout — see your journal drafted, invoice generated, and compliance checked in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -1329,11 +1351,11 @@ export default function Landing() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
             <button onClick={() => { trackEvent('landing_cta_waitlist', { location: 'final_cta' }); scrollTo('waitlist'); }}
-              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10">
+              className="rounded-xl border border-slate-300 bg-slate-100 px-8 py-4 text-base font-semibold text-slate-900 transition-colors hover:bg-slate-200 dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
               Join Waitlist
             </button>
           </div>
-          <p className="mt-4 text-xs text-slate-600">Demo uses sample data · Nothing is saved to a server</p>
+          <p className="mt-4 text-xs text-slate-500 dark:text-slate-600">Demo uses sample data · Nothing is saved to a server</p>
         </div>
       </section>
 
@@ -1443,4 +1465,3 @@ export default function Landing() {
     </div>
   );
 }
-
