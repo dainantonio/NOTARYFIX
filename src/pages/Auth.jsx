@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Eye, EyeOff, ArrowRight, Stamp,
   ChevronDown, ChevronUp, Wrench,
@@ -17,6 +18,7 @@ const DEV_PROFILES = [
 export default function Auth() {
   const navigate = useNavigate();
   const { data, updateSettings } = useData();
+  const { signInEmail, signInGoogle, isAuthenticated, hasFirebaseConfig, hasGoogleConfig } = useAuth();
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -25,35 +27,56 @@ export default function Auth() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
 
+  useEffect(() => {
+    if (!hasGoogleConfig) return;
+    if (window.google?.accounts?.id) return;
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [hasGoogleConfig]);
+
   // ── Already signed in? Go straight to dashboard ───────────────────────────
   // This handles the case where a user navigates to /auth while already
   // authenticated (e.g. bookmarked the URL or used the back button after sign-in).
-  if (data.settings?.onboardingComplete) {
+  if (isAuthenticated || data.settings?.onboardingComplete) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!email || !password) { setError('Please enter your email and password.'); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      // Restore full access — preserves all existing data (settings, appointments,
-      // dark mode, Stripe keys, etc.) by only flipping the auth gate.
+    try {
+      await signInEmail(email, password);
       updateSettings({ onboardingComplete: true });
       navigate('/dashboard');
-    }, 900);
+    } catch (err) {
+      setError(err?.message || 'Sign-in failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Google SSO — routes to onboarding for new users, dashboard for returning
-  const handleGoogle = () => {
-    // If there's existing data (name set), treat as returning user
-    if (data.settings?.name) {
-      updateSettings({ onboardingComplete: true });
-      navigate('/dashboard');
-    } else {
-      navigate('/onboarding');
+  const handleGoogle = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await signInGoogle();
+      if (data.settings?.name) {
+        updateSettings({ onboardingComplete: true });
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
+    } catch (err) {
+      setError(err?.message || 'Google sign-in failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,20 +102,32 @@ export default function Auth() {
           <p className="mt-1.5 text-sm text-slate-400">Sign in to your NotaryOS account</p>
         </div>
 
+
+        {!hasFirebaseConfig && (
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
+            Firebase auth is not configured. Add <span className="font-semibold">VITE_FIREBASE_API_KEY</span> and <span className="font-semibold">VITE_FIREBASE_PROJECT_ID</span> in <span className="font-semibold">.env.local</span>.
+          </div>
+        )}
+        {hasFirebaseConfig && !hasGoogleConfig && (
+          <div className="mb-4 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-xs text-blue-300">
+            Google sign-in is disabled until <span className="font-semibold">VITE_GOOGLE_CLIENT_ID</span> is configured.
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</div>
           )}
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required disabled={!hasFirebaseConfig}
               className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors" />
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Password</label>
             <div className="relative">
               <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" required
+                placeholder="••••••••" required disabled={!hasFirebaseConfig}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors" />
               <button type="button" onClick={() => setShowPass(p => !p)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
@@ -103,7 +138,7 @@ export default function Auth() {
               <button type="button" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">Forgot password?</button>
             </div>
           </div>
-          <button type="submit" disabled={loading}
+          <button type="submit" disabled={loading || !hasFirebaseConfig}
             className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-500 disabled:opacity-60 active:scale-[.98]">
             {loading
               ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -117,8 +152,8 @@ export default function Auth() {
           <div className="h-px flex-1 bg-white/10" />
         </div>
 
-        <button onClick={handleGoogle}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10 active:scale-[.98]">
+        <button onClick={handleGoogle} disabled={!hasGoogleConfig || loading}
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10 active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed">
           <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

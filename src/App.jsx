@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Layout from './components/Layout';
 import GatedRoute from './components/GatedRoute';
 import { useData } from './context/DataContext';
+import { useAuth } from './context/AuthContext';
 import AppErrorBoundary from './components/AppErrorBoundary';
 
 // ─── Lazy-loaded pages ────────────────────────────────────────────────────────
@@ -62,20 +63,23 @@ const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/legal', '/pricing', '/feat
 // Onboarding is reached only by explicit "Get started" navigation.
 const RouteGuard = ({ children }) => {
   const location = useLocation();
-  const { data } = useData();
+  const { data, dataReady } = useData();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const isPublic =
     PUBLIC_ROUTES.includes(location.pathname) ||
     location.pathname.startsWith('/portal') ||
     location.pathname.startsWith('/pay/');
   const onboarded = data.settings?.onboardingComplete;
 
-  // Not authenticated — send to sign-in page (not onboarding)
-  if (!isPublic && !onboarded) {
+  if (authLoading || !dataReady) return null;
+
+  // Real auth guard
+  if (!isPublic && !isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
   // Already authenticated — bounce away from onboarding back to dashboard
-  if (onboarded && location.pathname === '/onboarding') {
+  if (isAuthenticated && onboarded && location.pathname === '/onboarding') {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -10,7 +10,7 @@ A mobile-first, AI-powered operations platform for notary businesses. Built to m
 - **Recharts** — KPI and revenue charts
 - **Framer Motion** — animations
 - **Vercel** — hosting + serverless API proxy
-- **localStorage** — client-side persistence (Firebase migration ready)
+- **Firebase Identity Toolkit + Firestore REST** — real auth + cloud persistence
 
 ---
 
@@ -22,7 +22,13 @@ Business logic is split into three focused slice factories:
 - dispatchOps.js — team dispatch, jobs, payouts, notes
 - agentOps.js — AI closeout agent, AR scan, lead intake, weekly digest
 
-DataContext.jsx is a slim orchestrator (~200 lines) that wires slices and handles localStorage hydration/persistence.
+DataContext.jsx orchestrates slice ops and now syncs authenticated user data to Firestore (`users/{uid}/private/appData`) with one-time legacy localStorage migration.
+
+
+### Launch-Critical Platform Guarantees
+- **Real identity layer**: protected routes use authenticated sessions (Firebase token-backed), not onboarding flags.
+- **Cloud persistence**: appointments, invoices, journal entries, and client data are synced to Firestore per-user docs.
+- **Background automation handoff**: AR scans and weekly digest triggers enqueue automation jobs in Firestore (`users/{uid}/automationJobs/*`) so server-side workers/Cloud Functions can execute even with no browser tab open.
 
 ### AI Agent Service (src/services/agentService.js)
 All Gemini calls route through the /api/gemini Vercel serverless proxy. API key never reaches the browser. Capabilities:
@@ -78,12 +84,21 @@ npm run dev
 
 Local (.env.local):
 VITE_GEMINI_API_KEY=your_key_here
+VITE_FIREBASE_API_KEY=your_firebase_web_api_key
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
 
 Vercel (dashboard environment variables):
 GEMINI_API_KEY=your_key_here
 BASE_URL=/
 
 ---
+
+### Auth Configuration Troubleshooting
+- **"Firebase config missing (VITE_FIREBASE_API_KEY / VITE_FIREBASE_PROJECT_ID)"**: add both vars to `.env.local` and restart `npm run dev`.
+- **"Google Sign-In not configured"**: add `VITE_GOOGLE_CLIENT_ID` (Google Identity Web client) to `.env.local`.
+- The Auth page now shows inline config status and disables unavailable sign-in methods until env vars are set.
+
 
 ## Deployment
 
