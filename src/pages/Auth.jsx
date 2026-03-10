@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Eye, EyeOff, ArrowRight, Stamp,
   ChevronDown, ChevronUp, Wrench,
@@ -17,6 +18,7 @@ const DEV_PROFILES = [
 export default function Auth() {
   const navigate = useNavigate();
   const { data, updateSettings } = useData();
+  const { signInEmail, signInGoogle, isAuthenticated } = useAuth();
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -25,35 +27,55 @@ export default function Auth() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
 
+  useEffect(() => {
+    if (window.google?.accounts?.id) return;
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
+
   // ── Already signed in? Go straight to dashboard ───────────────────────────
   // This handles the case where a user navigates to /auth while already
   // authenticated (e.g. bookmarked the URL or used the back button after sign-in).
-  if (data.settings?.onboardingComplete) {
+  if (isAuthenticated || data.settings?.onboardingComplete) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!email || !password) { setError('Please enter your email and password.'); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      // Restore full access — preserves all existing data (settings, appointments,
-      // dark mode, Stripe keys, etc.) by only flipping the auth gate.
+    try {
+      await signInEmail(email, password);
       updateSettings({ onboardingComplete: true });
       navigate('/dashboard');
-    }, 900);
+    } catch (err) {
+      setError(err?.message || 'Sign-in failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Google SSO — routes to onboarding for new users, dashboard for returning
-  const handleGoogle = () => {
-    // If there's existing data (name set), treat as returning user
-    if (data.settings?.name) {
-      updateSettings({ onboardingComplete: true });
-      navigate('/dashboard');
-    } else {
-      navigate('/onboarding');
+  const handleGoogle = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await signInGoogle();
+      if (data.settings?.name) {
+        updateSettings({ onboardingComplete: true });
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
+    } catch (err) {
+      setError(err?.message || 'Google sign-in failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
