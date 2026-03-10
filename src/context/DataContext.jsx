@@ -1,16 +1,15 @@
 // File: src/context/DataContext.jsx
-// Slim orchestrator: initialises state, imports slice factories, exposes context.
-// ~280 lines — all business logic lives in src/context/slices/.
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createCrudOps }     from './slices/crudOps';
+import { createCrudOps } from './slices/crudOps';
 import { createDispatchOps } from './slices/dispatchOps';
-import { createAgentOps }    from './slices/agentOps';
-import { createJobOps }     from './slices/jobOps';
+import { createAgentOps } from './slices/agentOps';
+import { createJobOps } from './slices/jobOps';
 import { createFinanceOps } from './slices/financeOps';
+import { useAuth } from './AuthContext';
+import { enqueueAutomationJob, getUserDataDoc, upsertUserDataDoc } from '../services/firebaseRest';
 
 const DataContext = createContext();
 
-// ── US States lookup (used by pages via useData) ─────────────────────────────
 export const US_STATES = [
   { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' }, { code: 'AZ', name: 'Arizona' },
   { code: 'AR', name: 'Arkansas' }, { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
@@ -38,196 +37,140 @@ export const parseMoneyLike = (value) => {
   return match ? parseFloat(match[0]) : null;
 };
 
-// ── Default / seed data ───────────────────────────────────────────────────────
-// Mock arrays are intentionally empty for production.
-// Config objects (settings, journalSettings, autonomyRoadmap, etc.) are kept.
 const defaultData = {
-  appointments:    [],
-  clients:         [],
-  invoices:        [],
-  mileageLogs:     [],
-  complianceItems: [],
-  agentRuns:       [],
-  agentSuggestions:[],
-  reminderQueue:   [],
-  signerSessions:  [],
-  signerDocuments: [],
-  portalMessages:  [],
-  journalEntries:  [],
-  teamMembers:     [],
-  dispatchJobs:    [],
-  dispatchNotes:   [],
-  payouts:         [],
-  dispatchAuditLog:[],
-  adminAuditLog:   [],
-  agentTriggerLog: [],   // persisted deduplication log for useAgentTriggers
-  agentFeedback:   [],   // edit/outcome records for useFeedbackLoop confidence adjustment
-  agentMemory:     { facts: [], updatedAt: null },
-  jobMessages:     [],
-  jobs:            [],
-  jobExpenses:     [],
-  businessExpenses:[],
-  taxDocuments:    [],
-
+  appointments: [], clients: [], invoices: [], mileageLogs: [], complianceItems: [],
+  agentRuns: [], agentSuggestions: [], reminderQueue: [], signerSessions: [], signerDocuments: [],
+  portalMessages: [], journalEntries: [], teamMembers: [], dispatchJobs: [], dispatchNotes: [], payouts: [],
+  dispatchAuditLog: [], adminAuditLog: [], agentTriggerLog: [], agentFeedback: [],
+  agentMemory: { facts: [], updatedAt: null }, jobMessages: [], jobs: [], jobExpenses: [], businessExpenses: [], taxDocuments: [],
   settings: {
-    name: '',
-    businessName: '',
-    businessLogo: '',
-    businessLogoName: '',
-    planTier: 'free',
-    userRole: 'owner',
-    currentStateCode: 'WA',
-    commissionedStates: ['WA'],
-    costPerMile: 0.67,
-    taxRate: 15,
-    monthlyGoal: 15000,
-    commissionRate: 12,
-    complianceReviewDay: 'Monday',
-    eAndOExpiresOn: '',
-    onboardingComplete: false,
-    autonomyMode: 'supervised',
-    enableAutoCloseoutAgent: true,
-    enableAutoReminderDrafts: false,
-    confidenceThreshold: 85,
-    requireApprovalForWarnings: true,
-    autoScanAR: false,
-    licenseNumber: '',
-    commissionExpiryDate: '',
-    notaryType: 'Traditional',
+    name: '', businessName: '', businessLogo: '', businessLogoName: '',
+    planTier: 'free', userRole: 'owner', currentStateCode: 'WA', commissionedStates: ['WA'],
+    costPerMile: 0.67, taxRate: 15, monthlyGoal: 15000, commissionRate: 12,
+    complianceReviewDay: 'Monday', eAndOExpiresOn: '', onboardingComplete: false,
+    autonomyMode: 'supervised', enableAutoCloseoutAgent: true, enableAutoReminderDrafts: false,
+    confidenceThreshold: 85, requireApprovalForWarnings: true, autoScanAR: false,
+    licenseNumber: '', commissionExpiryDate: '', notaryType: 'Traditional',
     feeSchedule: { loanSigning: 150, deed: 50, affidavit: 25, i9: 45, general: 15, ron: 75 },
   },
-
-  journalSettings: {
-    defaultFee: 15,
-    requireThumbprintFor: ['Deed of Trust', 'Grant Deed'],
-    enableScoring: true,
-    retentionYears: 10,
-  },
-
+  journalSettings: { defaultFee: 15, requireThumbprintFor: ['Deed of Trust', 'Grant Deed'], enableScoring: true, retentionYears: 10 },
   autonomyRoadmap: {
-    owner: 'Product + Ops',
-    updatedAt: new Date().toISOString(),
+    owner: 'Product + Ops', updatedAt: new Date().toISOString(),
     phases: [
-      { id: 'phase1', name: 'Assistive Foundation',      status: 'in_progress', completion: 70 },
-      { id: 'phase2', name: 'Supervised Autonomy',       status: 'in_progress', completion: 35 },
-      { id: 'phase3', name: 'Autonomous Operations',     status: 'planned',     completion: 0  },
-      { id: 'phase4', name: 'Learning + Defensibility',  status: 'planned',     completion: 0  },
+      { id: 'phase1', name: 'Assistive Foundation', status: 'in_progress', completion: 70 },
+      { id: 'phase2', name: 'Supervised Autonomy', status: 'in_progress', completion: 35 },
+      { id: 'phase3', name: 'Autonomous Operations', status: 'planned', completion: 0 },
+      { id: 'phase4', name: 'Learning + Defensibility', status: 'planned', completion: 0 },
     ],
-    kpis: {
-      closeoutLatencyMinutes: null,
-      draftApprovalRate: null,
-      manualEditRate: null,
-      dsoDays: null,
-    },
+    kpis: { closeoutLatencyMinutes: null, draftApprovalRate: null, manualEditRate: null, dsoDays: null },
   },
-
-  // Admin reference data (kept — not mock)
-  stateRules:        [],
-  feeSchedules:      [],
-  idRequirements:    [],
-  knowledgeArticles: [],
+  stateRules: [], feeSchedules: [], idRequirements: [], knowledgeArticles: [],
 };
 
-// ── Hydration from localStorage ───────────────────────────────────────────────
-const hydrate = () => {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('notaryfix_data');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          ...defaultData,
-          ...parsed,
-          appointments:     Array.isArray(parsed.appointments)     ? parsed.appointments     : defaultData.appointments,
-          clients:          Array.isArray(parsed.clients)          ? parsed.clients          : defaultData.clients,
-          invoices:         Array.isArray(parsed.invoices)         ? parsed.invoices         : defaultData.invoices,
-          mileageLogs:      Array.isArray(parsed.mileageLogs)      ? parsed.mileageLogs      : defaultData.mileageLogs,
-          complianceItems:  Array.isArray(parsed.complianceItems)  ? parsed.complianceItems  : defaultData.complianceItems,
-          agentRuns:        Array.isArray(parsed.agentRuns)        ? parsed.agentRuns        : defaultData.agentRuns,
-          agentSuggestions: Array.isArray(parsed.agentSuggestions) ? parsed.agentSuggestions : defaultData.agentSuggestions,
-          reminderQueue:    Array.isArray(parsed.reminderQueue)    ? parsed.reminderQueue    : defaultData.reminderQueue,
-          signerSessions:   Array.isArray(parsed.signerSessions)   ? parsed.signerSessions   : defaultData.signerSessions,
-          signerDocuments:  Array.isArray(parsed.signerDocuments)  ? parsed.signerDocuments  : defaultData.signerDocuments,
-          portalMessages:   Array.isArray(parsed.portalMessages)   ? parsed.portalMessages   : defaultData.portalMessages,
-          journalEntries:   Array.isArray(parsed.journalEntries)   ? parsed.journalEntries   : defaultData.journalEntries,
-          teamMembers:      Array.isArray(parsed.teamMembers)      ? parsed.teamMembers      : defaultData.teamMembers,
-          dispatchJobs:     Array.isArray(parsed.dispatchJobs)     ? parsed.dispatchJobs     : defaultData.dispatchJobs,
-          dispatchNotes:    Array.isArray(parsed.dispatchNotes)    ? parsed.dispatchNotes    : defaultData.dispatchNotes,
-          payouts:          Array.isArray(parsed.payouts)          ? parsed.payouts          : defaultData.payouts,
-          dispatchAuditLog: Array.isArray(parsed.dispatchAuditLog) ? parsed.dispatchAuditLog : defaultData.dispatchAuditLog,
-          adminAuditLog:    Array.isArray(parsed.adminAuditLog)    ? parsed.adminAuditLog    : defaultData.adminAuditLog,
-          agentTriggerLog:  Array.isArray(parsed.agentTriggerLog)  ? parsed.agentTriggerLog  : defaultData.agentTriggerLog,
-          agentFeedback:    Array.isArray(parsed.agentFeedback)    ? parsed.agentFeedback    : defaultData.agentFeedback,
-          agentMemory:      parsed.agentMemory && typeof parsed.agentMemory === 'object'
-            ? { facts: Array.isArray(parsed.agentMemory.facts) ? parsed.agentMemory.facts : [], updatedAt: parsed.agentMemory.updatedAt || null }
-            : defaultData.agentMemory,
-          stateRules:       Array.isArray(parsed.stateRules)       ? parsed.stateRules       : defaultData.stateRules,
-          feeSchedules:     Array.isArray(parsed.feeSchedules)     ? parsed.feeSchedules     : defaultData.feeSchedules,
-          idRequirements:   Array.isArray(parsed.idRequirements)   ? parsed.idRequirements   : defaultData.idRequirements,
-          knowledgeArticles:Array.isArray(parsed.knowledgeArticles)? parsed.knowledgeArticles: defaultData.knowledgeArticles,
-          autonomyRoadmap:  parsed.autonomyRoadmap && typeof parsed.autonomyRoadmap === 'object'
-            ? { ...defaultData.autonomyRoadmap, ...parsed.autonomyRoadmap }
-            : defaultData.autonomyRoadmap,
-          settings:         { ...defaultData.settings,        ...(parsed.settings        || {}) },
-          journalSettings:  { ...defaultData.journalSettings, ...(parsed.journalSettings || {}) },
-        };
-      } catch (e) {
-        return defaultData;
-      }
-    }
-  }
-  return defaultData;
-};
+const mergeWithDefaults = (parsed = {}) => ({
+  ...defaultData,
+  ...parsed,
+  settings: { ...defaultData.settings, ...(parsed.settings || {}) },
+  journalSettings: { ...defaultData.journalSettings, ...(parsed.journalSettings || {}) },
+  autonomyRoadmap: parsed.autonomyRoadmap && typeof parsed.autonomyRoadmap === 'object'
+    ? { ...defaultData.autonomyRoadmap, ...parsed.autonomyRoadmap }
+    : defaultData.autonomyRoadmap,
+  agentMemory: parsed.agentMemory && typeof parsed.agentMemory === 'object'
+    ? { facts: Array.isArray(parsed.agentMemory.facts) ? parsed.agentMemory.facts : [], updatedAt: parsed.agentMemory.updatedAt || null }
+    : defaultData.agentMemory,
+});
 
-// ── Provider ──────────────────────────────────────────────────────────────────
 export const DataProvider = ({ children }) => {
-  const [data, setData] = useState(hydrate);
+  const { user, isAuthenticated } = useAuth();
+  const [data, setData] = useState(defaultData);
+  const [dataReady, setDataReady] = useState(false);
+  const [syncError, setSyncError] = useState('');
 
-  // Persist to localStorage on every data change
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem('notaryfix_data', JSON.stringify(data));
-  }, [data]);
+    const load = async () => {
+      setDataReady(false);
+      setSyncError('');
 
-  // Stable snapshot reader — always reflects latest state via ref.
-  // More reliable than the setState snapshot trick (no batching edge-cases).
+      if (!isAuthenticated || !user?.uid) {
+        setData(defaultData);
+        setDataReady(true);
+        return;
+      }
+
+      try {
+        const remote = await getUserDataDoc({ idToken: user.idToken, uid: user.uid });
+        if (remote) {
+          setData(mergeWithDefaults(remote));
+          setDataReady(true);
+          return;
+        }
+
+        const legacy = localStorage.getItem('notaryfix_data');
+        if (legacy) {
+          const parsed = mergeWithDefaults(JSON.parse(legacy));
+          setData(parsed);
+          await upsertUserDataDoc({ idToken: user.idToken, uid: user.uid, payload: parsed });
+          localStorage.removeItem('notaryfix_data');
+        } else {
+          setData(defaultData);
+          await upsertUserDataDoc({ idToken: user.idToken, uid: user.uid, payload: defaultData });
+        }
+      } catch (e) {
+        setSyncError(e.message || 'Failed to sync with cloud');
+      } finally {
+        setDataReady(true);
+      }
+    };
+    load();
+  }, [isAuthenticated, user?.uid, user?.idToken]);
+
   const dataRef = useRef(data);
   useEffect(() => { dataRef.current = data; }, [data]);
   const getData = useCallback(() => dataRef.current, []);
 
-  // ── Instantiate slice ops (memoised — only recreated if setData/getData change) ──
-  const crudOps     = useMemo(() => createCrudOps(setData),          []);       // eslint-disable-line react-hooks/exhaustive-deps
-  const dispatchOps = useMemo(() => createDispatchOps(setData),      []);       // eslint-disable-line react-hooks/exhaustive-deps
-  const agentOps    = useMemo(() => createAgentOps(setData, getData), [getData]); // eslint-disable-line react-hooks/exhaustive-deps
-  const jobOps      = useMemo(() => createJobOps(setData, getData),     [getData]); // eslint-disable-line react-hooks/exhaustive-deps
-  const financeOps  = useMemo(() => createFinanceOps(setData, getData),  [getData]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isAuthenticated || !user?.uid || !dataReady) return;
+    const id = setTimeout(() => {
+      upsertUserDataDoc({ idToken: user.idToken, uid: user.uid, payload: data }).catch((e) => setSyncError(e.message || 'Sync failed'));
+    }, 350);
+    return () => clearTimeout(id);
+  }, [data, dataReady, isAuthenticated, user?.idToken, user?.uid]);
 
-  // Wrap the three async/callback ops that were originally useCallback in DataContext
-  const runCloseoutAgentWithAI = useCallback(agentOps.runCloseoutAgentWithAI, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const checkAutoScanAR        = useCallback(agentOps.checkAutoScanAR,        []); // eslint-disable-line react-hooks/exhaustive-deps
-  const generateWeeklySummary  = useCallback(agentOps.generateWeeklySummary,  []); // eslint-disable-line react-hooks/exhaustive-deps
+  const crudOps = useMemo(() => createCrudOps(setData), []);
+  const dispatchOps = useMemo(() => createDispatchOps(setData), []);
+  const agentOps = useMemo(() => createAgentOps(setData, getData), [getData]);
+  const jobOps = useMemo(() => createJobOps(setData, getData), [getData]);
+  const financeOps = useMemo(() => createFinanceOps(setData, getData), [getData]);
 
-  // ── Agent feedback — persisted edit/outcome log for useFeedbackLoop ──────────
-  // Feeds confidence adjustment. Cap at 1000 records to prevent unbounded growth.
+  const runCloseoutAgentWithAI = useCallback(agentOps.runCloseoutAgentWithAI, []); // eslint-disable-line
+  const checkAutoScanAR = useCallback(async (...args) => {
+    const out = await agentOps.checkAutoScanAR(...args);
+    if (user?.uid) enqueueAutomationJob({ idToken: user.idToken, uid: user.uid, type: 'ar_scan', payload: { source: 'client_trigger' } }).catch(() => {});
+    return out;
+  }, [agentOps, user?.idToken, user?.uid]);
+
+  const generateWeeklySummary = useCallback(async (...args) => {
+    const out = await agentOps.generateWeeklySummary(...args);
+    if (user?.uid) enqueueAutomationJob({ idToken: user.idToken, uid: user.uid, type: 'weekly_digest', payload: { source: 'client_trigger' } }).catch(() => {});
+    return out;
+  }, [agentOps, user?.idToken, user?.uid]);
+
   const addFeedback = useCallback((record) => {
     if (!record?.id) return;
     setData((p) => {
       const existing = Array.isArray(p.agentFeedback) ? p.agentFeedback : [];
-      // Deduplicate by suggestionId + outcome to prevent double-recording
-      const isDupe = existing.some(
-        (f) => f.suggestionId === record.suggestionId && f.outcome === record.outcome
-      );
+      const isDupe = existing.some((f) => f.suggestionId === record.suggestionId && f.outcome === record.outcome);
       if (isDupe) return p;
       return { ...p, agentFeedback: [record, ...existing].slice(0, 1000) };
     });
   }, []);
-  // Replaces localStorage-based deduplication. Survives incognito + storage clears.
+
   const addAgentTriggerEntry = useCallback((key) => {
     if (!key) return;
     setData((p) => {
       const existing = Array.isArray(p.agentTriggerLog) ? p.agentTriggerLog : [];
-      if (existing.includes(key)) return p;             // already recorded
-      return { ...p, agentTriggerLog: [...existing, key].slice(-500) }; // cap at 500 entries
+      if (existing.includes(key)) return p;
+      return { ...p, agentTriggerLog: [...existing, key].slice(-500) };
     });
   }, []);
 
@@ -235,15 +178,12 @@ export const DataProvider = ({ children }) => {
     <DataContext.Provider
       value={{
         data,
-        // ── CRUD ────────────────────────────────────────────────────────────
+        dataReady,
+        syncError,
         ...crudOps,
-        // ── Dispatch / Team / Payouts ────────────────────────────────────────
         ...dispatchOps,
-        // ── Agent ops (spread base, then override the three memoised fns) ───
         ...agentOps,
-        // ── Job Intelligence ops ──────────────────────────────────────────
         ...jobOps,
-        // ── Finance / Tax ops ─────────────────────────────────────────────
         ...financeOps,
         runCloseoutAgentWithAI,
         checkAutoScanAR,

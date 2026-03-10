@@ -4,16 +4,19 @@ import App from './App.jsx'
 import './index.css'
 import { ThemeProvider } from './context/ThemeContext'
 import { DataProvider } from './context/DataContext'
+import { AuthProvider } from './context/AuthContext'
 import { ActiveTripProvider } from './context/ActiveTripContext'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
+      <AuthProvider>
       <DataProvider>
         <ActiveTripProvider>
           <App />
         </ActiveTripProvider>
       </DataProvider>
+      </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>,
 )
