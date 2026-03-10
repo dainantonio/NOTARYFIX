@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { refreshIdToken, signInWithGoogleIdToken, signInWithPassword } from '../services/firebaseRest';
+import { hasFirebaseConfig, refreshIdToken, signInWithGoogleIdToken, signInWithPassword } from '../services/firebaseRest';
 
 const AuthContext = createContext();
 const AUTH_STORAGE_KEY = 'notaryfix_auth';
@@ -15,11 +15,16 @@ const decodeJwt = (jwt) => {
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
+  const hasGoogleClientId = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const boot = async () => {
+      if (!hasFirebaseConfig) {
+        setLoading(false);
+        return;
+      }
       try {
         const raw = localStorage.getItem(AUTH_STORAGE_KEY);
         if (!raw) return;
@@ -48,6 +53,7 @@ export const AuthProvider = ({ children }) => {
 
   const signInEmail = async (email, password) => {
     setError('');
+    if (!hasFirebaseConfig) throw new Error('Auth is not configured. Add VITE_FIREBASE_API_KEY and VITE_FIREBASE_PROJECT_ID to .env.local.');
     const res = await signInWithPassword({ email, password });
     const next = {
       uid: res.localId,
@@ -63,8 +69,10 @@ export const AuthProvider = ({ children }) => {
 
   const signInGoogle = async () => {
     setError('');
+    if (!hasFirebaseConfig) throw new Error('Google sign-in unavailable until Firebase env vars are configured.');
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId || !window.google?.accounts?.id) throw new Error('Google Sign-In not configured.');
+    if (!clientId) throw new Error('Google sign-in unavailable: missing VITE_GOOGLE_CLIENT_ID.');
+    if (!window.google?.accounts?.id) throw new Error('Google script not loaded yet.');
 
     const googleIdToken = await new Promise((resolve, reject) => {
       try {
@@ -110,7 +118,9 @@ export const AuthProvider = ({ children }) => {
     signInGoogle,
     signOut,
     isAuthenticated: Boolean(session?.uid),
-  }), [session, loading, error]);
+    hasFirebaseConfig,
+    hasGoogleConfig: hasFirebaseConfig && hasGoogleClientId,
+  }), [session, loading, error, hasGoogleClientId]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

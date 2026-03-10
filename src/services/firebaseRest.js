@@ -1,12 +1,16 @@
 const API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
 const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
 
+export const hasFirebaseConfig = Boolean(API_KEY && PROJECT_ID);
+
 const AUTH_BASE = 'https://identitytoolkit.googleapis.com/v1';
 const TOKEN_BASE = 'https://securetoken.googleapis.com/v1';
 const FIRESTORE_BASE = PROJECT_ID ? `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents` : '';
 
-const ensureConfig = () => {
-  if (!API_KEY || !PROJECT_ID) throw new Error('Firebase config missing (VITE_FIREBASE_API_KEY / VITE_FIREBASE_PROJECT_ID)');
+const ensureConfig = (operation = 'Firebase operation') => {
+  if (!API_KEY || !PROJECT_ID) {
+    throw new Error(`${operation} unavailable: missing VITE_FIREBASE_API_KEY or VITE_FIREBASE_PROJECT_ID.`);
+  }
 };
 
 const post = async (url, body) => {
@@ -21,12 +25,12 @@ const post = async (url, body) => {
 };
 
 export const signInWithPassword = async ({ email, password }) => {
-  ensureConfig();
+  ensureConfig('Email/password sign-in');
   return post(`${AUTH_BASE}/accounts:signInWithPassword?key=${API_KEY}`, { email, password, returnSecureToken: true });
 };
 
 export const signInWithGoogleIdToken = async ({ idToken }) => {
-  ensureConfig();
+  ensureConfig('Google sign-in');
   return post(`${AUTH_BASE}/accounts:signInWithIdp?key=${API_KEY}`, {
     postBody: `id_token=${idToken}&providerId=google.com`,
     requestUri: window.location.origin,
@@ -36,7 +40,7 @@ export const signInWithGoogleIdToken = async ({ idToken }) => {
 };
 
 export const refreshIdToken = async (refreshToken) => {
-  ensureConfig();
+  ensureConfig('Session refresh');
   return post(`${TOKEN_BASE}/token?key=${API_KEY}`, {
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
@@ -74,7 +78,7 @@ const fromFirestoreValue = (wrapped) => {
 };
 
 export const getUserDataDoc = async ({ idToken, uid }) => {
-  ensureConfig();
+  ensureConfig('Cloud data load');
   const res = await fetch(`${FIRESTORE_BASE}/users/${uid}/private/appData`, {
     headers: { Authorization: `Bearer ${idToken}` },
   });
@@ -85,7 +89,7 @@ export const getUserDataDoc = async ({ idToken, uid }) => {
 };
 
 export const upsertUserDataDoc = async ({ idToken, uid, payload }) => {
-  ensureConfig();
+  ensureConfig('Cloud data save');
   const res = await fetch(`${FIRESTORE_BASE}/users/${uid}/private/appData`, {
     method: 'PATCH',
     headers: {
@@ -105,7 +109,7 @@ export const upsertUserDataDoc = async ({ idToken, uid, payload }) => {
 };
 
 export const enqueueAutomationJob = async ({ idToken, uid, type, payload = {} }) => {
-  ensureConfig();
+  ensureConfig('Automation job queue');
   const id = `${type}_${Date.now()}`;
   const res = await fetch(`${FIRESTORE_BASE}/users/${uid}/automationJobs/${id}`, {
     method: 'PATCH',

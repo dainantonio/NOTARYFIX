@@ -94,6 +94,12 @@ BASE_URL=/
 
 ---
 
+### Auth Configuration Troubleshooting
+- **"Firebase config missing (VITE_FIREBASE_API_KEY / VITE_FIREBASE_PROJECT_ID)"**: add both vars to `.env.local` and restart `npm run dev`.
+- **"Google Sign-In not configured"**: add `VITE_GOOGLE_CLIENT_ID` (Google Identity Web client) to `.env.local`.
+- The Auth page now shows inline config status and disables unavailable sign-in methods until env vars are set.
+
+
 ## Deployment
 
 ### Vercel (recommended)
