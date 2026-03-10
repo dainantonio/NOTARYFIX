@@ -500,13 +500,6 @@ const LayoutInner = ({ children }) => {
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-violet-500 text-[9px] font-bold text-white flex items-center justify-center">{unseenCount > 9 ? '9+' : unseenCount}</span>
               )}
             </button>
-            <button
-              onClick={toggleTheme}
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-600 dark:text-slate-200" />}
-            </button>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <Menu className="w-6 h-6 dark:text-white" />
             </Button>
@@ -531,16 +524,6 @@ const LayoutInner = ({ children }) => {
               </div>
 
               {/* Drawer nav */}
-              <button
-                onClick={toggleTheme}
-                className="mb-4 flex w-full items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors"
-              >
-                <span>Appearance</span>
-                <span className="inline-flex items-center gap-2">
-                  {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500 dark:text-slate-300" />}
-                  {theme === 'dark' ? 'Light' : 'Dark'}
-                </span>
-              </button>
               <nav className="space-y-6 flex-1">
                 {sidebarGroups.map(group => (
                   <div key={group.title} className="space-y-1">
@@ -598,6 +581,12 @@ const LayoutInner = ({ children }) => {
                 </div>
                 {/* Action row */}
                 <div className="flex items-center gap-1">
+                  <button onClick={toggleTheme}
+                    title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                    className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 text-xs font-medium transition-all ring-1 ring-white/[0.06]">
+                    {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                    {theme === 'dark' ? 'Light' : 'Dark'}
+                  </button>
                   <button onClick={() => { setIsCommandPaletteOpen(true); setIsMobileMenuOpen(false); }}
                     title="Search"
                     className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 text-xs font-medium transition-all ring-1 ring-white/[0.06]">
